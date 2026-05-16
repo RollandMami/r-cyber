@@ -46,7 +46,7 @@ def patrimoine_create(request):
         if form.is_valid():
             patrimoine          = form.save(commit=False)
             if request.user.is_authenticated:
-                patrimoine.cree_par = request.user
+                patrimoine.cree_par = request.user if request.user.is_authenticated else None
             patrimoine.save()
 
             # Lance la conversion IFC si un fichier a été uploadé
@@ -106,7 +106,7 @@ def document_upload(request, patrimoine_pk):
         if form.is_valid():
             doc              = form.save(commit=False)
             doc.patrimoine   = patrimoine
-            doc.uploade_par  = request.user
+            doc.uploade_par  = request.user if request.user.is_authenticated else None
             doc.save()
             messages.success(request, f'Document « {doc.titre} » ajouté.')
             return redirect('smartdocs:patrimoine_detail', pk=patrimoine_pk)
