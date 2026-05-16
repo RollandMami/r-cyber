@@ -141,3 +141,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Auth
 LOGIN_URL          = '/admin/login/'
 LOGIN_REDIRECT_URL = '/patrimoines/'
+# Sessions persistantes
+SESSION_COOKIE_AGE = 86400 * 30   # 30 jours
+SESSION_SAVE_EVERY_REQUEST = True
