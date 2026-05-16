@@ -144,3 +144,7 @@ LOGIN_REDIRECT_URL = '/patrimoines/'
 # Sessions persistantes
 SESSION_COOKIE_AGE = 86400 * 30   # 30 jours
 SESSION_SAVE_EVERY_REQUEST = True
+
+# HTTPS via Nginx proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST    = True
