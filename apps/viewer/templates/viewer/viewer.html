@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Viewer 3D — {{ patrimoine.nom }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ── Layout général ──────────────────────────────────────── */
+body { overflow: hidden; }
+
+.viewer-wrapper {
+    display: flex;
+    height: calc(100vh - 56px); /* adapte selon hauteur navbar */
+    background: #1a1a2e;
+}
+
+/* ── Panneau gauche — canvas Three.js ───────────────────── */
+#viewer-canvas-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#viewer-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Barre d'outils flottante */
+.viewer-toolbar {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+
+.viewer-btn {
+    background: rgba(20,20,40,0.85);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    border-radius: 8px;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+.viewer-btn:hover { background: rgba(255,255,255,0.12); }
+.viewer-btn.active { background: var(--action-color, #a44200); border-color: var(--action-color, #a44200); }
+
+/* Infos objet survolé */
+#hover-info {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1rem;
+    background: rgba(20,20,40,0.88);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #e0e0e0;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    backdrop-filter: blur(8px);
+    display: none;
+    pointer-events: none;
+}
+
+/* Loading overlay */
+#loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    z-index: 20;
+}
+
+.loading-spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: var(--action-color, #a44200);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Panneau droit — arborescence ───────────────────────── */
+.viewer-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: #12122a;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+}
+
+.sidebar-header h6 {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.45);
+}
+
+.sidebar-header .patrimoine-nom {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bouton "Tout afficher" */
+.btn-tout-afficher {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: calc(100% - 2rem);
+    margin: 0.75rem 1rem 0;
+    padding: 0.5rem 0.85rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-tout-afficher:hover,
+.btn-tout-afficher.active {
+    background: rgba(164,66,0,0.3);
+    border-color: var(--action-color, #a44200);
+    color: #fff;
+}
+
+/* Scroll de l'arborescence */
+.sidebar-tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.sidebar-tree::-webkit-scrollbar { width: 4px; }
+.sidebar-tree::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* Items étage */
+.etage-item {
+    margin: 0.25rem 0.75rem;
+}
+
+.etage-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.etage-btn:hover {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    border-color: rgba(255,255,255,0.1);
+}
+
+.etage-btn.active {
+    background: rgba(164,66,0,0.25);
+    border-color: var(--action-color, #a44200);
+    color: #fff;
+}
+
+.etage-btn .etage-icon {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+.etage-btn.open .etage-icon { transform: rotate(90deg); opacity: 1; }
+
+.etage-level-badge {
+    margin-left: auto;
+    font-size: 0.68rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    color: rgba(255,255,255,0.45);
+    flex-shrink: 0;
+}
+
+/* Items pièces */
+.pieces-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.25rem;
+    display: none;
+}
+.pieces-list.open { display: block; }
+
+.piece-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.4rem 0.85rem 0.4rem 2.4rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+}
+.piece-btn:hover {
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.85);
+}
+.piece-btn.active {
+    background: rgba(164,66,0,0.15);
+    color: #fff;
+}
+.piece-btn .piece-surface {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.3);
+    flex-shrink: 0;
+}
+
+/* ── Responsive mobile ───────────────────────────────────── */
+@media (max-width: 767.98px) {
+    .viewer-wrapper { flex-direction: column; }
+    .viewer-sidebar {
+        width: 100%;
+        height: 220px;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-tree { display: flex; gap: 0.5rem; flex-wrap: nowrap; overflow-x: auto; padding: 0.5rem; }
+    .etage-item { margin: 0; flex-shrink: 0; }
+    .etage-btn { padding: 0.4rem 0.75rem; white-space: nowrap; }
+    .pieces-list { display: none !important; } /* masqué en mobile, géré par modal */
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="viewer-wrapper">
+
+    {# ── Canvas 3D ─────────────────────────────────────────── #}
+    <div id="viewer-canvas-wrapper">
+
+        {# Loading #}
+        <div id="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p style="font-size:0.9rem; color:rgba(255,255,255,0.6);">Chargement du modèle…</p>
+        </div>
+
+        {# Barre d'outils #}
+        <div class="viewer-toolbar">
+            <button class="viewer-btn active" id="btn-perspective" onclick="setCameraMode('perspective')">
+                <i class="fas fa-cube me-1"></i> 3D
+            </button>
+            <button class="viewer-btn" id="btn-top" onclick="setCameraMode('top')">
+                <i class="fas fa-arrows-alt-v me-1"></i> Plan
+            </button>
+            <button class="viewer-btn" onclick="resetCamera()">
+                <i class="fas fa-home me-1"></i> Reset
+            </button>
+            <a href="{% url 'smartdocs:patrimoine_detail' patrimoine.pk %}"
+               class="viewer-btn" style="text-decoration:none;">
+                <i class="fas fa-file-alt me-1"></i> Documents
+            </a>
+        </div>
+
+        <canvas id="viewer-canvas"></canvas>
+
+        {# Info objet survolé #}
+        <div id="hover-info">
+            <i class="fas fa-info-circle me-1"></i>
+            <span id="hover-info-text">—</span>
+        </div>
+    </div>
+
+    {# ── Sidebar arborescence ──────────────────────────────── #}
+    <nav class="viewer-sidebar">
+        <div class="sidebar-header">
+            <h6>Navigation</h6>
+            <div class="patrimoine-nom" title="{{ patrimoine.nom }}">{{ patrimoine.nom }}</div>
+        </div>
+
+        <button class="btn-tout-afficher active" id="btn-tout" onclick="filtrerEtage(null, this)">
+            <i class="fas fa-building"></i> Tout le bâtiment
+        </button>
+
+        <div class="sidebar-tree" id="sidebar-tree">
+            {% for etage in etages %}
+            <div class="etage-item">
+                <button class="etage-btn"
+                        data-etage-pk="{{ etage.pk }}"
+                        data-etage-guid="{{ etage.ifc_guid }}"
+                        onclick="toggleEtage(this, {{ etage.pk }})">
+                    <i class="fas fa-chevron-right etage-icon"></i>
+                    <i class="fas fa-layer-group" style="color:var(--action-color,#a44200);font-size:0.8rem;"></i>
+                    {{ etage.nom }}
+                    <span class="etage-level-badge">N{{ etage.niveau }}</span>
+                </button>
+
+                {% if etage.pieces.all %}
+                <ul class="pieces-list" id="pieces-{{ etage.pk }}">
+                    {% for piece in etage.pieces.all %}
+                    <li>
+                        <button class="piece-btn"
+                                data-piece-pk="{{ piece.pk }}"
+                                data-piece-guid="{{ piece.ifc_guid }}"
+                                onclick="filtrerPiece(this, '{{ piece.ifc_guid }}')">
+                            <i class="fas fa-door-open" style="font-size:0.7rem;opacity:0.5;"></i>
+                            {{ piece.nom }}
+                            {% if piece.surface %}
+                            <span class="piece-surface">{{ piece.surface|floatformat:1 }} m²</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div style="padding:1.5rem 1rem; color:rgba(255,255,255,0.3); font-size:0.82rem; text-align:center;">
+                <i class="fas fa-info-circle mb-2 d-block"></i>
+                Aucun étage détecté dans le modèle.
+            </div>
+            {% endfor %}
+        </div>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{# Three.js via CDN #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="{% static 'viewer/js/viewer.js' %}"></script>
+<script>
+    // Initialise le viewer avec l'URL du JSON
+    document.addEventListener('DOMContentLoaded', function () {
+        initViewer(
+            'viewer-canvas',
+            "{{ json_url }}",
+            "{% url 'viewer:api_geometrie' patrimoine.pk %}"
+        );
+    });
+</script>
+{% endblock %}

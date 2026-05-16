@@ -1,7 +1,7 @@
 # Makefile pour le projet Django
 # Utilise le venv local pour toutes les commandes.
 
-VENV = venv
+VENV = env
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 MANAGE = $(PYTHON) manage.py
