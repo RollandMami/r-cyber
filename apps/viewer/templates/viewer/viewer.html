@@ -5,265 +5,185 @@
 
 {% block extra_head %}
 <style>
-/* ── Layout général ──────────────────────────────────────── */
-body { overflow: hidden; }
+:root {
+    --viewer-bg:     #0d0f1a;
+    --panel-bg:      #111220;
+    --panel-border:  rgba(255,255,255,0.07);
+    --accent:        #2196f3;
+    --accent-dim:    rgba(33,150,243,0.18);
+    --text-main:     rgba(255,255,255,0.88);
+    --text-muted:    rgba(255,255,255,0.38);
+    --glass:         rgba(13,15,26,0.82);
+    --drawer-w:      300px;
+    --navbar-h:      56px;
+}
+body { overflow: hidden; margin: 0; }
 
 .viewer-wrapper {
     display: flex;
-    height: calc(100vh - 56px); /* adapte selon hauteur navbar */
-    background: #1a1a2e;
-}
-
-/* ── Panneau gauche — canvas Three.js ───────────────────── */
-#viewer-canvas-wrapper {
-    flex: 1;
+    height: calc(100vh - var(--navbar-h));
+    background: var(--viewer-bg);
     position: relative;
-    overflow: hidden;
 }
 
-#viewer-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
+#viewer-canvas-wrapper { flex: 1; position: relative; overflow: hidden; min-width: 0; }
+#viewer-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
 
-/* Barre d'outils flottante */
-.viewer-toolbar {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    display: flex;
-    gap: 0.5rem;
-    z-index: 10;
-}
-
-.viewer-btn {
-    background: rgba(20,20,40,0.85);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: #fff;
-    border-radius: 8px;
-    padding: 0.5rem 0.85rem;
-    font-size: 0.82rem;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: all 0.2s ease;
-}
-.viewer-btn:hover { background: rgba(255,255,255,0.12); }
-.viewer-btn.active { background: var(--action-color, #a44200); border-color: var(--action-color, #a44200); }
-
-/* Infos objet survolé */
-#hover-info {
-    position: absolute;
-    bottom: 1.5rem;
-    left: 1rem;
-    background: rgba(20,20,40,0.88);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: #e0e0e0;
-    border-radius: 10px;
-    padding: 0.6rem 1rem;
-    font-size: 0.8rem;
-    backdrop-filter: blur(8px);
-    display: none;
-    pointer-events: none;
-}
-
-/* Loading overlay */
+/* Loading */
 #loading-overlay {
-    position: absolute;
-    inset: 0;
-    background: #1a1a2e;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    z-index: 20;
+    position: absolute; inset: 0; background: var(--viewer-bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; z-index: 50;
 }
-
-.loading-spinner {
-    width: 48px; height: 48px;
-    border: 3px solid rgba(255,255,255,0.1);
-    border-top-color: var(--action-color, #a44200);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 1rem;
+.loading-ring {
+    width: 52px; height: 52px;
+    border: 3px solid rgba(255,255,255,0.08); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 1.2rem;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Panneau droit — arborescence ───────────────────────── */
+/* Toolbar */
+.viewer-toolbar {
+    position: absolute; top: 1rem; left: 1rem;
+    display: flex; gap: 0.4rem; z-index: 20; flex-wrap: wrap;
+    max-width: calc(100% - 2rem);
+}
+.viewer-btn {
+    background: var(--glass); border: 1px solid rgba(255,255,255,0.13);
+    color: var(--text-main); border-radius: 10px; padding: 0.45rem 0.8rem;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    backdrop-filter: blur(12px); transition: all 0.2s ease;
+    white-space: nowrap; display: flex; align-items: center; gap: 0.35rem;
+    text-decoration: none; letter-spacing: 0.02em;
+}
+.viewer-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.viewer-btn.active { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+.viewer-btn i { font-size: 0.75rem; }
+
+/* Bouton drawer mobile */
+.btn-open-drawer {
+    display: none; position: absolute; bottom: 1.5rem; right: 1rem; z-index: 20;
+    background: var(--accent); border: none; border-radius: 50px;
+    padding: 0.7rem 1.2rem; color: #fff; font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(33,150,243,0.4);
+    align-items: center; gap: 0.5rem; transition: all 0.2s ease;
+}
+.btn-open-drawer:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(33,150,243,0.5); }
+
+/* Hover info */
+#hover-info {
+    position: absolute; bottom: 1.5rem; left: 1rem;
+    background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-muted); border-radius: 10px; padding: 0.5rem 0.9rem;
+    font-size: 0.78rem; backdrop-filter: blur(12px);
+    display: none; pointer-events: none; max-width: 260px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Sidebar desktop ─────────────────────────────────────── */
 .viewer-sidebar {
-    width: 280px;
-    flex-shrink: 0;
-    background: #12122a;
-    border-left: 1px solid rgba(255,255,255,0.08);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    width: var(--drawer-w); flex-shrink: 0;
+    background: var(--panel-bg); border-left: 1px solid var(--panel-border);
+    display: flex; flex-direction: column; overflow: hidden;
 }
+.sidebar-header { padding: 1rem 1rem 0.75rem; border-bottom: 1px solid var(--panel-border); }
+.sidebar-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 0.25rem; }
+.sidebar-title { font-size: 0.92rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.sidebar-header {
-    padding: 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.03);
+.btn-tout {
+    display: flex; align-items: center; gap: 0.5rem;
+    width: calc(100% - 1.5rem); margin: 0.75rem 0.75rem 0;
+    padding: 0.55rem 0.85rem; background: transparent;
+    border: 1px solid var(--panel-border); border-radius: 10px;
+    color: var(--text-muted); font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease; text-align: left;
 }
+.btn-tout:hover, .btn-tout.active { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
 
-.sidebar-header h6 {
-    margin: 0;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.45);
-}
+.sidebar-tree { flex: 1; overflow-y: auto; padding: 0.5rem 0.75rem 2rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+.sidebar-tree::-webkit-scrollbar { width: 3px; }
+.sidebar-tree::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
 
-.sidebar-header .patrimoine-nom {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #fff;
-    margin-top: 0.2rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Bouton "Tout afficher" */
-.btn-tout-afficher {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: calc(100% - 2rem);
-    margin: 0.75rem 1rem 0;
-    padding: 0.5rem 0.85rem;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    color: rgba(255,255,255,0.7);
-    font-size: 0.82rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.btn-tout-afficher:hover,
-.btn-tout-afficher.active {
-    background: rgba(164,66,0,0.3);
-    border-color: var(--action-color, #a44200);
-    color: #fff;
-}
-
-/* Scroll de l'arborescence */
-.sidebar-tree {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.5rem 0 2rem;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.1) transparent;
-}
-.sidebar-tree::-webkit-scrollbar { width: 4px; }
-.sidebar-tree::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-
-/* Items étage */
-.etage-item {
-    margin: 0.25rem 0.75rem;
-}
-
+.etage-item { margin-bottom: 0.2rem; }
 .etage-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    width: 100%;
-    padding: 0.55rem 0.85rem;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    color: rgba(255,255,255,0.75);
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
+    display: flex; align-items: center; gap: 0.55rem; width: 100%;
+    padding: 0.55rem 0.75rem; background: transparent;
+    border: 1px solid transparent; border-radius: 10px;
+    color: rgba(255,255,255,0.65); font-size: 0.84rem; font-weight: 600;
+    cursor: pointer; transition: all 0.18s ease; text-align: left;
 }
-
-.etage-btn:hover {
-    background: rgba(255,255,255,0.06);
-    color: #fff;
-    border-color: rgba(255,255,255,0.1);
-}
-
-.etage-btn.active {
-    background: rgba(164,66,0,0.25);
-    border-color: var(--action-color, #a44200);
-    color: #fff;
-}
-
-.etage-btn .etage-icon {
-    font-size: 0.8rem;
-    opacity: 0.6;
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
-}
+.etage-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.etage-btn.active { background: var(--accent-dim); border-color: rgba(33,150,243,0.35); color: #fff; }
+.etage-icon { font-size: 0.7rem; opacity: 0.5; transition: transform 0.2s ease; flex-shrink: 0; }
 .etage-btn.open .etage-icon { transform: rotate(90deg); opacity: 1; }
+.etage-layer-icon { color: var(--accent); font-size: 0.75rem; flex-shrink: 0; }
+.etage-badge { margin-left: auto; font-size: 0.62rem; background: rgba(255,255,255,0.07); border-radius: 4px; padding: 0.1rem 0.4rem; color: var(--text-muted); flex-shrink: 0; }
 
-.etage-level-badge {
-    margin-left: auto;
-    font-size: 0.68rem;
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-    padding: 0.1rem 0.4rem;
-    color: rgba(255,255,255,0.45);
-    flex-shrink: 0;
-}
-
-/* Items pièces */
-.pieces-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0.25rem;
-    display: none;
-}
+.pieces-list { list-style: none; padding: 0; margin: 0 0 0.2rem; display: none; }
 .pieces-list.open { display: block; }
-
 .piece-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 0.4rem 0.85rem 0.4rem 2.4rem;
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    color: rgba(255,255,255,0.5);
-    font-size: 0.82rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-align: left;
+    display: flex; align-items: center; gap: 0.45rem; width: 100%;
+    padding: 0.38rem 0.75rem 0.38rem 2.1rem; background: transparent;
+    border: none; border-radius: 8px; color: var(--text-muted);
+    font-size: 0.8rem; cursor: pointer; transition: all 0.15s ease; text-align: left;
 }
-.piece-btn:hover {
-    background: rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.85);
-}
-.piece-btn.active {
-    background: rgba(164,66,0,0.15);
-    color: #fff;
-}
-.piece-btn .piece-surface {
-    margin-left: auto;
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.3);
-    flex-shrink: 0;
-}
+.piece-btn:hover { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.8); }
+.piece-btn.active { background: rgba(33,150,243,0.12); color: #fff; }
+.piece-surface { margin-left: auto; font-size: 0.68rem; color: rgba(255,255,255,0.22); flex-shrink: 0; }
 
-/* ── Responsive mobile ───────────────────────────────────── */
+/* ── Drawer mobile ───────────────────────────────────────── */
+.drawer-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 100;
+    backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease;
+}
+.drawer-backdrop.open { opacity: 1; }
+
+.drawer {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 101;
+    background: var(--panel-bg); border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--panel-border);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    max-height: 80vh; display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateY(0); }
+
+.drawer-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0.75rem auto 0; flex-shrink: 0; cursor: grab; }
+.drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem 0.5rem; border-bottom: 1px solid var(--panel-border); flex-shrink: 0; }
+.drawer-header-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+.drawer-header-title i { color: var(--accent); font-size: 0.8rem; }
+.btn-close-drawer { background: rgba(255,255,255,0.08); border: none; border-radius: 50%; width: 30px; height: 30px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: all 0.2s ease; }
+.btn-close-drawer:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+.drawer-body { overflow-y: auto; padding: 0.75rem 1rem 2rem; flex: 1; scrollbar-width: none; }
+.drawer-body::-webkit-scrollbar { display: none; }
+
+.drawer-tout-btn { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.7rem 1rem; background: transparent; border: 1px solid var(--panel-border); border-radius: 12px; color: var(--text-muted); font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-bottom: 0.75rem; transition: all 0.18s ease; text-align: left; }
+.drawer-tout-btn.active, .drawer-tout-btn:hover { background: var(--accent-dim); border-color: rgba(33,150,243,0.4); color: #fff; }
+
+.drawer-etage-chip { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 12px; color: rgba(255,255,255,0.7); font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-bottom: 0.5rem; transition: all 0.18s ease; text-align: left; }
+.drawer-etage-chip:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.drawer-etage-chip.active { background: var(--accent-dim); border-color: rgba(33,150,243,0.4); color: #fff; }
+.chip-icon { color: var(--accent); font-size: 0.8rem; }
+.chip-badge { margin-left: auto; font-size: 0.68rem; color: var(--text-muted); }
+.chip-arrow { font-size: 0.65rem; opacity: 0.4; transition: transform 0.2s; }
+.drawer-etage-chip.open .chip-arrow { transform: rotate(90deg); opacity: 0.8; }
+
+.drawer-pieces { list-style: none; padding: 0 0 0 0.75rem; margin: 0 0 0.5rem 0.5rem; display: none; border-left: 2px solid rgba(33,150,243,0.2); }
+.drawer-pieces.open { display: block; }
+.drawer-piece-btn { display: flex; align-items: center; gap: 0.5rem; width: 100%; padding: 0.5rem 0.5rem; background: transparent; border: none; border-radius: 8px; color: var(--text-muted); font-size: 0.82rem; cursor: pointer; transition: all 0.15s ease; text-align: left; margin-bottom: 0.15rem; }
+.drawer-piece-btn:hover { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.8); }
+.drawer-piece-btn.active { background: rgba(33,150,243,0.12); color: #fff; }
+.drawer-piece-surface { margin-left: auto; font-size: 0.7rem; color: rgba(255,255,255,0.22); }
+
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 767.98px) {
-    .viewer-wrapper { flex-direction: column; }
-    .viewer-sidebar {
-        width: 100%;
-        height: 220px;
-        border-left: none;
-        border-top: 1px solid rgba(255,255,255,0.08);
-    }
-    .sidebar-tree { display: flex; gap: 0.5rem; flex-wrap: nowrap; overflow-x: auto; padding: 0.5rem; }
-    .etage-item { margin: 0; flex-shrink: 0; }
-    .etage-btn { padding: 0.4rem 0.75rem; white-space: nowrap; }
-    .pieces-list { display: none !important; } /* masqué en mobile, géré par modal */
+    .viewer-sidebar { display: none; }
+    .btn-open-drawer { display: flex; }
+    .viewer-btn span { display: none; }
+    .viewer-btn { padding: 0.42rem 0.65rem; }
+    #hover-info { bottom: 5rem; }
 }
 </style>
 {% endblock %}
@@ -271,78 +191,60 @@ body { overflow: hidden; }
 {% block content %}
 <div class="viewer-wrapper">
 
-    {# ── Canvas 3D ─────────────────────────────────────────── #}
     <div id="viewer-canvas-wrapper">
-
-        {# Loading #}
         <div id="loading-overlay">
-            <div class="loading-spinner"></div>
-            <p style="font-size:0.9rem; color:rgba(255,255,255,0.6);">Chargement du modèle…</p>
+            <div class="loading-ring"></div>
+            <p style="font-size:0.85rem;color:var(--text-muted,rgba(255,255,255,0.4));">Chargement du modèle…</p>
         </div>
 
-        {# Barre d'outils #}
         <div class="viewer-toolbar">
             <button class="viewer-btn active" id="btn-perspective" onclick="setCameraMode('perspective')">
-                <i class="fas fa-cube me-1"></i> 3D
+                <i class="fas fa-cube"></i><span> 3D</span>
             </button>
             <button class="viewer-btn" id="btn-top" onclick="setCameraMode('top')">
-                <i class="fas fa-arrows-alt-v me-1"></i> Plan
+                <i class="fas fa-arrows-alt-v"></i><span> Plan</span>
             </button>
             <button class="viewer-btn" onclick="resetCamera()">
-                <i class="fas fa-home me-1"></i> Reset
+                <i class="fas fa-home"></i><span> Reset</span>
             </button>
-            <a href="{% url 'smartdocs:patrimoine_detail' patrimoine.pk %}"
-               class="viewer-btn" style="text-decoration:none;">
-                <i class="fas fa-file-alt me-1"></i> Documents
+            <a href="{% url 'smartdocs:patrimoine_detail' patrimoine.pk %}" class="viewer-btn">
+                <i class="fas fa-file-alt"></i><span> Docs</span>
             </a>
         </div>
 
         <canvas id="viewer-canvas"></canvas>
+        <div id="hover-info"><i class="fas fa-info-circle me-1"></i><span id="hover-info-text"></span></div>
 
-        {# Info objet survolé #}
-        <div id="hover-info">
-            <i class="fas fa-info-circle me-1"></i>
-            <span id="hover-info-text">—</span>
-        </div>
+        <button class="btn-open-drawer" onclick="openDrawer()">
+            <i class="fas fa-layer-group"></i> Niveaux
+        </button>
     </div>
 
-    {# ── Sidebar arborescence ──────────────────────────────── #}
     <nav class="viewer-sidebar">
         <div class="sidebar-header">
-            <h6>Navigation</h6>
-            <div class="patrimoine-nom" title="{{ patrimoine.nom }}">{{ patrimoine.nom }}</div>
+            <div class="sidebar-label">Navigation</div>
+            <div class="sidebar-title" title="{{ patrimoine.nom }}">{{ patrimoine.nom }}</div>
         </div>
-
-        <button class="btn-tout-afficher active" id="btn-tout" onclick="filtrerEtage(null, this)">
+        <button class="btn-tout active" id="btn-tout" onclick="filtrerEtage(null, this)">
             <i class="fas fa-building"></i> Tout le bâtiment
         </button>
-
-        <div class="sidebar-tree" id="sidebar-tree">
+        <div class="sidebar-tree">
             {% for etage in etages %}
             <div class="etage-item">
-                <button class="etage-btn"
-                        data-etage-pk="{{ etage.pk }}"
-                        data-etage-guid="{{ etage.ifc_guid }}"
-                        onclick="toggleEtage(this, {{ etage.pk }})">
+                <button class="etage-btn" data-etage-pk="{{ etage.pk }}" onclick="toggleEtage(this, {{ etage.pk }})">
                     <i class="fas fa-chevron-right etage-icon"></i>
-                    <i class="fas fa-layer-group" style="color:var(--action-color,#a44200);font-size:0.8rem;"></i>
+                    <i class="fas fa-layer-group etage-layer-icon"></i>
                     {{ etage.nom }}
-                    <span class="etage-level-badge">N{{ etage.niveau }}</span>
+                    <span class="etage-badge">N{{ etage.niveau }}</span>
                 </button>
-
                 {% if etage.pieces.all %}
                 <ul class="pieces-list" id="pieces-{{ etage.pk }}">
                     {% for piece in etage.pieces.all %}
                     <li>
-                        <button class="piece-btn"
-                                data-piece-pk="{{ piece.pk }}"
-                                data-piece-guid="{{ piece.ifc_guid }}"
-                                onclick="filtrerPiece(this, '{{ piece.ifc_guid }}')">
-                            <i class="fas fa-door-open" style="font-size:0.7rem;opacity:0.5;"></i>
+                        <button class="piece-btn" onclick="filtrerPiece(this, '{{ piece.ifc_guid }}')">
+                            <i class="fas fa-door-open" style="font-size:0.68rem;opacity:0.45;"></i>
                             {{ piece.nom }}
-                            {% if piece.surface %}
-                            <span class="piece-surface">{{ piece.surface|floatformat:1 }} m²</span>
-                            {% endif %}
+                            {% if piece.surface %}<span class="piece-surface">{{ piece.surface|floatformat:0 }} m²</span>{% endif %}
                         </button>
                     </li>
                     {% endfor %}
@@ -350,28 +252,107 @@ body { overflow: hidden; }
                 {% endif %}
             </div>
             {% empty %}
-            <div style="padding:1.5rem 1rem; color:rgba(255,255,255,0.3); font-size:0.82rem; text-align:center;">
-                <i class="fas fa-info-circle mb-2 d-block"></i>
-                Aucun étage détecté dans le modèle.
+            <div style="padding:2rem 0.5rem;color:var(--text-muted);font-size:0.8rem;text-align:center;">
+                <i class="fas fa-info-circle mb-2 d-block"></i>Aucun étage détecté.
             </div>
             {% endfor %}
         </div>
     </nav>
 </div>
+
+{# Drawer mobile #}
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer-mobile">
+    <div class="drawer-handle" id="drawer-handle"></div>
+    <div class="drawer-header">
+        <div class="drawer-header-title">
+            <i class="fas fa-layer-group"></i> Niveaux — {{ patrimoine.nom }}
+        </div>
+        <button class="btn-close-drawer" onclick="closeDrawer()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="drawer-body">
+        <button class="drawer-tout-btn active" id="drawer-btn-tout" onclick="filtrerEtageDrawer(null, this)">
+            <i class="fas fa-building" style="color:var(--accent);"></i> Tout le bâtiment
+        </button>
+        {% for etage in etages %}
+        <button class="drawer-etage-chip" data-etage-pk="{{ etage.pk }}" onclick="toggleDrawerEtage(this, {{ etage.pk }})">
+            <i class="fas fa-chevron-right chip-arrow"></i>
+            <i class="fas fa-layer-group chip-icon"></i>
+            {{ etage.nom }}
+            <span class="chip-badge">N{{ etage.niveau }}</span>
+        </button>
+        {% if etage.pieces.all %}
+        <ul class="drawer-pieces" id="drawer-pieces-{{ etage.pk }}">
+            {% for piece in etage.pieces.all %}
+            <li>
+                <button class="drawer-piece-btn" onclick="filtrerPieceDrawer(this, '{{ piece.ifc_guid }}')">
+                    <i class="fas fa-door-open" style="font-size:0.7rem;opacity:0.4;"></i>
+                    {{ piece.nom }}
+                    {% if piece.surface %}<span class="drawer-piece-surface">{{ piece.surface|floatformat:0 }} m²</span>{% endif %}
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-{# Three.js via CDN #}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="{% static 'viewer/js/viewer.js' %}"></script>
 <script>
-    // Initialise le viewer avec l'URL du JSON
-    document.addEventListener('DOMContentLoaded', function () {
-        initViewer(
-            'viewer-canvas',
-            "{{ json_url }}",
-            "{% url 'viewer:api_geometrie' patrimoine.pk %}"
-        );
-    });
+document.addEventListener('DOMContentLoaded', function () {
+    initViewer('viewer-canvas', "{{ json_url }}", "{% url 'viewer:api_geometrie' patrimoine.pk %}");
+});
+
+function openDrawer() {
+    document.getElementById('drawer-mobile').classList.add('open');
+    document.getElementById('drawer-backdrop').style.display = 'block';
+    setTimeout(() => document.getElementById('drawer-backdrop').classList.add('open'), 10);
+}
+function closeDrawer() {
+    document.getElementById('drawer-mobile').classList.remove('open');
+    document.getElementById('drawer-backdrop').classList.remove('open');
+    setTimeout(() => document.getElementById('drawer-backdrop').style.display = 'none', 300);
+}
+
+// Swipe down pour fermer
+(function() {
+    const drawer = document.getElementById('drawer-mobile');
+    const handle = document.getElementById('drawer-handle');
+    let startY = 0, dragging = false;
+    handle.addEventListener('touchstart', e => { startY = e.touches[0].clientY; dragging = true; }, { passive: true });
+    handle.addEventListener('touchmove',  e => { if (dragging) drawer.style.transform = `translateY(${Math.max(0, e.touches[0].clientY - startY)}px)`; }, { passive: true });
+    handle.addEventListener('touchend',   e => { dragging = false; drawer.style.transform = ''; if (e.changedTouches[0].clientY - startY > 80) closeDrawer(); });
+})();
+
+function filtrerEtageDrawer(etagePk, btn) {
+    document.querySelectorAll('.drawer-etage-chip,.drawer-piece-btn').forEach(b => b.classList.remove('active','open'));
+    document.getElementById('drawer-btn-tout').classList.remove('active');
+    if (btn) btn.classList.add('active');
+    filtrerEtage(etagePk, null);
+    if (!etagePk) document.getElementById('drawer-btn-tout').classList.add('active');
+    setTimeout(closeDrawer, 350);
+}
+function toggleDrawerEtage(btn, etagePk) {
+    const piecesEl = document.getElementById('drawer-pieces-' + etagePk);
+    filtrerEtage(etagePk, null);
+    document.querySelectorAll('.drawer-etage-chip').forEach(b => { if (b !== btn) { b.classList.remove('active','open'); } });
+    btn.classList.toggle('active');
+    const open = btn.classList.toggle('open');
+    if (piecesEl) {
+        document.querySelectorAll('.drawer-pieces').forEach(p => { if (p !== piecesEl) p.classList.remove('open'); });
+        piecesEl.classList.toggle('open', open);
+    }
+    if (!piecesEl) setTimeout(closeDrawer, 350);
+}
+function filtrerPieceDrawer(btn, pieceGuid) {
+    document.querySelectorAll('.drawer-piece-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filtrerPiece(null, pieceGuid);
+    setTimeout(closeDrawer, 350);
+}
 </script>
 {% endblock %}
