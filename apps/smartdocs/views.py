@@ -45,7 +45,8 @@ def patrimoine_create(request):
         form = PatrimoineForm(request.POST, request.FILES)
         if form.is_valid():
             patrimoine          = form.save(commit=False)
-            patrimoine.cree_par = request.user
+            if request.user.is_authenticated:
+                patrimoine.cree_par = request.user
             patrimoine.save()
 
             # Lance la conversion IFC si un fichier a été uploadé

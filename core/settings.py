@@ -137,3 +137,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Auth
+LOGIN_URL          = '/admin/login/'
+LOGIN_REDIRECT_URL = '/patrimoines/'
