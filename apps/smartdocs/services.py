@@ -42,7 +42,7 @@ def convertir_ifc_en_json(patrimoine):
     écrit le résultat dans patrimoine.fichier_json et met à jour le statut.
     Crée ou met à jour aussi les objets Etage / Piece en base.
     """
-    from apps.smartdocs.models import Etage, Piece
+    from .models import Etage, Piece
 
     patrimoine.statut_conversion  = 'en_cours'
     patrimoine.erreur_conversion  = ''
@@ -202,9 +202,25 @@ def _get_elements_of_storey(ifc_model, storey):
         if rel.RelatingStructure == storey:
             for el in rel.RelatedElements:
                 if el.is_a() in (
+                    # Structure
                     'IfcWall', 'IfcWallStandardCase', 'IfcSlab',
-                    'IfcColumn', 'IfcBeam', 'IfcDoor', 'IfcWindow',
-                    'IfcStair', 'IfcRoof', 'IfcCovering',
+                    'IfcColumn', 'IfcBeam', 'IfcRoof', 'IfcFooting',
+                    'IfcPile', 'IfcMember', 'IfcCurtainWall',
+                    # Ouvertures
+                    'IfcDoor', 'IfcWindow',
+                    # Escaliers
+                    'IfcStair', 'IfcStairFlight', 'IfcRamp', 'IfcRampFlight',
+                    # Revêtements
+                    'IfcCovering',
+                    # Sanitaire & MEP
+                    'IfcSanitaryTerminal', 'IfcFlowTerminal',
+                    'IfcFlowSegment', 'IfcFlowFitting', 'IfcFlowController',
+                    'IfcEnergyConversionDevice', 'IfcDistributionControlElement',
+                    'IfcElectricAppliance', 'IfcLightFixture',
+                    # Mobilier
+                    'IfcFurnishingElement', 'IfcFurniture',
+                    # Générique
+                    'IfcBuildingElementProxy',
                 ):
                     elements.append(el)
     return elements
