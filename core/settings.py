@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 	
 	# rest framework
 	'rest_framework',
+	'django.contrib.humanize',
 	
 ]
 
