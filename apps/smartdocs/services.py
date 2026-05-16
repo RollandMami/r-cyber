@@ -42,7 +42,7 @@ def convertir_ifc_en_json(patrimoine):
     écrit le résultat dans patrimoine.fichier_json et met à jour le statut.
     Crée ou met à jour aussi les objets Etage / Piece en base.
     """
-    from .models import Etage, Piece
+    from apps.smartdocs.models import Etage, Piece
 
     patrimoine.statut_conversion  = 'en_cours'
     patrimoine.erreur_conversion  = ''
