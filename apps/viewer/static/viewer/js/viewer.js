@@ -6,6 +6,7 @@
  */
 
 let scene, camera, renderer, orbitControls;
+let navMode = 'orbit'; // 'orbit' | 'pan'
 let raycaster, mouse;
 let allMeshes = [];
 let apiBaseUrl = '';
@@ -168,6 +169,17 @@ function resetCamera() {
     _fitCameraToScene();
 }
 
+function setNavMode(mode) {
+    navMode = mode;
+    const btnOrbit = document.getElementById('btn-orbit');
+    const btnPan   = document.getElementById('btn-pan');
+    if (btnOrbit) btnOrbit.classList.toggle('active', mode === 'orbit');
+    if (btnPan)   btnPan.classList.toggle('active',   mode === 'pan');
+    // Change le curseur du canvas
+    const canvas = renderer ? renderer.domElement : null;
+    if (canvas) canvas.style.cursor = mode === 'pan' ? 'grab' : 'default';
+}
+
 function _fitCameraToScene() {
     if (!allMeshes.length) return;
     const box = new THREE.Box3();
@@ -210,13 +222,15 @@ function _setupOrbitControls(canvas) {
         if (!s.drag) return;
         const dx = e.clientX - s.px, dy = e.clientY - s.py;
         s.px = e.clientX; s.py = e.clientY;
-        if (s.mid || e.shiftKey) {
+        if (s.mid || e.shiftKey || navMode === 'pan') {
+            // Mode PAN — déplace le point cible
             const right = new THREE.Vector3(), up = new THREE.Vector3();
             camera.matrix.extractBasis(right, up, new THREE.Vector3());
             const sp = s.radius * 0.001;
             s.target.addScaledVector(right, -dx * sp);
             s.target.addScaledVector(up,     dy * sp);
         } else {
+            // Mode ORBIT
             s.theta -= dx * 0.008;
             s.phi = Math.max(0.05, Math.min(Math.PI - 0.05, s.phi + dy * 0.008));
         }
@@ -231,8 +245,19 @@ function _setupOrbitControls(canvas) {
     canvas.addEventListener('touchmove', e => {
         e.preventDefault();
         if (e.touches.length === 1 && s.drag) {
-            s.theta -= (e.touches[0].clientX - s.px) * 0.01;
-            s.phi = Math.max(0.05, Math.min(Math.PI - 0.05, s.phi + (e.touches[0].clientY - s.py) * 0.01));
+            const dx = e.touches[0].clientX - s.px;
+            const dy = e.touches[0].clientY - s.py;
+            if (navMode === 'pan') {
+                // Pan tactile
+                const right = new THREE.Vector3(), up = new THREE.Vector3();
+                camera.matrix.extractBasis(right, up, new THREE.Vector3());
+                const sp = s.radius * 0.002;
+                s.target.addScaledVector(right, -dx * sp);
+                s.target.addScaledVector(up,     dy * sp);
+            } else {
+                s.theta -= dx * 0.01;
+                s.phi = Math.max(0.05, Math.min(Math.PI - 0.05, s.phi + dy * 0.01));
+            }
             s.px = e.touches[0].clientX; s.py = e.touches[0].clientY; update();
         }
         if (e.touches.length === 2) {

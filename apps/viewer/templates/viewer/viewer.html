@@ -61,14 +61,8 @@ body { overflow: hidden; margin: 0; }
 .viewer-btn i { font-size: 0.75rem; }
 
 /* Bouton drawer mobile */
-.btn-open-drawer {
-    display: none; position: absolute; bottom: 1.5rem; right: 1rem; z-index: 20;
-    background: var(--accent); border: none; border-radius: 50px;
-    padding: 0.7rem 1.2rem; color: #fff; font-size: 0.85rem; font-weight: 700;
-    cursor: pointer; box-shadow: 0 4px 20px rgba(33,150,243,0.4);
-    align-items: center; gap: 0.5rem; transition: all 0.2s ease;
-}
-.btn-open-drawer:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(33,150,243,0.5); }
+/* Bouton drawer dans toolbar — caché sur desktop, visible mobile */
+.btn-drawer-mobile { display: none; }
 
 /* Hover info */
 #hover-info {
@@ -180,10 +174,10 @@ body { overflow: hidden; margin: 0; }
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 767.98px) {
     .viewer-sidebar { display: none; }
-    .btn-open-drawer { display: flex; }
+    .btn-drawer-mobile { display: flex !important; }
     .viewer-btn span { display: none; }
     .viewer-btn { padding: 0.42rem 0.65rem; }
-    #hover-info { bottom: 5rem; }
+    #hover-info { bottom: 1.5rem; }
 }
 </style>
 {% endblock %}
@@ -207,17 +201,25 @@ body { overflow: hidden; margin: 0; }
             <button class="viewer-btn" onclick="resetCamera()">
                 <i class="fas fa-home"></i><span> Reset</span>
             </button>
+            <button class="viewer-btn active" id="btn-orbit" onclick="setNavMode('orbit')" title="Mode orbite">
+                <i class="fas fa-sync-alt"></i><span> Orbite</span>
+            </button>
+            <button class="viewer-btn" id="btn-pan" onclick="setNavMode('pan')" title="Mode déplacement">
+                <i class="fas fa-hand-paper"></i><span> Pan</span>
+            </button>
             <a href="{% url 'smartdocs:patrimoine_detail' patrimoine.pk %}" class="viewer-btn">
                 <i class="fas fa-file-alt"></i><span> Docs</span>
             </a>
+            {# Bouton drawer — mobile seulement #}
+            <button class="viewer-btn btn-drawer-mobile" onclick="openDrawer()" id="btn-niveaux">
+                <i class="fas fa-layer-group"></i><span> Niveaux</span>
+            </button>
         </div>
 
         <canvas id="viewer-canvas"></canvas>
         <div id="hover-info"><i class="fas fa-info-circle me-1"></i><span id="hover-info-text"></span></div>
 
-        <button class="btn-open-drawer" onclick="openDrawer()">
-            <i class="fas fa-layer-group"></i> Niveaux
-        </button>
+
     </div>
 
     <nav class="viewer-sidebar">
