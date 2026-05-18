@@ -44,6 +44,8 @@ INSTALLED_APPS = [
 	'apps.smartdocs.apps.SmartdocsConfig',
 	'apps.users.apps.UsersConfig',
 	'apps.viewer.apps.ViewerConfig',
+	'apps.core_api.apps.CoreApiConfig',
+	'apps.home.apps.HomeConfig',
 	
 	# rest framework
 	'rest_framework',
@@ -139,8 +141,9 @@ MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Auth
-LOGIN_URL          = '/admin/login/'
-LOGIN_REDIRECT_URL = '/patrimoines/'
+LOGIN_URL          = '/compte/connexion/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 # Sessions persistantes
 SESSION_COOKIE_AGE = 86400 * 30   # 30 jours
 SESSION_SAVE_EVERY_REQUEST = True

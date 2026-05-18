@@ -1,0 +1,787 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}R-CYBER Madagascar — BTP, Dev, Gaming, Studio{% endblock %}
+{% block meta_description %}R-CYBER Madagascar : bureau d'étude BTP, construction, développement web/python, cybercafé, gaming, studio son et multi-service. Votre partenaire technologique à Madagascar.{% endblock %}
+{% block nav_class %}transparent{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ============================================================
+   HOME PAGE STYLES
+   ============================================================ */
+
+/* ── HERO ─────────────────────────────────────────────────── */
+.hero {
+    min-height:      100vh;
+    background:      var(--c-navy);
+    position:        relative;
+    display:         flex;
+    align-items:     center;
+    overflow:        hidden;
+}
+
+/* Fond animé particules */
+.hero-bg {
+    position: absolute;
+    inset:    0;
+    background:
+        radial-gradient(ellipse 80% 60% at 60% 40%, rgba(30,111,202,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 10% 80%, rgba(0,200,255,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 50% at 90% 10%, rgba(245,158,11,0.06) 0%, transparent 50%);
+}
+
+/* Grille décorative */
+.hero-grid {
+    position:         absolute;
+    inset:            0;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:  60px 60px;
+    mask-image:       radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+.hero-inner {
+    position:   relative;
+    z-index:    2;
+    padding-top: calc(var(--navbar-h) + 2rem);
+    padding-bottom: 4rem;
+}
+
+/* Badge */
+.hero-badge {
+    display:         inline-flex;
+    align-items:     center;
+    gap:             0.5rem;
+    background:      rgba(45,138,255,0.12);
+    border:          1px solid rgba(45,138,255,0.25);
+    border-radius:   50px;
+    padding:         0.4rem 1rem;
+    font-size:       0.78rem;
+    font-weight:     600;
+    color:           var(--c-cyan);
+    letter-spacing:  0.04em;
+    margin-bottom:   1.5rem;
+}
+.hero-badge span { width: 8px; height: 8px; border-radius: 50%; background: var(--c-cyan); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(1.4); } }
+
+/* Titre hero */
+.hero-title {
+    font-family:   var(--font-head);
+    font-size:     clamp(2.4rem, 6vw, 5rem);
+    font-weight:   800;
+    color:         #fff;
+    line-height:   1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+}
+.hero-title .accent { color: var(--c-cyan); }
+.hero-title .accent-gold { color: var(--c-accent); }
+
+.hero-sub {
+    font-size:     clamp(1rem, 2vw, 1.2rem);
+    color:         rgba(255,255,255,0.6);
+    max-width:     560px;
+    line-height:   1.7;
+    margin-bottom: 2.5rem;
+}
+.hero-sub em { color: rgba(255,255,255,0.35); font-style: normal; font-size: 0.9em; }
+
+/* Boutons hero */
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3.5rem; }
+
+/* Stats */
+.hero-stats {
+    display:   flex;
+    gap:       2.5rem;
+    flex-wrap: wrap;
+}
+.stat-item { text-align: left; }
+.stat-num {
+    font-family:  var(--font-head);
+    font-size:    2rem;
+    font-weight:  800;
+    color:        #fff;
+    line-height:  1;
+}
+.stat-num span { color: var(--c-cyan); }
+.stat-label {
+    font-size:  0.78rem;
+    color:      rgba(255,255,255,0.38);
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* Illustration droite */
+.hero-visual {
+    position:   relative;
+    display:    flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-card-stack {
+    position: relative;
+    width: min(420px, 100%);
+    aspect-ratio: 1;
+}
+.hero-card {
+    position:      absolute;
+    background:    rgba(255,255,255,0.04);
+    border:        1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(20px);
+    padding:       1.5rem;
+    transition:    all 0.4s ease;
+}
+.hero-card:hover { transform: translateY(-6px); border-color: rgba(45,138,255,0.3); }
+.hero-card-main {
+    width: 80%; top: 10%; left: 10%;
+    background: linear-gradient(135deg, rgba(30,111,202,0.2), rgba(0,200,255,0.08));
+}
+.hero-card-float-1 { width: 52%; top: -5%; right: -3%; animation: float1 4s ease-in-out infinite; }
+.hero-card-float-2 { width: 48%; bottom: 0%; left: -4%; animation: float2 5s ease-in-out infinite; }
+@keyframes float1 { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
+@keyframes float2 { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-8px) rotate(-1.5deg); } }
+
+.card-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+.card-title { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
+.card-desc  { font-size: 0.76rem; color: rgba(255,255,255,0.45); }
+
+/* Scroll indicator */
+.scroll-hint {
+    position:   absolute;
+    bottom:     2rem;
+    left:       50%;
+    transform:  translateX(-50%);
+    display:    flex;
+    flex-direction: column;
+    align-items: center;
+    gap:        0.4rem;
+    color:      rgba(255,255,255,0.25);
+    font-size:  0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation:  bounce 2s ease-in-out infinite;
+}
+@keyframes bounce { 0%,100% { transform:translateX(-50%) translateY(0); } 50% { transform:translateX(-50%) translateY(-6px); } }
+
+/* ── SECTION COMMUNE ──────────────────────────────────────── */
+.section { padding: 6rem 0; }
+.section-alt { background: var(--c-gray-50); }
+.section-dark { background: var(--c-navy); }
+
+.section-label {
+    display:         inline-block;
+    font-size:       0.72rem;
+    font-weight:     700;
+    text-transform:  uppercase;
+    letter-spacing:  0.14em;
+    color:           var(--c-blue);
+    margin-bottom:   0.6rem;
+}
+.section-dark .section-label { color: var(--c-cyan); }
+
+.section-title {
+    font-family:   var(--font-head);
+    font-size:     clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight:   800;
+    color:         var(--t-primary);
+    letter-spacing: -0.02em;
+    line-height:   1.15;
+    margin-bottom: 0.75rem;
+}
+.section-dark .section-title { color: #fff; }
+
+.section-desc {
+    font-size:  1rem;
+    color:      var(--t-secondary);
+    max-width:  560px;
+    line-height: 1.7;
+}
+.section-dark .section-desc { color: rgba(255,255,255,0.5); }
+
+/* ── SERVICES CARDS ───────────────────────────────────────── */
+.service-card {
+    background:    var(--c-white);
+    border:        1px solid var(--c-gray-100);
+    border-radius: var(--radius-lg);
+    padding:       2rem 1.75rem;
+    height:        100%;
+    transition:    all 0.3s ease;
+    cursor:        pointer;
+    text-decoration: none;
+    display:       block;
+    position:      relative;
+    overflow:      hidden;
+}
+.service-card::before {
+    content:    '';
+    position:   absolute;
+    top:        0; left: 0; right: 0;
+    height:     3px;
+    background: linear-gradient(90deg, var(--c-blue), var(--c-cyan));
+    transform:  scaleX(0);
+    transition: transform 0.3s ease;
+}
+.service-card:hover {
+    transform:   translateY(-6px);
+    box-shadow:  var(--shadow-lg);
+    border-color: transparent;
+}
+.service-card:hover::before { transform: scaleX(1); }
+
+.service-icon {
+    width:           56px;
+    height:          56px;
+    border-radius:   var(--radius-md);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       1.35rem;
+    margin-bottom:   1.25rem;
+    flex-shrink:     0;
+}
+
+.service-name {
+    font-family:  var(--font-head);
+    font-size:    1.05rem;
+    font-weight:  700;
+    color:        var(--t-primary);
+    margin-bottom: 0.5rem;
+}
+.service-sub {
+    font-size:  0.78rem;
+    font-weight: 600;
+    color:      var(--c-blue);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.service-desc {
+    font-size:  0.87rem;
+    color:      var(--t-secondary);
+    line-height: 1.65;
+}
+.service-arrow {
+    position:   absolute;
+    bottom:     1.5rem;
+    right:      1.5rem;
+    color:      var(--c-gray-200);
+    font-size:  0.9rem;
+    transition: all 0.25s ease;
+}
+.service-card:hover .service-arrow { color: var(--c-blue); transform: translate(3px, -3px); }
+
+/* ── WHY US ───────────────────────────────────────────────── */
+.why-item {
+    display:   flex;
+    gap:       1.25rem;
+    align-items: flex-start;
+    padding:   1.5rem;
+    border-radius: var(--radius-lg);
+    transition: all 0.25s ease;
+}
+.why-item:hover { background: rgba(30,111,202,0.04); }
+.why-icon {
+    width:           48px;
+    height:          48px;
+    border-radius:   var(--radius-md);
+    background:      linear-gradient(135deg, var(--c-blue), var(--c-cyan));
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       1.1rem;
+    color:           #fff;
+    flex-shrink:     0;
+}
+.why-title { font-size: 1rem; font-weight: 700; color: var(--t-primary); margin-bottom: 0.3rem; }
+.why-desc  { font-size: 0.87rem; color: var(--t-secondary); line-height: 1.6; }
+
+/* ── PROJETS GRID ─────────────────────────────────────────── */
+.project-card {
+    border-radius:   var(--radius-lg);
+    overflow:        hidden;
+    background:      var(--c-white);
+    border:          1px solid var(--c-gray-100);
+    transition:      all 0.3s ease;
+    text-decoration: none;
+    display:         block;
+}
+.project-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+.project-img {
+    height:     200px;
+    background: linear-gradient(135deg, var(--c-navy-light), var(--c-navy-mid));
+    display:    flex;
+    align-items: center;
+    justify-content: center;
+    font-size:  3rem;
+    color:      rgba(255,255,255,0.2);
+    position:   relative;
+    overflow:   hidden;
+}
+.project-tag {
+    position:      absolute;
+    top:           1rem;
+    left:          1rem;
+    background:    var(--c-blue);
+    color:         #fff;
+    font-size:     0.7rem;
+    font-weight:   700;
+    padding:       0.25rem 0.65rem;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.project-body { padding: 1.25rem; }
+.project-title { font-size: 0.97rem; font-weight: 700; color: var(--t-primary); margin-bottom: 0.4rem; }
+.project-desc  { font-size: 0.84rem; color: var(--t-secondary); line-height: 1.6; }
+
+/* ── TESTIMONIALS ─────────────────────────────────────────── */
+.testimonial-card {
+    background:      rgba(255,255,255,0.04);
+    border:          1px solid rgba(255,255,255,0.08);
+    border-radius:   var(--radius-lg);
+    padding:         2rem;
+    height:          100%;
+    position:        relative;
+}
+.testimonial-quote { font-size: 3rem; color: rgba(255,255,255,0.08); line-height: 1; font-family: Georgia; position: absolute; top: 1rem; left: 1.5rem; }
+.testimonial-text  { font-size: 0.92rem; color: rgba(255,255,255,0.7); line-height: 1.75; font-style: italic; padding-top: 1.5rem; margin-bottom: 1.25rem; }
+.testimonial-author { display: flex; align-items: center; gap: 0.75rem; }
+.testimonial-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--c-blue), var(--c-cyan)); display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 700; color: #fff; }
+.testimonial-name { font-size: 0.88rem; font-weight: 700; color: #fff; }
+.testimonial-role { font-size: 0.75rem; color: rgba(255,255,255,0.38); }
+
+/* ── CTA SECTION ──────────────────────────────────────────── */
+.cta-section {
+    background:   linear-gradient(135deg, var(--c-navy-mid) 0%, var(--c-navy-light) 100%);
+    border-radius: var(--radius-xl);
+    padding:      4rem 3rem;
+    text-align:   center;
+    position:     relative;
+    overflow:     hidden;
+}
+.cta-section::before {
+    content:    '';
+    position:   absolute;
+    inset:      0;
+    background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(45,138,255,0.15), transparent);
+}
+.cta-title { font-family: var(--font-head); font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; color: #fff; margin-bottom: 0.75rem; position: relative; }
+.cta-desc  { color: rgba(255,255,255,0.55); max-width: 480px; margin: 0 auto 2rem; position: relative; }
+.cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+    .hero-visual { display: none; }
+    .section { padding: 4rem 0; }
+    .cta-section { padding: 3rem 1.5rem; }
+}
+@media (max-width: 575.98px) {
+    .hero-stats { gap: 1.5rem; }
+    .stat-num   { font-size: 1.6rem; }
+    .section    { padding: 3rem 0; }
+    .hero-actions { flex-direction: column; }
+    .hero-actions a { text-align: center; justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════ -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+
+    <div class="container hero-inner">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="hero-badge">
+                    <span></span> Votre partenaire tech à Madagascar · <em style="opacity:0.6;">Your tech partner</em>
+                </div>
+
+                <h1 class="hero-title">
+                    L'innovation<br>
+                    au service de<br>
+                    <span class="accent">votre projet</span>
+                </h1>
+
+                <p class="hero-sub">
+                    Bureau d'étude BTP, développement numérique, cybercafé, gaming et studio son.
+                    R-CYBER construit l'avenir de Madagascar, brique par brique.
+                    <br><em>Building Madagascar's future, one project at a time.</em>
+                </p>
+
+                <div class="hero-actions">
+                    <a href="{% url 'home:services' %}" class="btn-primary-rc">
+                        <i class="fas fa-th-large"></i> Nos services
+                    </a>
+                    <a href="{% url 'home:contact' %}" class="btn-ghost-rc">
+                        <i class="fas fa-envelope"></i> Nous contacter
+                    </a>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-num">7<span>+</span></div>
+                        <div class="stat-label">Services</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">50<span>+</span></div>
+                        <div class="stat-label">Projets livrés</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">6<span>ans</span></div>
+                        <div class="stat-label">D'expérience</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="hero-visual">
+                    <div class="hero-card-stack">
+                        <div class="hero-card hero-card-main">
+                            <div class="card-icon">🏗️</div>
+                            <div class="card-title">Bureau d'étude BTP</div>
+                            <div class="card-desc">Plans, études de sol, devis — expertise complète</div>
+                        </div>
+                        <div class="hero-card hero-card-float-1">
+                            <div class="card-icon">💻</div>
+                            <div class="card-title">Info-Dev</div>
+                            <div class="card-desc">Web & Python sur mesure</div>
+                        </div>
+                        <div class="hero-card hero-card-float-2">
+                            <div class="card-icon">🎮</div>
+                            <div class="card-title">Gaming & Cyber</div>
+                            <div class="card-desc">Espace gaming dernière génération</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-hint">
+        <span>Découvrir</span>
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     SERVICES
+══════════════════════════════════════════════════ -->
+<section class="section section-alt" id="services">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-label">Ce que nous faisons · What we do</div>
+            <h2 class="section-title">Nos Services</h2>
+            <p class="section-desc mx-auto">
+                Une gamme complète de services pour répondre à tous vos besoins — du BTP au numérique.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- BTP -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' 'btp' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#1e6fca22,#1e6fca44);">
+                        <i class="fas fa-hard-hat" style="color:#1e6fca;"></i>
+                    </div>
+                    <div class="service-sub">BTP · Civil Engineering</div>
+                    <div class="service-name">Bureau d'étude BTP</div>
+                    <p class="service-desc">Études structurelles, plans d'architecture, métrés, devis estimatifs et suivi de chantier.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Construction -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' 'construction' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#f59e0b22,#f59e0b44);">
+                        <i class="fas fa-building" style="color:#f59e0b;"></i>
+                    </div>
+                    <div class="service-sub">Construction · Building</div>
+                    <div class="service-name">Construction</div>
+                    <p class="service-desc">Réalisation de bâtiments résidentiels et commerciaux, rénovation, maçonnerie et second œuvre.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Info-Dev -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' 'info-dev' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#00c8ff22,#00c8ff44);">
+                        <i class="fas fa-code" style="color:#00c8ff;"></i>
+                    </div>
+                    <div class="service-sub">Web · Python · Dev</div>
+                    <div class="service-name">Info-Dev</div>
+                    <p class="service-desc">Développement web sur mesure, applications Django/Python, APIs, automatisation et maintenance.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Cybercafé -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' 'cybercafe' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#22c55e22,#22c55e44);">
+                        <i class="fas fa-wifi" style="color:#22c55e;"></i>
+                    </div>
+                    <div class="service-sub">Internet · Cybercafé</div>
+                    <div class="service-name">Cybercafé</div>
+                    <p class="service-desc">Accès internet haut débit, impression, scan, photocopie, services bureautiques pour tous.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Gaming -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' 'gaming' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#a855f722,#a855f744);">
+                        <i class="fas fa-gamepad" style="color:#a855f7;"></i>
+                    </div>
+                    <div class="service-sub">Gaming · eSport</div>
+                    <div class="service-name">Gaming</div>
+                    <p class="service-desc">Salle gaming équipée de PCs haute performance, tournois eSport, abonnements et location.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Studio -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' 'studio' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#f4366022,#f4366044);">
+                        <i class="fas fa-microphone" style="color:#f43660;"></i>
+                    </div>
+                    <div class="service-sub">Son · Audio · Studio</div>
+                    <div class="service-name">Studio Son</div>
+                    <p class="service-desc">Enregistrement audio, mixage, mastering, production musicale et podcast dans un studio professionnel.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Multi-Service -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' 'multiservice' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#06b6d422,#06b6d444);">
+                        <i class="fas fa-th-large" style="color:#06b6d4;"></i>
+                    </div>
+                    <div class="service-sub">Multi · Services</div>
+                    <div class="service-name">Multi-Service</div>
+                    <p class="service-desc">Transfert d'argent, paiement de factures, recharge téléphonique, secrétariat et services divers.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Patrimoine (lien interne) -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'smartdocs:patrimoine_list' %}" class="service-card">
+                    <div class="service-icon" style="background:linear-gradient(135deg,#1e3a5f22,#2196f344);">
+                        <i class="fas fa-building" style="color:#2196f3;"></i>
+                    </div>
+                    <div class="service-sub">BIM · Immobilier</div>
+                    <div class="service-name">Gestion Patrimoine</div>
+                    <p class="service-desc">Plateforme de gestion de patrimoine immobilier avec visualisation 3D IFC, documents et suivi.</p>
+                    <i class="fas fa-arrow-up-right service-arrow"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     POURQUOI NOUS CHOISIR
+══════════════════════════════════════════════════ -->
+<section class="section">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-5">
+                <div class="section-label">Pourquoi R-CYBER · Why us</div>
+                <h2 class="section-title">Une expertise locale,<br>une vision globale</h2>
+                <p class="section-desc">
+                    Ancrés à Madagascar, nous combinons savoir-faire local et standards internationaux pour livrer des projets qui durent.
+                </p>
+                <div class="mt-4">
+                    <a href="{% url 'home:about' %}" class="btn-primary-rc">
+                        <i class="fas fa-info-circle"></i> En savoir plus
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="why-item">
+                            <div class="why-icon"><i class="fas fa-award"></i></div>
+                            <div>
+                                <div class="why-title">Expertise pluridisciplinaire</div>
+                                <p class="why-desc">BTP, numérique, audiovisuel — une seule équipe pour tous vos projets. Multi-disciplinary expertise under one roof.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="why-item">
+                            <div class="why-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <div class="why-title">Qualité & fiabilité</div>
+                                <p class="why-desc">Chaque projet est suivi avec rigueur, du devis à la livraison. Quality and reliability from quote to delivery.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="why-item">
+                            <div class="why-icon"><i class="fas fa-bolt"></i></div>
+                            <div>
+                                <div class="why-title">Réactivité & proximité</div>
+                                <p class="why-desc">Une équipe locale disponible et réactive pour vous accompagner à chaque étape. Fast, local, available.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="why-item">
+                            <div class="why-icon"><i class="fas fa-seedling"></i></div>
+                            <div>
+                                <div class="why-title">Innovation continue</div>
+                                <p class="why-desc">Nous intégrons les dernières technologies pour vous donner un avantage compétitif durable. Always innovating.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     PROJETS RÉCENTS
+══════════════════════════════════════════════════ -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-5 flex-wrap gap-3">
+            <div>
+                <div class="section-label">Portfolio · Projects</div>
+                <h2 class="section-title mb-0">Projets récents</h2>
+            </div>
+            <a href="{% url 'home:projects' %}" class="btn-primary-rc">
+                Voir tout <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'smartdocs:patrimoine_list' %}" class="project-card">
+                    <div class="project-img">
+                        <i class="fas fa-building"></i>
+                        <span class="project-tag">BTP</span>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-title">Gestion Patrimoine Immobilier</div>
+                        <p class="project-desc">Plateforme BIM avec visualisation IFC 3D, gestion documentaire et arborescence bâtiment.</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card">
+                    <div class="project-img">
+                        <i class="fas fa-code"></i>
+                        <span class="project-tag">Dev</span>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-title">Application Web Sur Mesure</div>
+                        <p class="project-desc">Développement Django/Python d'une application de gestion pour entreprise locale.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card">
+                    <div class="project-img">
+                        <i class="fas fa-hard-hat"></i>
+                        <span class="project-tag">Construction</span>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-title">Bâtiment Résidentiel</div>
+                        <p class="project-desc">Conception et suivi de construction d'un immeuble R+2 à Antananarivo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     TÉMOIGNAGES
+══════════════════════════════════════════════════ -->
+<section class="section section-dark">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-label">Témoignages · Reviews</div>
+            <h2 class="section-title">Ce que disent nos clients</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">"</div>
+                    <p class="testimonial-text">R-CYBER a transformé notre vision en réalité. Le projet de construction a été livré dans les délais et avec une qualité irréprochable.</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">JR</div>
+                        <div>
+                            <div class="testimonial-name">Jean Rakoto</div>
+                            <div class="testimonial-role">Promoteur immobilier</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">"</div>
+                    <p class="testimonial-text">L'équipe Info-Dev a développé notre application en un temps record. Professionnels, réactifs et à l'écoute. Je recommande vivement.</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">SM</div>
+                        <div>
+                            <div class="testimonial-name">Sarah Mamy</div>
+                            <div class="testimonial-role">Directrice startup</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">"</div>
+                    <p class="testimonial-text">Le studio son est équipé comme un vrai studio professionnel. J'ai enregistré mon EP ici et le résultat dépasse mes attentes.</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">DA</div>
+                        <div>
+                            <div class="testimonial-name">Dina Andrianaivo</div>
+                            <div class="testimonial-role">Artiste musicien</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     CTA FINAL
+══════════════════════════════════════════════════ -->
+<section class="section">
+    <div class="container">
+        <div class="cta-section">
+            <h2 class="cta-title">Prêt à démarrer votre projet ?<br><span style="color:var(--c-cyan);font-size:0.75em;">Ready to start?</span></h2>
+            <p class="cta-desc">Contactez-nous dès aujourd'hui pour un devis gratuit et personnalisé. Notre équipe est disponible pour vous accompagner.</p>
+            <div class="cta-actions">
+                <a href="{% url 'home:contact' %}" class="btn-primary-rc">
+                    <i class="fas fa-envelope"></i> Demander un devis gratuit
+                </a>
+                <a href="tel:+261000000000" class="btn-ghost-rc">
+                    <i class="fas fa-phone"></i> Appeler maintenant
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

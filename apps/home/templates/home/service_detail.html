@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ service.nom }} — R-CYBER{% endblock %}
+{% block meta_description %}{{ service.hero_desc }}{% endblock %}
+{% block nav_class %}light{% endblock %}
+{% block nav_services %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+.service-hero {
+    padding: calc(var(--navbar-h) + 3rem) 0 4rem;
+    background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-navy-light) 100%);
+    position: relative; overflow: hidden;
+}
+.service-hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(45,138,255,0.12), transparent);
+}
+.service-hero-icon {
+    width: 80px; height: 80px; border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #fff; margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.feature-card {
+    background: var(--c-white); border: 1px solid var(--c-gray-100);
+    border-radius: var(--radius-lg); padding: 1.75rem;
+    transition: all 0.25s ease; height: 100%;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.feature-icon {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: #fff; margin-bottom: 1rem;
+}
+.feature-title { font-size: 0.95rem; font-weight: 700; color: var(--t-primary); margin-bottom: 0.4rem; }
+.feature-desc  { font-size: 0.84rem; color: var(--t-secondary); line-height: 1.6; }
+
+/* Autres services */
+.other-service {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.85rem 1rem; border-radius: var(--radius-md);
+    background: var(--c-gray-50); text-decoration: none; color: var(--t-primary);
+    transition: all 0.2s ease; font-size: 0.88rem; font-weight: 500;
+}
+.other-service:hover { background: var(--c-blue); color: #fff; }
+.other-service i { width: 20px; text-align: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="service-hero">
+    <div class="container" style="position:relative;z-index:2;">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb" style="font-size:0.8rem;">
+                <li class="breadcrumb-item"><a href="{% url 'home:index' %}" style="color:rgba(255,255,255,0.5);">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'home:services' %}" style="color:rgba(255,255,255,0.5);">Services</a></li>
+                <li class="breadcrumb-item active" style="color:rgba(255,255,255,0.8);">{{ service.nom }}</li>
+            </ol>
+        </nav>
+        <div class="service-hero-icon" style="background:linear-gradient(135deg, {{ service.couleur }}, {{ service.couleur }}99);">
+            <i class="{{ service.icone }}"></i>
+        </div>
+        <h1 style="font-family:var(--font-head);font-size:clamp(2rem,4vw,3.2rem);font-weight:800;color:#fff;margin-bottom:1rem;">
+            {{ service.nom }}<br>
+            <span style="font-size:0.55em;color:rgba(255,255,255,0.4);font-weight:500;">{{ service.nom_en }}</span>
+        </h1>
+        <p style="font-size:1.05rem;color:rgba(255,255,255,0.65);max-width:580px;line-height:1.7;margin-bottom:2rem;">
+            {{ service.hero_desc }}<br>
+            <em style="font-size:0.88em;color:rgba(255,255,255,0.35);">{{ service.desc_en }}</em>
+        </p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+            <a href="{% url 'home:contact' %}" class="btn-primary-rc">
+                <i class="fas fa-envelope"></i> Demander un devis
+            </a>
+            <a href="{% url 'home:services' %}" class="btn-ghost-rc">
+                <i class="fas fa-th-large"></i> Tous les services
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="container">
+        <div class="row g-5">
+
+            <div class="col-lg-8">
+                <div class="section-label">Ce que nous proposons</div>
+                <h2 class="section-title mb-4">Nos prestations</h2>
+                <div class="row g-3">
+                    {% for icone, titre, desc in service.features %}
+                    <div class="col-md-6">
+                        <div class="feature-card">
+                            <div class="feature-icon" style="background:linear-gradient(135deg,{{ service.couleur }},{{ service.couleur }}aa);">
+                                <i class="{{ icone }}"></i>
+                            </div>
+                            <div class="feature-title">{{ titre }}</div>
+                            <p class="feature-desc">{{ desc }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div style="position:sticky;top:calc(var(--navbar-h) + 1.5rem);">
+                    <div style="background:var(--c-navy);border-radius:var(--radius-xl);padding:2rem;margin-bottom:1.5rem;">
+                        <h5 style="color:#fff;font-weight:700;margin-bottom:0.5rem;">Vous avez un projet ?</h5>
+                        <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;margin-bottom:1.25rem;">Contactez-nous pour un devis gratuit et personnalisé.</p>
+                        <a href="{% url 'home:contact' %}" class="btn-primary-rc" style="width:100%;justify-content:center;">
+                            <i class="fas fa-envelope"></i> Nous écrire
+                        </a>
+                    </div>
+
+                    <div style="background:var(--c-gray-50);border-radius:var(--radius-xl);padding:1.5rem;">
+                        <div class="section-label" style="margin-bottom:0.75rem;">Autres services</div>
+                        <div style="display:flex;flex-direction:column;gap:0.4rem;">
+                            {% for slug, s in services.items %}
+                            {% if slug != service.slug %}
+                            <a href="{% url 'home:service_detail' slug %}" class="other-service">
+                                <i class="{{ s.icone }}" style="color:{{ s.couleur }};"></i>
+                                {{ s.nom }}
+                            </a>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

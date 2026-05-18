@@ -19,11 +19,17 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
+from apps.core_api.views import api_version, api_offline_sync
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 	path('patrimoines/', include('apps.smartdocs.urls')),
     path('viewer/', include('apps.viewer.urls')),
-	path('', RedirectView.as_view(url='/patrimoines/')),
+    path('',             include('apps.home.urls')),
+    path('compte/',      include('apps.users.urls')),
+
+    # App version management
+    path('api/version/',  api_version,      name='api_version'),
+    path('api/sync/',     api_offline_sync, name='api_sync'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

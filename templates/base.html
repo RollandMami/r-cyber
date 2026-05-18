@@ -1,489 +1,1006 @@
 <!DOCTYPE html>
-<html lang="fr" data-bs-theme="light">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}Gestion de patrimoine immobilier — R-CYBER{% endblock %}">
-    <title>{% block title %}R-CYBER Patrimoine{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}R-CYBER — Bureau d'étude BTP, Développement Web, Cybercafé & Gaming, Studio Son à Madagascar{% endblock %}">
+    <meta name="theme-color" content="#0d1628">
+    <title>{% block title %}R-CYBER{% endblock %}</title>
 
-    {# Bootstrap 5 #}
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    {# Font Awesome #}
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    {# Google Fonts #}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
     <style>
     /* ============================================================
-       VARIABLES THÈME — R-CYBER PATRIMOINE
+       DESIGN TOKENS
        ============================================================ */
     :root {
         /* Couleurs principales */
-        --primary:          #1e3a5f;        /* Bleu marine profond */
-        --primary-dark:     #132640;
-        --primary-light:    #2d5490;
-        --accent:           #2196f3;        /* Bleu électrique */
-        --accent-hover:     #1565c0;
+        --c-navy:        #0d1628;
+        --c-navy-mid:    #111e35;
+        --c-navy-light:  #1a2d4d;
+        --c-blue:        #1e6fca;
+        --c-blue-bright: #2d8aff;
+        --c-cyan:        #00c8ff;
+        --c-accent:      #f59e0b;   /* or/ambre */
+        --c-accent-dark: #d97706;
 
         /* Neutres */
-        --bg-primary:       #ffffff;
-        --bg-secondary:     #f4f7fb;
-        --bg-tertiary:      #eaf0f8;
-        --sidebar-bg:       #0f1f35;
-        --sidebar-text:     rgba(255,255,255,0.72);
-        --sidebar-active:   #2196f3;
+        --c-white:       #ffffff;
+        --c-off-white:   #f8fafc;
+        --c-gray-50:     #f1f5f9;
+        --c-gray-100:    #e2e8f0;
+        --c-gray-200:    #cbd5e1;
+        --c-gray-400:    #94a3b8;
+        --c-gray-600:    #475569;
+        --c-gray-800:    #1e293b;
+        --c-gray-900:    #0f172a;
 
         /* Texte */
-        --text-primary:     #1a2332;
-        --text-secondary:   #5a6a7e;
-        --text-muted:       #8fa3b8;
-
-        /* Bordures */
-        --border-color:     #dde6f0;
-        --border-light:     #eef3f9;
-
-        /* États */
-        --success:          #22c55e;
-        --warning:          #f59e0b;
-        --danger:           #ef4444;
-        --info:             #06b6d4;
+        --t-primary:     #0f172a;
+        --t-secondary:   #475569;
+        --t-muted:       #94a3b8;
+        --t-light:       #ffffff;
 
         /* Ombres */
-        --shadow-sm:        0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-        --shadow-md:        0 4px 16px rgba(0,0,0,0.08);
-        --shadow-lg:        0 8px 32px rgba(0,0,0,0.12);
+        --shadow-xs:  0 1px 2px rgba(0,0,0,0.05);
+        --shadow-sm:  0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md:  0 4px 20px rgba(0,0,0,0.10);
+        --shadow-lg:  0 8px 40px rgba(0,0,0,0.14);
+        --shadow-xl:  0 16px 64px rgba(0,0,0,0.18);
 
-        /* Navbar */
-        --navbar-height:    56px;
+        /* Layout */
+        --navbar-h:   68px;
+        --radius-sm:  8px;
+        --radius-md:  14px;
+        --radius-lg:  20px;
+        --radius-xl:  28px;
 
-        /* Typographie */
-        --font-main:        'Inter', system-ui, -apple-system, sans-serif;
+        /* Typo */
+        --font-main:  'Inter', system-ui, -apple-system, sans-serif;
+        --font-head:  'Syne', 'Inter', sans-serif;
     }
 
     /* ============================================================
-       BASE
+       RESET & BASE
        ============================================================ */
-    *, *::before, *::after { box-sizing: border-box; }
-
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-        font-family: var(--font-main);
-        background:  var(--bg-secondary);
-        color:       var(--text-primary);
-        min-height:  100vh;
-        margin:      0;
+        font-family:     var(--font-main);
+        color:           var(--t-primary);
+        background:      var(--c-off-white);
+        min-height:      100vh;
+        display:         flex;
+        flex-direction:  column;
+        -webkit-font-smoothing: antialiased;
     }
 
     /* ============================================================
-       NAVBAR
+       NAVBAR DESKTOP
        ============================================================ */
-    .rcyber-navbar {
-        height:           var(--navbar-height);
-        background:       var(--primary);
-        border-bottom:    1px solid rgba(255,255,255,0.06);
-        box-shadow:       0 2px 12px rgba(0,0,0,0.18);
-        position:         sticky;
+    .rcyber-nav {
+        position:         fixed;
         top:              0;
-        z-index:          1030;
+        left:             0;
+        right:            0;
+        z-index:          1000;
+        height:           var(--navbar-h);
+        display:          flex;
+        align-items:      center;
+        padding:          0 2rem;
+        transition:       background 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease;
     }
 
-    .rcyber-navbar .navbar-brand {
+    /* État scrollé */
+    .rcyber-nav.scrolled {
+        background:      rgba(13,22,40,0.92);
+        backdrop-filter: blur(20px);
+        box-shadow:      0 1px 0 rgba(255,255,255,0.06), var(--shadow-lg);
+    }
+
+    /* État transparent (top de page, sur hero) */
+    .rcyber-nav.transparent {
+        background:      transparent;
+    }
+
+    /* État clair (pages intérieures sans hero) */
+    .rcyber-nav.light {
+        background:      var(--c-white);
+        box-shadow:      var(--shadow-sm);
+        border-bottom:   1px solid var(--c-gray-100);
+    }
+    .rcyber-nav.light .nav-link-item,
+    .rcyber-nav.light .brand-name { color: var(--t-primary) !important; }
+    .rcyber-nav.light .nav-link-item:hover { color: var(--c-blue) !important; }
+
+    /* ── Brand ─────────────────────────────────────────────── */
+    .brand-wrap {
         display:     flex;
         align-items: center;
-        gap:         0.6rem;
-        font-weight: 800;
-        font-size:   1.1rem;
-        color:       #fff !important;
+        gap:         0.7rem;
         text-decoration: none;
-        letter-spacing: -0.02em;
+        flex-shrink: 0;
     }
-
-    .rcyber-navbar .brand-icon {
-        width:           34px;
-        height:          34px;
-        background:      var(--accent);
-        border-radius:   10px;
+    .brand-logo {
+        width:           40px;
+        height:          40px;
+        background:      linear-gradient(135deg, var(--c-blue) 0%, var(--c-cyan) 100%);
+        border-radius:   12px;
         display:         flex;
         align-items:     center;
         justify-content: center;
-        font-size:       0.9rem;
+        font-size:       1.1rem;
         color:           #fff;
+        font-weight:     800;
         flex-shrink:     0;
+        box-shadow:      0 4px 16px rgba(45,138,255,0.35);
+    }
+    .brand-text { display: flex; flex-direction: column; }
+    .brand-name {
+        font-family:     var(--font-head);
+        font-size:       1.15rem;
+        font-weight:     800;
+        color:           #fff;
+        letter-spacing:  0.04em;
+        line-height:     1;
+    }
+    .brand-sub {
+        font-size:       0.6rem;
+        font-weight:     500;
+        color:           rgba(255,255,255,0.45);
+        letter-spacing:  0.12em;
+        text-transform:  uppercase;
+        line-height:     1;
+        margin-top:      2px;
     }
 
-    .rcyber-navbar .brand-sub {
+    /* ── Liens nav desktop ────────────────────────────────── */
+    .nav-links {
+        display:     flex;
+        align-items: center;
+        gap:         0.25rem;
+        margin-left: auto;
+    }
+
+    .nav-link-item {
+        color:           rgba(255,255,255,0.78);
+        font-size:       0.88rem;
+        font-weight:     500;
+        padding:         0.45rem 0.85rem;
+        border-radius:   var(--radius-sm);
+        text-decoration: none;
+        transition:      all 0.2s ease;
+        position:        relative;
+        white-space:     nowrap;
+        display:         flex;
+        align-items:     center;
+        gap:             0.35rem;
+    }
+    .nav-link-item:hover {
+        color:      #fff;
+        background: rgba(255,255,255,0.09);
+    }
+    .nav-link-item.active {
+        color:      #fff;
+        background: rgba(45,138,255,0.18);
+    }
+    .nav-link-item i { font-size: 0.78rem; opacity: 0.7; }
+
+    /* Dropdown Services */
+    .nav-dropdown { position: relative; }
+    .nav-dropdown-menu {
+        position:         absolute;
+        top:              calc(100% + 0.75rem);
+        left:             50%;
+        transform:        translateX(-50%);
+        background:       var(--c-navy-mid);
+        border:           1px solid rgba(255,255,255,0.08);
+        border-radius:    var(--radius-md);
+        padding:          0.5rem;
+        min-width:        220px;
+        box-shadow:       var(--shadow-xl);
+        opacity:          0;
+        visibility:       hidden;
+        transform:        translateX(-50%) translateY(-8px);
+        transition:       all 0.22s ease;
+        z-index:          100;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu {
+        opacity:    1;
+        visibility: visible;
+        transform:  translateX(-50%) translateY(0);
+    }
+    .nav-dd-item {
+        display:         flex;
+        align-items:     center;
+        gap:             0.6rem;
+        padding:         0.55rem 0.85rem;
+        color:           rgba(255,255,255,0.75);
+        text-decoration: none;
+        border-radius:   var(--radius-sm);
+        font-size:       0.85rem;
+        font-weight:     500;
+        transition:      all 0.15s ease;
+    }
+    .nav-dd-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .nav-dd-item i { width: 18px; text-align: center; color: var(--c-cyan); font-size: 0.8rem; }
+
+    /* Séparateur */
+    .nav-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 0.4rem; }
+
+    /* Bouton Search */
+    .nav-search-btn {
+        background:  transparent;
+        border:      1px solid rgba(255,255,255,0.15);
+        border-radius: var(--radius-sm);
+        color:       rgba(255,255,255,0.6);
+        padding:     0.42rem 0.75rem;
+        font-size:   0.82rem;
+        cursor:      pointer;
+        display:     flex;
+        align-items: center;
+        gap:         0.4rem;
+        transition:  all 0.2s ease;
+        white-space: nowrap;
+    }
+    .nav-search-btn:hover { border-color: rgba(255,255,255,0.35); color: #fff; }
+    .nav-search-btn kbd {
+        background:  rgba(255,255,255,0.1);
+        border-radius: 4px;
+        padding:     0.1rem 0.35rem;
         font-size:   0.68rem;
-        font-weight: 500;
-        color:       rgba(255,255,255,0.45);
-        display:     block;
-        line-height: 1;
-        margin-top:  1px;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+        font-family: inherit;
     }
 
-    /* Liens navbar */
-    .rcyber-navbar .nav-link {
-        color:        rgba(255,255,255,0.7) !important;
-        font-size:    0.86rem;
-        font-weight:  500;
-        padding:      0.45rem 0.85rem !important;
-        border-radius: 8px;
-        transition:   all 0.2s ease;
-        display:      flex;
-        align-items:  center;
-        gap:          0.4rem;
+    /* Bouton Login */
+    .nav-login-btn {
+        background:      linear-gradient(135deg, var(--c-blue) 0%, var(--c-blue-bright) 100%);
+        border:          none;
+        border-radius:   var(--radius-sm);
+        color:           #fff;
+        padding:         0.48rem 1.1rem;
+        font-size:       0.85rem;
+        font-weight:     600;
+        cursor:          pointer;
+        text-decoration: none;
+        transition:      all 0.2s ease;
+        box-shadow:      0 2px 12px rgba(45,138,255,0.3);
+        display:         flex;
+        align-items:     center;
+        gap:             0.4rem;
+        white-space:     nowrap;
+    }
+    .nav-login-btn:hover {
+        transform:   translateY(-1px);
+        box-shadow:  0 4px 20px rgba(45,138,255,0.45);
+        color:       #fff;
     }
 
-    .rcyber-navbar .nav-link:hover {
-        color:      #fff !important;
-        background: rgba(255,255,255,0.08);
-    }
-
-    .rcyber-navbar .nav-link.active {
-        color:      #fff !important;
-        background: rgba(33,150,243,0.25);
-    }
-
-    .rcyber-navbar .nav-link i {
-        font-size: 0.8rem;
-        opacity:   0.8;
-    }
-
-    /* Séparateur vertical */
-    .nav-divider {
-        width:      1px;
-        height:     20px;
-        background: rgba(255,255,255,0.12);
-        margin:     0 0.5rem;
-        align-self: center;
-    }
-
-    /* Avatar utilisateur */
-    .user-avatar {
-        width:           32px;
-        height:          32px;
+    /* Avatar utilisateur connecté */
+    .nav-avatar {
+        width:           36px;
+        height:          36px;
         border-radius:   50%;
-        background:      var(--accent);
+        background:      linear-gradient(135deg, var(--c-blue), var(--c-cyan));
         display:         flex;
         align-items:     center;
         justify-content: center;
         font-size:       0.78rem;
         font-weight:     700;
         color:           #fff;
+        cursor:          pointer;
+        border:          2px solid rgba(255,255,255,0.2);
+        transition:      all 0.2s ease;
+    }
+    .nav-avatar:hover { border-color: var(--c-cyan); }
+
+    /* Burger mobile */
+    .nav-burger {
+        display:         none;
+        background:      transparent;
+        border:          1px solid rgba(255,255,255,0.2);
+        border-radius:   var(--radius-sm);
+        color:           #fff;
+        padding:         0.45rem 0.65rem;
+        cursor:          pointer;
+        transition:      all 0.2s ease;
+        margin-left:     auto;
+    }
+    .nav-burger:hover { background: rgba(255,255,255,0.08); }
+    .nav-burger i { font-size: 1rem; }
+
+    /* ============================================================
+       DRAWER MOBILE
+       ============================================================ */
+    .drawer-overlay {
+        position:   fixed;
+        inset:      0;
+        background: rgba(0,0,0,0.65);
+        z-index:    1100;
+        opacity:    0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(4px);
+    }
+    .drawer-overlay.open { opacity: 1; visibility: visible; }
+
+    .drawer-panel {
+        position:   fixed;
+        top:        0;
+        right:      0;
+        bottom:     0;
+        width:      min(320px, 85vw);
+        background: var(--c-navy);
+        z-index:    1101;
+        transform:  translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+        display:    flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .drawer-panel.open { transform: translateX(0); }
+
+    .drawer-top {
+        display:         flex;
+        align-items:     center;
+        justify-content: space-between;
+        padding:         1.25rem 1.25rem 1rem;
+        border-bottom:   1px solid rgba(255,255,255,0.07);
         flex-shrink:     0;
     }
+    .drawer-close {
+        background:  rgba(255,255,255,0.07);
+        border:      none;
+        border-radius: 50%;
+        width:       36px;
+        height:      36px;
+        color:       rgba(255,255,255,0.6);
+        cursor:      pointer;
+        display:     flex;
+        align-items: center;
+        justify-content: center;
+        transition:  all 0.2s ease;
+    }
+    .drawer-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
-    .rcyber-navbar .dropdown-menu {
-        border:        1px solid var(--border-color);
-        border-radius: 12px;
-        box-shadow:    var(--shadow-lg);
-        padding:       0.5rem;
-        min-width:     180px;
-        margin-top:    0.5rem !important;
+    .drawer-body { flex: 1; padding: 1rem 1rem 2rem; }
+
+    .drawer-link {
+        display:         flex;
+        align-items:     center;
+        gap:             0.75rem;
+        padding:         0.75rem 1rem;
+        color:           rgba(255,255,255,0.75);
+        text-decoration: none;
+        border-radius:   var(--radius-md);
+        font-size:       0.92rem;
+        font-weight:     500;
+        transition:      all 0.18s ease;
+        margin-bottom:   0.15rem;
+    }
+    .drawer-link:hover, .drawer-link.active {
+        background: rgba(255,255,255,0.07);
+        color: #fff;
+    }
+    .drawer-link i { width: 20px; text-align: center; font-size: 0.85rem; color: var(--c-cyan); }
+
+    /* Accordéon services dans le drawer */
+    .drawer-section-title {
+        font-size:      0.68rem;
+        font-weight:    700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color:          rgba(255,255,255,0.28);
+        padding:        1rem 1rem 0.4rem;
     }
 
-    .rcyber-navbar .dropdown-item {
-        border-radius: 8px;
-        font-size:     0.85rem;
-        padding:       0.5rem 0.75rem;
-        color:         var(--text-primary);
-        display:       flex;
-        align-items:   center;
-        gap:           0.5rem;
+    .drawer-services-toggle {
+        display:     flex;
+        align-items: center;
+        gap:         0.75rem;
+        width:       100%;
+        padding:     0.75rem 1rem;
+        background:  transparent;
+        border:      none;
+        border-radius: var(--radius-md);
+        color:       rgba(255,255,255,0.75);
+        font-size:   0.92rem;
+        font-weight: 500;
+        cursor:      pointer;
+        transition:  all 0.18s ease;
+        text-align:  left;
     }
+    .drawer-services-toggle:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .drawer-services-toggle .toggle-arrow { margin-left: auto; transition: transform 0.25s; font-size: 0.72rem; }
+    .drawer-services-toggle.open .toggle-arrow { transform: rotate(90deg); }
 
-    .rcyber-navbar .dropdown-item:hover {
-        background: var(--bg-tertiary);
+    .drawer-services-list {
+        list-style: none;
+        overflow:   hidden;
+        max-height: 0;
+        transition: max-height 0.3s ease;
+        padding-left: 0.5rem;
     }
-
-    .rcyber-navbar .dropdown-item i {
-        width:    16px;
-        opacity:  0.6;
-        font-size: 0.8rem;
+    .drawer-services-list.open { max-height: 400px; }
+    .drawer-services-list a {
+        display:         flex;
+        align-items:     center;
+        gap:             0.6rem;
+        padding:         0.55rem 1rem 0.55rem 1.5rem;
+        color:           rgba(255,255,255,0.55);
+        text-decoration: none;
+        border-radius:   var(--radius-sm);
+        font-size:       0.85rem;
+        transition:      all 0.15s ease;
     }
+    .drawer-services-list a:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .drawer-services-list a i { color: var(--c-cyan); font-size: 0.75rem; width: 16px; text-align: center; }
 
-    /* Toggler mobile */
-    .rcyber-navbar .navbar-toggler {
-        border:  1px solid rgba(255,255,255,0.2);
-        padding: 0.3rem 0.6rem;
+    .drawer-footer {
+        padding:       1rem 1.25rem 1.5rem;
+        border-top:    1px solid rgba(255,255,255,0.07);
+        flex-shrink:   0;
     }
+    .drawer-login-btn {
+        display:         flex;
+        align-items:     center;
+        justify-content: center;
+        gap:             0.5rem;
+        width:           100%;
+        padding:         0.8rem;
+        background:      linear-gradient(135deg, var(--c-blue), var(--c-blue-bright));
+        border:          none;
+        border-radius:   var(--radius-md);
+        color:           #fff;
+        font-size:       0.9rem;
+        font-weight:     600;
+        text-decoration: none;
+        cursor:          pointer;
+        transition:      all 0.2s ease;
+    }
+    .drawer-login-btn:hover { opacity: 0.9; color: #fff; }
 
-    .rcyber-navbar .navbar-toggler-icon {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,255,255,0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    /* ============================================================
+       SEARCH OVERLAY
+       ============================================================ */
+    .search-overlay {
+        position:   fixed;
+        inset:      0;
+        background: rgba(13,22,40,0.95);
+        z-index:    2000;
+        display:    flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 15vh;
+        opacity:    0;
+        visibility: hidden;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(12px);
+    }
+    .search-overlay.open { opacity: 1; visibility: visible; }
+    .search-box {
+        width:       min(640px, 90vw);
+        position:    relative;
+    }
+    .search-input {
+        width:         100%;
+        background:    rgba(255,255,255,0.06);
+        border:        1px solid rgba(255,255,255,0.15);
+        border-radius: var(--radius-lg);
+        color:         #fff;
+        font-size:     1.2rem;
+        padding:       1rem 3.5rem 1rem 1.5rem;
+        outline:       none;
+        transition:    border-color 0.2s;
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.3); }
+    .search-input:focus { border-color: var(--c-blue-bright); }
+    .search-close {
+        position:    absolute;
+        right:       1rem;
+        top:         50%;
+        transform:   translateY(-50%);
+        background:  transparent;
+        border:      none;
+        color:       rgba(255,255,255,0.4);
+        cursor:      pointer;
+        font-size:   1.1rem;
+        transition:  color 0.2s;
+    }
+    .search-close:hover { color: #fff; }
+    .search-hint {
+        text-align:  center;
+        color:       rgba(255,255,255,0.3);
+        font-size:   0.82rem;
+        margin-top:  1rem;
     }
 
     /* ============================================================
        CONTENU PRINCIPAL
        ============================================================ */
-    .page-content {
-        min-height: calc(100vh - var(--navbar-height));
-    }
-
-    /* ============================================================
-       COMPOSANTS GLOBAUX
-       ============================================================ */
-
-    /* Cards */
-    .card {
-        border:        1px solid var(--border-color) !important;
-        border-radius: 14px !important;
-        box-shadow:    var(--shadow-sm) !important;
-        background:    var(--bg-primary);
-    }
-
-    /* Boutons */
-    .btn-primary {
-        background:    var(--accent) !important;
-        border-color:  var(--accent) !important;
-        font-weight:   600;
-        border-radius: 8px;
-    }
-    .btn-primary:hover {
-        background:   var(--accent-hover) !important;
-        border-color: var(--accent-hover) !important;
-    }
-
-    .btn-outline-primary {
-        border-color: var(--accent) !important;
-        color:        var(--accent) !important;
-        font-weight:  600;
-        border-radius: 8px;
-    }
-    .btn-outline-primary:hover {
-        background:  var(--accent) !important;
-        color:       #fff !important;
-    }
-
-    .btn-outline-secondary {
-        border-color:  var(--border-color) !important;
-        color:         var(--text-secondary) !important;
-        border-radius: 8px;
-    }
-    .btn-outline-secondary:hover {
-        background:  var(--bg-tertiary) !important;
-        color:       var(--text-primary) !important;
-        border-color: var(--border-color) !important;
-    }
-
-    /* Badges */
-    .badge {
-        font-weight:   600;
-        border-radius: 6px;
-        font-size:     0.72rem;
-    }
-
-    /* Formulaires */
-    .form-control, .form-select {
-        border-color:  var(--border-color) !important;
-        border-radius: 8px !important;
-        color:         var(--text-primary) !important;
-        background:    var(--bg-primary) !important;
-        font-size:     0.92rem;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: var(--accent) !important;
-        box-shadow:   0 0 0 3px rgba(33,150,243,0.12) !important;
-        outline:      none !important;
-    }
-
-    .form-label {
-        font-weight: 600;
-        font-size:   0.83rem;
-        color:       var(--text-secondary);
-        margin-bottom: 0.4rem;
-    }
-
-    /* Alerts */
-    .alert {
-        border-radius: 10px;
-        border:        none;
-        font-size:     0.88rem;
-    }
-    .alert-success { background: #f0fdf4; color: #15803d; }
-    .alert-danger  { background: #fef2f2; color: #b91c1c; }
-    .alert-warning { background: #fffbeb; color: #92400e; }
-    .alert-info    { background: #eff6ff; color: #1d4ed8; }
-
-    /* Accordion */
-    .accordion-button {
-        font-weight:   600;
-        border-radius: 12px !important;
-        font-size:     0.92rem;
-    }
-    .accordion-button:not(.collapsed) {
-        color:      var(--accent) !important;
-        background: var(--bg-tertiary) !important;
-        box-shadow: none !important;
-    }
-    .accordion-button:focus {
-        box-shadow: none !important;
-    }
-    .accordion-item {
-        border:        1px solid var(--border-color) !important;
-        border-radius: 12px !important;
-        overflow:      hidden;
-        background:    var(--bg-primary);
-    }
-
-    /* Breadcrumb */
-    .breadcrumb {
-        font-size: 0.82rem;
-        margin:    0;
-    }
-    .breadcrumb-item a {
-        color:           var(--accent);
-        text-decoration: none;
-    }
-    .breadcrumb-item a:hover { text-decoration: underline; }
-    .breadcrumb-item.active  { color: var(--text-muted); }
-    .breadcrumb-item + .breadcrumb-item::before { color: var(--text-muted); }
-
-    /* Scrollbar globale */
-    ::-webkit-scrollbar       { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    .page-body { flex: 1; display: flex; flex-direction: column; }
 
     /* ============================================================
        FOOTER
        ============================================================ */
     .rcyber-footer {
-        background:    var(--primary);
+        background:    var(--c-navy);
         color:         rgba(255,255,255,0.45);
-        font-size:     0.78rem;
-        padding:       1rem 0;
-        text-align:    center;
-        border-top:    1px solid rgba(255,255,255,0.06);
+        padding:       3rem 0 1.5rem;
         margin-top:    auto;
     }
-
-    .rcyber-footer a {
-        color:           rgba(255,255,255,0.6);
-        text-decoration: none;
+    .footer-brand-name {
+        font-family:  var(--font-head);
+        font-size:    1.3rem;
+        font-weight:  800;
+        color:        #fff;
+        margin-bottom: 0.5rem;
     }
-    .rcyber-footer a:hover { color: #fff; }
+    .footer-tagline {
+        font-size:  0.85rem;
+        color:      rgba(255,255,255,0.38);
+        max-width:  280px;
+        line-height: 1.6;
+    }
+    .footer-col-title {
+        font-size:      0.72rem;
+        font-weight:    700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color:          rgba(255,255,255,0.3);
+        margin-bottom:  1rem;
+    }
+    .footer-link {
+        display:         block;
+        color:           rgba(255,255,255,0.5);
+        text-decoration: none;
+        font-size:       0.88rem;
+        padding:         0.25rem 0;
+        transition:      color 0.2s;
+    }
+    .footer-link:hover { color: #fff; }
+    .footer-social {
+        display:     flex;
+        gap:         0.6rem;
+        margin-top:  1rem;
+    }
+    .footer-social a {
+        width:           36px;
+        height:          36px;
+        border-radius:   50%;
+        background:      rgba(255,255,255,0.07);
+        display:         flex;
+        align-items:     center;
+        justify-content: center;
+        color:           rgba(255,255,255,0.5);
+        text-decoration: none;
+        font-size:       0.85rem;
+        transition:      all 0.2s ease;
+    }
+    .footer-social a:hover { background: var(--c-blue); color: #fff; }
+    .footer-bottom {
+        border-top:  1px solid rgba(255,255,255,0.06);
+        padding-top: 1.25rem;
+        margin-top:  2rem;
+        font-size:   0.78rem;
+        display:     flex;
+        flex-wrap:   wrap;
+        gap:         0.5rem;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* ============================================================
+       UTILITAIRES GLOBAUX
+       ============================================================ */
+    .btn-primary-rc {
+        background:      linear-gradient(135deg, var(--c-blue) 0%, var(--c-blue-bright) 100%);
+        border:          none;
+        border-radius:   var(--radius-md);
+        color:           #fff;
+        font-weight:     600;
+        padding:         0.75rem 1.75rem;
+        transition:      all 0.25s ease;
+        text-decoration: none;
+        display:         inline-flex;
+        align-items:     center;
+        gap:             0.5rem;
+        box-shadow:      0 4px 20px rgba(45,138,255,0.3);
+        cursor:          pointer;
+    }
+    .btn-primary-rc:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(45,138,255,0.45); color: #fff; }
+
+    .btn-ghost-rc {
+        background:      transparent;
+        border:          1.5px solid rgba(255,255,255,0.25);
+        border-radius:   var(--radius-md);
+        color:           rgba(255,255,255,0.85);
+        font-weight:     600;
+        padding:         0.75rem 1.75rem;
+        transition:      all 0.25s ease;
+        text-decoration: none;
+        display:         inline-flex;
+        align-items:     center;
+        gap:             0.5rem;
+        cursor:          pointer;
+    }
+    .btn-ghost-rc:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.07); }
+
+    /* Scroll bar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--c-gray-200); border-radius: 3px; }
+
+    /* Toast animation */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 
     /* ============================================================
        RESPONSIVE
        ============================================================ */
-    @media (max-width: 767.98px) {
-        .rcyber-navbar .navbar-collapse {
-            background:    var(--primary-dark);
-            border-radius: 12px;
-            padding:       0.75rem;
-            margin-top:    0.5rem;
-            border:        1px solid rgba(255,255,255,0.08);
-        }
+    @media (max-width: 991.98px) {
+        .nav-links   { display: none; }
+        .nav-burger  { display: flex; }
+        .rcyber-nav  { padding: 0 1.25rem; }
+    }
 
-        .rcyber-navbar .nav-divider { display: none; }
+    @media (max-width: 575.98px) {
+        .rcyber-nav { padding: 0 1rem; }
+        :root { --navbar-h: 60px; }
     }
     </style>
 
     {% block extra_head %}{% endblock %}
 </head>
-
 <body>
 
-{# ══════════════  NAVBAR   ════════ #}
-<nav class="rcyber-navbar navbar navbar-expand-md">
-    <div class="container-fluid px-3">
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="rcyber-nav {% block nav_class %}transparent{% endblock %}" id="rcyber-nav">
+    <div style="display:flex;align-items:center;width:100%;gap:0.5rem;">
 
-        {# Brand #}
-        <a class="navbar-brand" href="{% url 'smartdocs:patrimoine_list' %}">
-            <div class="brand-icon">
-                <i class="fas fa-building"></i>
-            </div>
-            <div>
-                R-CYBER
-                <span class="brand-sub">Patrimoine</span>
+        <!-- Brand -->
+        <a href="{% url 'home:index' %}" class="brand-wrap">
+            <div class="brand-logo">R</div>
+            <div class="brand-text">
+                <span class="brand-name">R-CYBER</span>
+                <span class="brand-sub">Madagascar</span>
             </div>
         </a>
 
-        {# Toggler mobile #}
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navbarMain"
-                aria-controls="navbarMain" aria-expanded="false" aria-label="Menu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <!-- Liens desktop -->
+        <div class="nav-links">
+            <a href="{% url 'home:index' %}" class="nav-link-item {% block nav_home %}{% endblock %}">
+                <i class="fas fa-home"></i> Home
+            </a>
 
-        {# Liens #}
-        <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav me-auto gap-1 ms-3">
-                <li class="nav-item">
-                    <a class="nav-link {% block nav_patrimoines %}{% endblock %}"
-                       href="{% url 'smartdocs:patrimoine_list' %}">
-                        <i class="fas fa-building"></i> Patrimoines
+            <!-- Dropdown Services -->
+            <div class="nav-dropdown">
+                <a href="{% url 'home:services' %}" class="nav-link-item {% block nav_services %}{% endblock %}">
+                    Services <i class="fas fa-chevron-down" style="font-size:0.65rem;"></i>
+                </a>
+                <div class="nav-dropdown-menu">
+                    <a href="{% url 'home:service_detail' 'btp' %}" class="nav-dd-item">
+                        <i class="fas fa-hard-hat"></i> Bureau d'étude BTP
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% block nav_documents %}{% endblock %}"
-                       href="{% url 'smartdocs:patrimoine_list' %}">
-                        <i class="fas fa-folder-open"></i> Documents
+                    <a href="{% url 'home:service_detail' 'construction' %}" class="nav-dd-item">
+                        <i class="fas fa-building"></i> Construction
                     </a>
-                </li>
-            </ul>
+                    <a href="{% url 'home:service_detail' 'info-dev' %}" class="nav-dd-item">
+                        <i class="fas fa-code"></i> Info-Dev Web/Python
+                    </a>
+                    <a href="{% url 'home:service_detail' 'cybercafe' %}" class="nav-dd-item">
+                        <i class="fas fa-wifi"></i> Cybercafé
+                    </a>
+                    <a href="{% url 'home:service_detail' 'gaming' %}" class="nav-dd-item">
+                        <i class="fas fa-gamepad"></i> Gaming
+                    </a>
+                    <a href="{% url 'home:service_detail' 'studio' %}" class="nav-dd-item">
+                        <i class="fas fa-microphone"></i> Studio Son
+                    </a>
+                    <a href="{% url 'home:service_detail' 'multiservice' %}" class="nav-dd-item">
+                        <i class="fas fa-th-large"></i> Multi-Service
+                    </a>
+                </div>
+            </div>
 
-            {# Séparateur + user #}
-            <ul class="navbar-nav align-items-center gap-1">
-                <div class="nav-divider d-none d-md-block"></div>
+            <a href="{% url 'home:projects' %}" class="nav-link-item {% block nav_projects %}{% endblock %}">
+                <i class="fas fa-folder-open"></i> Projets
+            </a>
+            <a href="{% url 'home:about' %}" class="nav-link-item {% block nav_about %}{% endblock %}">
+                <i class="fas fa-info-circle"></i> À propos
+            </a>
+            <a href="{% url 'home:contact' %}" class="nav-link-item {% block nav_contact %}{% endblock %}">
+                <i class="fas fa-envelope"></i> Contact
+            </a>
 
-                {% if user.is_authenticated %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
-                       href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="user-avatar">
-                            {{ user.username|slice:":2"|upper }}
-                        </div>
-                        <span class="d-none d-md-inline" style="color:rgba(255,255,255,0.8);font-size:0.85rem;">
-                            {{ user.username }}
-                        </span>
+            <div class="nav-sep"></div>
+
+            <!-- Patrimoine (lien interne) -->
+            <a href="{% url 'smartdocs:patrimoine_list' %}" class="nav-link-item">
+                <i class="fas fa-building"></i> Patrimoine
+            </a>
+
+            <div class="nav-sep"></div>
+
+            <!-- Search -->
+            <button class="nav-search-btn" onclick="openSearch()">
+                <i class="fas fa-search"></i>
+                <span>Rechercher</span>
+                <kbd>⌘K</kbd>
+            </button>
+
+            <div class="nav-sep"></div>
+
+            <!-- Auth -->
+            {% if user.is_authenticated %}
+            <div class="nav-dropdown">
+                <div class="nav-avatar">{{ user.username|slice:":2"|upper }}</div>
+                <div class="nav-dropdown-menu" style="right:0;left:auto;transform:translateX(0);">
+                    <a href="{% url 'users:profile' %}" class="nav-dd-item">
+                        <i class="fas fa-user"></i> Mon profil
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        {% if user.is_staff %}
-                        <li>
-                            <a class="dropdown-item" href="{% url 'admin:index' %}">
-                                <i class="fas fa-cog"></i> Administration
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider my-1"></li>
-                        {% endif %}
-                        <li>
-                            <a class="dropdown-item text-danger" href="{% url 'admin:logout' %}">
-                                <i class="fas fa-sign-out-alt"></i> Déconnexion
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin:index' %}">
-                        <i class="fas fa-sign-in-alt"></i> Connexion
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin:index' %}" class="nav-dd-item">
+                        <i class="fas fa-cog"></i> Administration
                     </a>
-                </li>
-                {% endif %}
-            </ul>
+                    {% endif %}
+                    <a href="{% url 'users:logout' %}" class="nav-dd-item" style="color:#f87171;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <a href="{% url 'users:login' %}" class="nav-login-btn">
+                <i class="fas fa-sign-in-alt"></i> Connexion
+            </a>
+            {% endif %}
         </div>
+
+        <!-- Burger mobile -->
+        <button class="nav-burger" onclick="openDrawer()" aria-label="Menu">
+            <i class="fas fa-bars"></i>
+        </button>
     </div>
 </nav>
 
-{# ════════════════    CONTENU    ══════════════════ #}
-<div class="page-content">
+<!-- ============================================================
+     DRAWER MOBILE
+     ============================================================ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer-panel" id="drawer-panel">
+
+    <div class="drawer-top">
+        <a href="{% url 'home:index' %}" class="brand-wrap" onclick="closeDrawer()">
+            <div class="brand-logo" style="width:34px;height:34px;font-size:0.95rem;">R</div>
+            <div class="brand-text">
+                <span class="brand-name" style="font-size:1rem;">R-CYBER</span>
+                <span class="brand-sub">Madagascar</span>
+            </div>
+        </a>
+        <button class="drawer-close" onclick="closeDrawer()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="drawer-body">
+        <div class="drawer-section-title">Navigation</div>
+
+        <a href="{% url 'home:index' %}" class="drawer-link" onclick="closeDrawer()">
+            <i class="fas fa-home"></i> Home
+        </a>
+
+        <!-- Services accordéon -->
+        <button class="drawer-services-toggle" onclick="toggleDrawerServices(this)">
+            <i class="fas fa-th-large" style="width:20px;text-align:center;color:var(--c-cyan);font-size:0.85rem;"></i>
+            Services
+            <i class="fas fa-chevron-right toggle-arrow"></i>
+        </button>
+        <ul class="drawer-services-list" id="drawer-services">
+            <li><a href="{% url 'home:service_detail' 'btp' %}" onclick="closeDrawer()">
+                <i class="fas fa-hard-hat"></i> Bureau d'étude BTP
+            </a></li>
+            <li><a href="{% url 'home:service_detail' 'construction' %}" onclick="closeDrawer()">
+                <i class="fas fa-building"></i> Construction
+            </a></li>
+            <li><a href="{% url 'home:service_detail' 'info-dev' %}" onclick="closeDrawer()">
+                <i class="fas fa-code"></i> Info-Dev Web/Python
+            </a></li>
+            <li><a href="{% url 'home:service_detail' 'cybercafe' %}" onclick="closeDrawer()">
+                <i class="fas fa-wifi"></i> Cybercafé
+            </a></li>
+            <li><a href="{% url 'home:service_detail' 'gaming' %}" onclick="closeDrawer()">
+                <i class="fas fa-gamepad"></i> Gaming
+            </a></li>
+            <li><a href="{% url 'home:service_detail' 'studio' %}" onclick="closeDrawer()">
+                <i class="fas fa-microphone"></i> Studio Son
+            </a></li>
+            <li><a href="{% url 'home:service_detail' 'multiservice' %}" onclick="closeDrawer()">
+                <i class="fas fa-th-large"></i> Multi-Service
+            </a></li>
+        </ul>
+
+        <a href="{% url 'home:projects' %}" class="drawer-link" onclick="closeDrawer()">
+            <i class="fas fa-folder-open"></i> Projets
+        </a>
+        <a href="{% url 'home:about' %}" class="drawer-link" onclick="closeDrawer()">
+            <i class="fas fa-info-circle"></i> À propos
+        </a>
+        <a href="{% url 'home:contact' %}" class="drawer-link" onclick="closeDrawer()">
+            <i class="fas fa-envelope"></i> Contact
+        </a>
+
+        <div class="drawer-section-title" style="margin-top:0.75rem;">Plateforme</div>
+
+        <a href="{% url 'smartdocs:patrimoine_list' %}" class="drawer-link" onclick="closeDrawer()">
+            <i class="fas fa-building"></i> Patrimoine immobilier
+        </a>
+
+        <a href="#" class="drawer-link" onclick="openSearch(); closeDrawer();">
+            <i class="fas fa-search"></i> Rechercher
+        </a>
+
+        {% if user.is_authenticated %}
+        <div class="drawer-section-title" style="margin-top:0.75rem;">Compte</div>
+        <a href="{% url 'users:profile' %}" class="drawer-link" onclick="closeDrawer()">
+            <i class="fas fa-user"></i> Mon profil ({{ user.username }})
+        </a>
+        {% if user.is_staff %}
+        <a href="{% url 'admin:index' %}" class="drawer-link" onclick="closeDrawer()">
+            <i class="fas fa-cog"></i> Administration
+        </a>
+        {% endif %}
+        <a href="{% url 'users:logout' %}" class="drawer-link" style="color:#f87171;" onclick="closeDrawer()">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="drawer-footer">
+        {% if not user.is_authenticated %}
+        <a href="{% url 'users:login' %}" class="drawer-login-btn" onclick="closeDrawer()">
+            <i class="fas fa-sign-in-alt"></i> Se connecter
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================================
+     SEARCH OVERLAY
+     ============================================================ -->
+<div class="search-overlay" id="search-overlay">
+    <div class="search-box">
+        <input type="text" class="search-input" id="search-input"
+               placeholder="Rechercher un service, projet, document…"
+               onkeydown="if(event.key==='Escape') closeSearch()">
+        <button class="search-close" onclick="closeSearch()"><i class="fas fa-times"></i></button>
+        <p class="search-hint">Appuyez sur <kbd style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">Échap</kbd> pour fermer</p>
+    </div>
+</div>
+
+<!-- ============================================================
+     CONTENU
+     ============================================================ -->
+<div class="page-body">
     {% block content %}{% endblock %}
 </div>
 
-{# ══════════════    FOOTER    ═════════════════ #}
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
 {% block footer %}
 <footer class="rcyber-footer">
-    <div class="container-fluid">
-        R-CYBER Patrimoine &copy; {% now "Y" %} &nbsp;·&nbsp;
-        Gestion immobilière intelligente
+    <div class="container">
+        <div class="row g-4 mb-2">
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand-name">R-CYBER</div>
+                <p class="footer-tagline">
+                    Votre partenaire technologique à Madagascar — BTP, développement numérique, gaming et bien plus.
+                    <br><em style="color:rgba(255,255,255,0.25);font-size:0.78rem;">Your technology partner in Madagascar.</em>
+                </p>
+                <div class="footer-social">
+                    <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6 col-6">
+                <div class="footer-col-title">Services</div>
+                <a href="{% url 'home:service_detail' 'btp' %}"          class="footer-link">Bureau BTP</a>
+                <a href="{% url 'home:service_detail' 'construction' %}"  class="footer-link">Construction</a>
+                <a href="{% url 'home:service_detail' 'info-dev' %}"      class="footer-link">Info-Dev</a>
+                <a href="{% url 'home:service_detail' 'cybercafe' %}"     class="footer-link">Cybercafé</a>
+                <a href="{% url 'home:service_detail' 'gaming' %}"        class="footer-link">Gaming</a>
+                <a href="{% url 'home:service_detail' 'studio' %}"        class="footer-link">Studio Son</a>
+            </div>
+            <div class="col-lg-2 col-md-6 col-6">
+                <div class="footer-col-title">Société</div>
+                <a href="{% url 'home:about' %}"   class="footer-link">À propos</a>
+                <a href="{% url 'home:projects' %}" class="footer-link">Projets</a>
+                <a href="{% url 'home:contact' %}" class="footer-link">Contact</a>
+                <a href="{% url 'smartdocs:patrimoine_list' %}" class="footer-link">Patrimoine</a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-col-title">Contact</div>
+                <p style="font-size:0.85rem;color:rgba(255,255,255,0.45);line-height:1.8;">
+                    <i class="fas fa-map-marker-alt me-2" style="color:var(--c-cyan);"></i>Antananarivo, Madagascar<br>
+                    <i class="fas fa-envelope me-2" style="color:var(--c-cyan);"></i>andrianavalonarolland@gmail.com<br>
+                    <i class="fas fa-phone me-2" style="color:var(--c-cyan);"></i>+261 34 90 793 84
+                </p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© {% now "Y" %} R-CYBER Madagascar — Tous droits réservés</span>
+            <span style="color:rgba(255,255,255,0.2);">Made with <i class="fas fa-heart" style="color:#f87171;"></i> in Madagascar</span>
+        </div>
     </div>
 </footer>
 {% endblock %}
 
-{# Scripts #}
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}{% endblock %}
+<script>
+/* ── Navbar scroll ───────────────────────────────────────── */
+(function() {
+    const nav      = document.getElementById('rcyber-nav');
+    const isHero   = nav.classList.contains('transparent');
+    const isLight  = nav.classList.contains('light');
+    if (!isHero && !isLight) return;
 
+    function update() {
+        if (window.scrollY > 60) {
+            nav.classList.remove('transparent');
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+            nav.classList.add('transparent');
+        }
+    }
+    if (isHero) { window.addEventListener('scroll', update, { passive: true }); update(); }
+})();
+
+/* ── Drawer ──────────────────────────────────────────────── */
+function openDrawer() {
+    document.getElementById('drawer-panel').classList.add('open');
+    document.getElementById('drawer-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+    document.getElementById('drawer-panel').classList.remove('open');
+    document.getElementById('drawer-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+function toggleDrawerServices(btn) {
+    const list = document.getElementById('drawer-services');
+    btn.classList.toggle('open');
+    list.classList.toggle('open');
+}
+
+/* ── Search ──────────────────────────────────────────────── */
+function openSearch() {
+    document.getElementById('search-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('search-input').focus(), 50);
+    document.body.style.overflow = 'hidden';
+}
+function closeSearch() {
+    document.getElementById('search-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+    if (e.key === 'Escape') { closeSearch(); closeDrawer(); }
+});
+</script>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>

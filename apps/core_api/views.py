@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from .models import AppVersion
+from apps.core_api.models import AppVersion
 
 def api_version(request):
     """
