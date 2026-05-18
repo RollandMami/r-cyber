@@ -5,7 +5,7 @@ from django.http import JsonResponse, Http404
 from apps.smartdocs.models import Patrimoine, Etage
 
 
-#@login_required
+@login_required
 def viewer(request, patrimoine_pk):
     """Vue principale du viewer 3D."""
     patrimoine = get_object_or_404(Patrimoine, pk=patrimoine_pk)
@@ -22,7 +22,7 @@ def viewer(request, patrimoine_pk):
     })
 
 
-#@login_required
+@login_required
 def api_geometrie(request, patrimoine_pk):
     """
     Sert le JSON de géométrie au Three.js.

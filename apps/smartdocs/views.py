@@ -16,13 +16,13 @@ from .services import convertir_ifc_en_json
 #  PATRIMOINES
 # ─────────────────────────────────────────
 
-#@login_required
+@login_required
 def patrimoine_list(request):
     patrimoines = Patrimoine.objects.prefetch_related('etages', 'documents').all()
     return render(request, 'smartdocs/patrimoine_list.html', {'patrimoines': patrimoines})
 
 
-#@login_required
+@login_required
 def patrimoine_detail(request, pk):
     patrimoine = get_object_or_404(Patrimoine, pk=pk)
     etages     = patrimoine.etages.prefetch_related('pieces', 'documents').all()
@@ -39,7 +39,7 @@ def patrimoine_detail(request, pk):
     })
 
 
-#@login_required
+@login_required
 def patrimoine_create(request):
     if request.method == 'POST':
         form = PatrimoineForm(request.POST, request.FILES)
@@ -61,7 +61,7 @@ def patrimoine_create(request):
     return render(request, 'smartdocs/patrimoine_form.html', {'form': form, 'action': 'Créer'})
 
 
-#@login_required
+@login_required
 def patrimoine_edit(request, pk):
     patrimoine = get_object_or_404(Patrimoine, pk=pk)
     if request.method == 'POST':
@@ -83,7 +83,7 @@ def patrimoine_edit(request, pk):
     })
 
 
-#@login_required
+@login_required
 @require_POST
 def patrimoine_delete(request, pk):
     patrimoine = get_object_or_404(Patrimoine, pk=pk)
@@ -97,7 +97,7 @@ def patrimoine_delete(request, pk):
 #  DOCUMENTS
 # ─────────────────────────────────────────
 
-#@login_required
+@login_required
 def document_upload(request, patrimoine_pk):
     patrimoine = get_object_or_404(Patrimoine, pk=patrimoine_pk)
 
@@ -118,7 +118,7 @@ def document_upload(request, patrimoine_pk):
     })
 
 
-#@login_required
+@login_required
 def document_download(request, pk):
     doc = get_object_or_404(Document, pk=pk)
     if not doc.fichier:
@@ -127,7 +127,7 @@ def document_download(request, pk):
     return response
 
 
-#@login_required
+@login_required
 @require_POST
 def document_delete(request, pk):
     doc        = get_object_or_404(Document, pk=pk)
@@ -141,7 +141,7 @@ def document_delete(request, pk):
 #  API — pour le Viewer
 # ─────────────────────────────────────────
 
-#@login_required
+@login_required
 def api_patrimoine_arborescence(request, pk):
     """Retourne l'arborescence étages/pièces en JSON pour le panneau de navigation du viewer."""
     patrimoine = get_object_or_404(Patrimoine, pk=pk)
