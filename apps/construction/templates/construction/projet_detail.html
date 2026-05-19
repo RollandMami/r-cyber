@@ -48,7 +48,7 @@
         <span>
             {% if projet.nb_jours_restants is not None and projet.statut not in 'termine suspendu' %}
                 {% if projet.nb_jours_restants < 0 %}
-                <span style="color:#ef4444;font-weight:700;"><i class="fas fa-exclamation-triangle me-1"></i>{{ projet.nb_jours_restants|phone2numeric }}j de retard</span>
+                <span style="color:#ef4444;font-weight:700;"><i class="fas fa-exclamation-triangle me-1"></i>{{ projet.nb_jours_restants|abs }}j de retard</span>
                 {% elif projet.nb_jours_restants < 7 %}
                 <span style="color:#f59e0b;font-weight:700;"><i class="fas fa-clock me-1"></i>J-{{ projet.nb_jours_restants }}</span>
                 {% else %}

@@ -1,0 +1,178 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ action }} bon de commande — {{ projet.titre }}{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:bon_list' projet_pk=projet.pk %}">Commandes</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-shopping-cart me-2" style="color:#7209b7;"></i>{{ action }} un bon de commande</h1>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row g-3" style="max-width:900px;">
+
+        <!-- Fournisseur -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#7209b7;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-store me-2"></i>Fournisseur
+                </h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Nom *</label>
+                        {{ form.fournisseur_nom }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact</label>
+                        {{ form.fournisseur_contact }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Téléphone</label>
+                        {{ form.fournisseur_tel }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Livraison -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#2563eb;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-truck me-2"></i>Commande & Livraison
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Date commande</label>
+                        {{ form.date_commande }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date livraison</label>
+                        {{ form.date_livraison }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Lieu de livraison</label>
+                        {{ form.lieu_livraison }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Statut</label>
+                        {{ form.statut }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">TVA (%)</label>
+                        {{ form.tva_pct }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lignes articles -->
+        <div class="col-12">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#d97706;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-list me-2"></i>Articles commandés
+                </h6>
+                {{ formset.management_form }}
+                <div class="table-responsive">
+                    <table class="table mb-0" style="font-size:.84rem;" id="lignesTable">
+                        <thead style="background:#f8fafc;">
+                            <tr>
+                                <th class="py-2">Désignation *</th>
+                                <th style="width:80px;">Unité</th>
+                                <th style="width:90px;">Quantité *</th>
+                                <th style="width:110px;">P.U. HT *</th>
+                                <th style="width:110px;" class="text-end">Montant HT</th>
+                                <th style="width:40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="lignesBody">
+                            {% for f in formset %}
+                            <tr class="ligne-row" data-form-idx="{{ forloop.counter0 }}">
+                                {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                                <td>{{ f.designation }}</td>
+                                <td>{{ f.unite }}</td>
+                                <td>
+                                    <input type="number" name="{{ f.quantite.html_name }}"
+                                           value="{{ f.quantite.value|default:'' }}"
+                                           class="form-control form-control-sm qte-input" step="any" min="0"
+                                           oninput="calcLigne(this)">
+                                </td>
+                                <td>
+                                    <input type="number" name="{{ f.prix_unitaire.html_name }}"
+                                           value="{{ f.prix_unitaire.value|default:'' }}"
+                                           class="form-control form-control-sm pu-input" step="any" min="0"
+                                           oninput="calcLigne(this)">
+                                </td>
+                                <td class="text-end" style="font-weight:600;">
+                                    <span class="montant-ht">—</span>
+                                </td>
+                                <td>
+                                    {% if f.DELETE %}
+                                    <label style="cursor:pointer;" title="Supprimer">
+                                        {{ f.DELETE }}
+                                        <i class="fas fa-times" style="color:#ef4444;font-size:.85rem;"></i>
+                                    </label>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f8fafc;font-weight:700;">
+                                <td colspan="4" class="py-2" style="text-align:right;font-size:.82rem;color:#64748b;">
+                                    Total HT
+                                </td>
+                                <td class="text-end" id="totalHT">0 Ar</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Note -->
+        <div class="col-12">
+            <div class="card p-3">
+                <label class="form-label fw-bold">Note / Observations</label>
+                {{ form.note }}
+            </div>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fas fa-save me-2"></i>{{ action }}
+            </button>
+            <a href="{% url 'construction:bon_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </div>
+</form>
+
+<script>
+function calcLigne(input) {
+    const row = input.closest('tr');
+    const qte = parseFloat(row.querySelector('.qte-input')?.value || 0);
+    const pu  = parseFloat(row.querySelector('.pu-input')?.value || 0);
+    const ht  = isNaN(qte) || isNaN(pu) ? 0 : qte * pu;
+    row.querySelector('.montant-ht').textContent = ht.toLocaleString('fr-FR') + ' Ar';
+    calcTotal();
+}
+function calcTotal() {
+    let total = 0;
+    document.querySelectorAll('.ligne-row').forEach(row => {
+        const qte = parseFloat(row.querySelector('.qte-input')?.value || 0);
+        const pu  = parseFloat(row.querySelector('.pu-input')?.value || 0);
+        if (!isNaN(qte) && !isNaN(pu)) total += qte * pu;
+    });
+    document.getElementById('totalHT').textContent = total.toLocaleString('fr-FR') + ' Ar';
+}
+// Init
+document.querySelectorAll('.qte-input, .pu-input').forEach(el => calcLigne(el));
+</script>
+{% endblock %}

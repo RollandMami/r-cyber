@@ -1,0 +1,101 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ action }} tâche — {{ projet.titre }}{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:gantt' projet_pk=projet.pk %}">Planning Gantt</a></li>
+            <li class="breadcrumb-item active">{{ action }} tâche</li>
+        </ol></nav>
+        <h1><i class="fas fa-tasks me-2" style="color:#7209b7;"></i>{{ action }} une tâche</h1>
+    </div>
+</div>
+
+<div style="max-width:680px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="card p-4 mb-3">
+            <h6 class="fw-bold mb-3" style="color:#7209b7;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                <i class="fas fa-info-circle me-2"></i>Informations de la tâche
+            </h6>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Titre *</label>
+                    {{ form.titre }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    {{ form.description }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tâche parente</label>
+                    {{ form.parent }}
+                    <div style="font-size:.72rem;color:#94a3b8;margin-top:.25rem;">Laissez vide pour une tâche principale</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Statut</label>
+                    {{ form.statut }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Priorité</label>
+                    {{ form.priorite }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4 mb-3">
+            <h6 class="fw-bold mb-3" style="color:#2563eb;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                <i class="fas fa-calendar-alt me-2"></i>Planning
+            </h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Date de début *</label>
+                    {{ form.date_debut }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date de fin *</label>
+                    {{ form.date_fin }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Avancement (%)</label>
+                    {{ form.avancement }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Ordre d'affichage</label>
+                    {{ form.ordre }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Assignée à</label>
+                    {{ form.assignee_a }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Couleur Gantt</label>
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        {{ form.couleur }}
+                        <span style="font-size:.78rem;color:#64748b;">Couleur de la barre</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fas fa-save me-2"></i>{{ action }}
+            </button>
+            <a href="{% url 'construction:gantt' projet_pk=projet.pk %}" class="btn btn-outline-secondary">
+                Annuler
+            </a>
+            {% if tache %}
+            <a href="{% url 'construction:tache_delete' pk=tache.pk %}"
+               onclick="return confirm('Supprimer cette tâche ?')"
+               class="btn btn-outline-danger ms-auto">
+                <i class="fas fa-trash me-1"></i>Supprimer
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

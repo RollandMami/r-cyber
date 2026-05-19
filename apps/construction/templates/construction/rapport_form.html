@@ -1,0 +1,128 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ action }} rapport — {{ projet.titre }}{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:rapport_list' projet_pk=projet.pk %}">Rapports</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-file-alt me-2" style="color:#f72585;"></i>{{ action }} un rapport d'activité</h1>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row g-3" style="max-width:900px;">
+
+        <!-- En-tête rapport -->
+        <div class="col-12">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#f72585;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-info-circle me-2"></i>En-tête du rapport
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Titre *</label>
+                        {{ form.titre }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Type de rapport</label>
+                        {{ form.type_rapport }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Début de période *</label>
+                        {{ form.periode_debut }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fin de période *</label>
+                        {{ form.periode_fin }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenu -->
+        <div class="col-12">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#2563eb;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-hammer me-2"></i>Contenu du rapport
+                </h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Travaux réalisés *</label>
+                        {{ form.travaux_realises }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Observations / Problèmes rencontrés</label>
+                        {{ form.observations }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Travaux prévus (prochaine période)</label>
+                        {{ form.travaux_prevus }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Métriques -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#d97706;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-chart-bar me-2"></i>Métriques chantier
+                </h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Avancement constaté (%)</label>
+                        {{ form.avancement_constate }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Nb ouvriers</label>
+                        {{ form.nb_ouvriers }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Journées travaillées</label>
+                        {{ form.nb_journees }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facturation + tâches -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#15803d;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-file-invoice me-2"></i>Facturation & Tâches
+                </h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Montant à facturer (Ar)</label>
+                        {{ form.montant_a_facturer }}
+                        <div style="font-size:.72rem;color:#94a3b8;margin-top:.2rem;">Pour paiement forfaitaire par tâche</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Pièce jointe</label>
+                        {{ form.fichier }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Tâches concernées</label>
+                        <div style="max-height:160px;overflow-y:auto;border:1px solid #dde6f0;border-radius:8px;padding:.5rem .75rem;">
+                            {{ form.taches_concernees }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fas fa-save me-2"></i>{{ action }}
+            </button>
+            <a href="{% url 'construction:rapport_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

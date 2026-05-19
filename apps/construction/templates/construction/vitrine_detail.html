@@ -103,7 +103,7 @@ body { font-family:'DM Sans',sans-serif; background:#f4f7fb; color:#1a2332; }
 <nav class="vit-nav">
     <div class="inner">
         <a href="{% url 'construction:vitrine' %}"><i class="fas fa-arrow-left"></i> Toutes les réalisations</a>
-        <a href="{% url 'home:index' %}"><i class="fas fa-home"></i> Accueil</a>
+        <a href="{% url 'main:home' %}"><i class="fas fa-home"></i> Accueil</a>
     </div>
 </nav>
 
@@ -231,7 +231,7 @@ body { font-family:'DM Sans',sans-serif; background:#f4f7fb; color:#1a2332; }
             <div class="cta-card">
                 <h5>Vous avez un projet similaire ?</h5>
                 <p>Contactez-nous pour une étude gratuite et un devis personnalisé.</p>
-                <a href="{% url 'home:index' %}#contact" class="btn-cta">
+                <a href="{% url 'main:home' %}#contact" class="btn-cta">
                     <i class="fas fa-phone me-2"></i>Nous contacter
                 </a>
                 <a href="{% url 'construction:vitrine' %}" class="btn-cta btn-cta-outline">

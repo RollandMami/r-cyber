@@ -1,0 +1,248 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ action }} facture — {{ projet.titre }}{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:facture_list' projet_pk=projet.pk %}">Factures</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-file-invoice me-2" style="color:#22c55e;"></i>{{ action }} une facture</h1>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row g-3" style="max-width:960px;">
+
+        <!-- Type & statut -->
+        <div class="col-12">
+            <div class="card p-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Type de facture</label>
+                        {{ form.type_facture }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Statut</label>
+                        {{ form.statut }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">TVA (%)</label>
+                        {{ form.tva_pct }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Objet</label>
+                        {{ form.objet }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Émetteur / Client -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#7209b7;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-building me-2"></i>Émetteur (votre société)
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label">Nom *</label>{{ form.emetteur_nom }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Adresse</label>{{ form.emetteur_adresse }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Téléphone</label>{{ form.emetteur_tel }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>{{ form.emetteur_email }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">NIF/STAT</label>{{ form.emetteur_nif }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#2563eb;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-user me-2"></i>Client
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label">Nom *</label>{{ form.client_nom }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Adresse</label>{{ form.client_adresse }}
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mt-3 mb-3" style="color:#d97706;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-calendar me-2"></i>Dates
+                </h6>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Date d'émission</label>{{ form.date_emission }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date d'échéance</label>{{ form.date_echeance }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Situation de travaux -->
+        <div class="col-12" id="situationBlock">
+            <div class="card p-4" style="background:#eff6ff;border-color:#bfdbfe;">
+                <h6 class="fw-bold mb-3" style="color:#1d4ed8;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-hard-hat me-2"></i>Situation de travaux (optionnel)
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">% d'avancement facturé</label>
+                        {{ form.pct_avancement }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Cumul situations précédentes (Ar HT)</label>
+                        {{ form.montant_precedent }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lignes de facturation -->
+        <div class="col-12">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#15803d;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-list me-2"></i>Lignes de facturation
+                </h6>
+                {{ formset.management_form }}
+                <div class="table-responsive">
+                    <table class="table mb-0" style="font-size:.84rem;">
+                        <thead style="background:#f8fafc;">
+                            <tr>
+                                <th class="py-2">Désignation *</th>
+                                <th style="width:70px;">Unité</th>
+                                <th style="width:90px;">Quantité</th>
+                                <th style="width:120px;">P.U. HT</th>
+                                <th style="width:130px;">Tâche liée</th>
+                                <th style="width:110px;" class="text-end">Montant HT</th>
+                                <th style="width:36px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in formset %}
+                            <tr class="fac-ligne-row">
+                                {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                                <td>{{ f.designation }}</td>
+                                <td>{{ f.unite }}</td>
+                                <td>
+                                    <input type="number" name="{{ f.quantite.html_name }}"
+                                           value="{{ f.quantite.value|default:1 }}"
+                                           class="form-control form-control-sm fac-qte" step="any" min="0"
+                                           oninput="calcFacLigne(this)">
+                                </td>
+                                <td>
+                                    <input type="number" name="{{ f.prix_unitaire.html_name }}"
+                                           value="{{ f.prix_unitaire.value|default:'' }}"
+                                           class="form-control form-control-sm fac-pu" step="any" min="0"
+                                           oninput="calcFacLigne(this)">
+                                </td>
+                                <td>{{ f.tache }}</td>
+                                <td class="text-end" style="font-weight:600;">
+                                    <span class="fac-montant">—</span>
+                                </td>
+                                <td>
+                                    {% if f.DELETE %}
+                                    <label style="cursor:pointer;" title="Supprimer ligne">
+                                        {{ f.DELETE }}
+                                        <i class="fas fa-times" style="color:#ef4444;"></i>
+                                    </label>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f8fafc;">
+                                <td colspan="5" class="py-2 text-end" style="font-size:.8rem;color:#64748b;">Total HT</td>
+                                <td class="text-end" style="font-weight:700;" id="facTotalHT">0 Ar</td>
+                                <td></td>
+                            </tr>
+                            <tr style="background:#f8fafc;">
+                                <td colspan="5" class="py-1 text-end" style="font-size:.8rem;color:#94a3b8;">
+                                    TVA (<span id="tvaPctDisplay">20</span>%)
+                                </td>
+                                <td class="text-end" style="font-size:.82rem;" id="facTVA">0 Ar</td>
+                                <td></td>
+                            </tr>
+                            <tr style="background:#0a1628;color:#fff;">
+                                <td colspan="5" class="py-2 pe-3 text-end" style="font-weight:700;">Total TTC</td>
+                                <td class="text-end" style="font-weight:800;" id="facTotalTTC">0 Ar</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conditions -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <label class="form-label fw-bold">Conditions de paiement</label>
+                {{ form.conditions_paiement }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <label class="form-label fw-bold">Note</label>
+                {{ form.note }}
+            </div>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fas fa-save me-2"></i>{{ action }}
+            </button>
+            <a href="{% url 'construction:facture_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </div>
+</form>
+
+<script>
+function calcFacLigne(input) {
+    const row = input.closest('tr');
+    const qte = parseFloat(row.querySelector('.fac-qte')?.value || 0);
+    const pu  = parseFloat(row.querySelector('.fac-pu')?.value  || 0);
+    const ht  = isNaN(qte) || isNaN(pu) ? 0 : qte * pu;
+    row.querySelector('.fac-montant').textContent = ht.toLocaleString('fr-FR') + ' Ar';
+    calcFacTotal();
+}
+function calcFacTotal() {
+    let total = 0;
+    document.querySelectorAll('.fac-ligne-row').forEach(row => {
+        const qte = parseFloat(row.querySelector('.fac-qte')?.value || 0);
+        const pu  = parseFloat(row.querySelector('.fac-pu')?.value  || 0);
+        if (!isNaN(qte) && !isNaN(pu)) total += qte * pu;
+    });
+    const tvaPct = parseFloat(document.querySelector('[name$="tva_pct"]')?.value || 20);
+    const tva    = total * tvaPct / 100;
+    const ttc    = total + tva;
+    document.getElementById('facTotalHT').textContent  = total.toLocaleString('fr-FR') + ' Ar';
+    document.getElementById('facTVA').textContent       = tva.toLocaleString('fr-FR')   + ' Ar';
+    document.getElementById('facTotalTTC').textContent  = ttc.toLocaleString('fr-FR')   + ' Ar';
+    const el = document.getElementById('tvaPctDisplay');
+    if (el) el.textContent = isNaN(tvaPct) ? 20 : tvaPct;
+}
+// Mise à jour TVA en live
+document.querySelector('[name$="tva_pct"]')?.addEventListener('input', calcFacTotal);
+// Init
+document.querySelectorAll('.fac-qte, .fac-pu').forEach(el => calcFacLigne(el));
+</script>
+{% endblock %}

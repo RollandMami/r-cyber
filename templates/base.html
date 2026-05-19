@@ -13,7 +13,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-
+    <link rel="icon" type="image/x-icon" href="{% static 'img/logo_rolland.ico'%}">
     <style>
     /* ============================================================
        DESIGN TOKENS
@@ -103,9 +103,16 @@
         box-shadow:      0 1px 0 rgba(255,255,255,0.06), var(--shadow-lg);
     }
 
-    /* État transparent (top de page, sur hero) */
+    /* État transparent (top de page, sur hero UNIQUEMENT) */
     .rcyber-nav.transparent {
         background:      transparent;
+    }
+
+    /* État solid — opaque fixe, toutes les pages sans hero */
+    .rcyber-nav.solid {
+        background:      rgba(13,22,40,0.97);
+        backdrop-filter: blur(16px);
+        box-shadow:      0 1px 0 rgba(255,255,255,0.06), var(--shadow-md);
     }
 
     /* État clair (pages intérieures sans hero) */
@@ -525,6 +532,13 @@
        ============================================================ */
     .page-body { flex: 1; display: flex; flex-direction: column; }
 
+    /* Pages avec navbar opaque fixe (solid/light/scrolled) :
+       compenser la hauteur de la nav pour que le contenu ne passe pas dessous */
+    .page-with-nav { padding-top: var(--navbar-h); }
+
+    /* Pages avec hero plein écran : pas de padding, le hero couvre toute la hauteur */
+    .page-hero { padding-top: 0; }
+
     /* ============================================================
        FOOTER
        ============================================================ */
@@ -664,7 +678,7 @@
 <!-- ============================================================
      NAVBAR
      ============================================================ -->
-<nav class="rcyber-nav {% block nav_class %}transparent{% endblock %}" id="rcyber-nav">
+<nav class="rcyber-nav {% block nav_class %}solid{% endblock %}" id="rcyber-nav">
     <div style="display:flex;align-items:center;width:100%;gap:0.5rem;">
 
         <!-- Brand -->
@@ -889,7 +903,7 @@
 <!-- ============================================================
      CONTENU
      ============================================================ -->
-<div class="page-body">
+<div class="page-body {% block page_body_class %}page-with-nav{% endblock %}">
     {% block content %}{% endblock %}
 </div>
 
@@ -951,11 +965,13 @@
 <script>
 /* ── Navbar scroll ───────────────────────────────────────── */
 (function() {
-    const nav      = document.getElementById('rcyber-nav');
-    const isHero   = nav.classList.contains('transparent');
-    const isLight  = nav.classList.contains('light');
-    if (!isHero && !isLight) return;
+    const nav    = document.getElementById('rcyber-nav');
+    const isHero = nav.classList.contains('transparent');
 
+    /* Pages sans hero (solid/light) : rien à faire, la nav est déjà opaque */
+    if (!isHero) return;
+
+    /* Pages avec hero : transparent → scrolled quand on descend */
     function update() {
         if (window.scrollY > 60) {
             nav.classList.remove('transparent');
@@ -965,7 +981,8 @@
             nav.classList.add('transparent');
         }
     }
-    if (isHero) { window.addEventListener('scroll', update, { passive: true }); update(); }
+    window.addEventListener('scroll', update, { passive: true });
+    update();
 })();
 
 /* ── Drawer ──────────────────────────────────────────────── */

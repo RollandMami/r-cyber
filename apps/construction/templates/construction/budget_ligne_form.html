@@ -1,0 +1,81 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ action|default:"Ajouter" }} ligne budget — {{ projet.titre }}{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:budget' projet_pk=projet.pk %}">Budget</a></li>
+            <li class="breadcrumb-item active">{{ action|default:"Ajouter" }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-coins me-2" style="color:#f59e0b;"></i>{{ action|default:"Ajouter" }} une ligne budgétaire</h1>
+    </div>
+</div>
+
+<div style="max-width:600px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="card p-4 mb-3">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Catégorie *</label>
+                    {{ form.categorie }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tâche liée</label>
+                    {{ form.tache }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Désignation *</label>
+                    {{ form.designation }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Unité</label>
+                    {{ form.unite }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Quantité</label>
+                    {{ form.quantite }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Prix unitaire (Ar)</label>
+                    {{ form.prix_unitaire }}
+                </div>
+
+                <!-- Calcul auto -->
+                <div class="col-12">
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.75rem 1rem;font-size:.83rem;">
+                        <i class="fas fa-calculator me-2" style="color:#15803d;"></i>
+                        Montant prévu = Qté × P.U. — calculé automatiquement à l'enregistrement
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Montant réel (Ar) <span style="color:#94a3b8;font-weight:400;">— dépense constatée</span></label>
+                    {{ form.montant_reel }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Note</label>
+                    {{ form.note }}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fas fa-save me-2"></i>Enregistrer
+            </button>
+            <a href="{% url 'construction:budget' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+            {% if ligne %}
+            <a href="{% url 'construction:budget_ligne_delete' pk=ligne.pk %}"
+               onclick="return confirm('Supprimer cette ligne ?')"
+               class="btn btn-outline-danger ms-auto">
+                <i class="fas fa-trash me-1"></i>Supprimer
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

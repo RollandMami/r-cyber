@@ -1,0 +1,67 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}Ajouter une photo — {{ projet.titre }}{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Ajouter une photo</li>
+        </ol></nav>
+        <h1><i class="fas fa-camera me-2" style="color:#00b4d8;"></i>Ajouter une photo vitrine</h1>
+        <p class="text-muted mb-0" style="font-size:.85rem;">{{ projet.photos.count }}/5 photos pour ce projet</p>
+    </div>
+</div>
+
+<div style="max-width:520px;">
+    <div class="card p-4">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <!-- Prévisualisation -->
+                <div class="col-12">
+                    <div id="previewWrap" style="display:none;margin-bottom:.5rem;">
+                        <img id="previewImg" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px;border:1px solid #dde6f0;" alt="Prévisualisation">
+                    </div>
+                    <label class="form-label fw-bold">Photo *</label>
+                    {{ form.image }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Légende</label>
+                    {{ form.legende }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Ordre d'affichage</label>
+                    {{ form.ordre }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" style="display:flex;align-items:center;gap:.5rem;margin-top:1.75rem;">
+                        {{ form.principale }} Photo de couverture
+                    </label>
+                    <div style="font-size:.72rem;color:#94a3b8;">Affichée en tête de vitrine</div>
+                </div>
+                <div class="col-12 d-flex gap-2 mt-1">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-upload me-2"></i>Ajouter la photo
+                    </button>
+                    <a href="{% url 'construction:projet_detail' pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        document.getElementById('previewImg').src = ev.target.result;
+        document.getElementById('previewWrap').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+</script>
+{% endblock %}
