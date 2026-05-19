@@ -1,0 +1,953 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}À propos — R-CYBER · Maminirina Rolland ANDRIANAVALONA{% endblock %}
+{% block meta_description %}Découvrez R-CYBER et son fondateur Maminirina Rolland ANDRIANAVALONA — Développeur Full-Stack, Technicien BTP, Expert CAO/BIM et étudiant à l'École 42.{% endblock %}
+{% block nav_class %}light{% endblock %}
+{% block nav_about %}active{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ABOUT — DESIGN SYSTEM
+   Aesthetic: Editorial · Biographique · Luxe sobre
+   Fonts: DM Serif Display (titres) + DM Sans (corps)
+   ============================================================ */
+:root {
+    --ink:        #0d1117;
+    --ink-mid:    #1e293b;
+    --ink-light:  #475569;
+    --ink-muted:  #94a3b8;
+    --paper:      #fafaf8;
+    --paper-warm: #f5f0e8;
+    --gold:       #c9a84c;
+    --gold-light: #e8d5a3;
+    --navy:       #0d1628;
+    --blue:       #1e6fca;
+    --line:       #e2e0d8;
+    --serif:      'DM Serif Display', Georgia, serif;
+    --sans:       'DM Sans', system-ui, sans-serif;
+}
+
+body { font-family: var(--sans); background: var(--paper); }
+
+/* ── HERO SPLIT ──────────────────────────────────────────── */
+.about-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 68px);
+    margin-top: 68px;
+}
+
+.about-hero-left {
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4rem 4rem 4rem;
+}
+
+/* Grain texture overlay */
+.about-hero-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 40% 30%, rgba(30,111,202,0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(201,168,76,0.12) 0%, transparent 50%);
+    z-index: 0;
+}
+
+.hero-photo-wrap {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0;
+}
+
+.hero-photo-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    opacity: 0.18;
+    mix-blend-mode: luminosity;
+}
+
+.hero-left-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+}
+.hero-eyebrow::before {
+    content: '';
+    width: 32px; height: 1px;
+    background: var(--gold);
+}
+
+.hero-name {
+    font-family: var(--serif);
+    font-size: clamp(2.2rem, 4vw, 3.8rem);
+    color: #fff;
+    line-height: 1.08;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+.hero-role {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+}
+
+.hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.hero-tag {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 500;
+}
+
+/* Barre dorée verticale */
+.about-hero-left::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 15%; bottom: 15%;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+    z-index: 3;
+}
+
+/* Panneau droit */
+.about-hero-right {
+    background: var(--paper);
+    padding: 5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.pull-quote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-left: 2rem;
+}
+.pull-quote::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0.3em; bottom: 0.3em;
+    width: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+}
+
+.pull-quote em { color: var(--blue); font-style: normal; }
+
+.hero-bio {
+    font-size: 1rem;
+    color: var(--ink-light);
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    max-width: 480px;
+}
+
+.hero-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.hero-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.hero-contact-item:hover { color: var(--blue); }
+.hero-contact-item i {
+    width: 32px; height: 32px;
+    background: var(--paper-warm);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--gold);
+    flex-shrink: 0;
+}
+
+/* ── SECTION COMMUNE ──────────────────────────────────────── */
+.about-section {
+    padding: 6rem 0;
+}
+.about-section-alt { background: var(--paper-warm); }
+.about-section-dark { background: var(--navy); color: #fff; }
+
+.section-kicker {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.section-kicker::after { content: ''; flex: 1; max-width: 40px; height: 1px; background: var(--gold); }
+
+.section-headline {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    color: var(--ink);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+}
+.about-section-dark .section-headline { color: #fff; }
+
+.section-body {
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    line-height: 1.8;
+    max-width: 560px;
+}
+.about-section-dark .section-body { color: rgba(255,255,255,0.55); }
+
+/* ── COMPÉTENCES ──────────────────────────────────────────── */
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+}
+
+.skill-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 1.75rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.skill-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blue), var(--gold));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s ease;
+}
+.skill-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+.skill-card:hover::after { transform: scaleX(1); }
+
+.skill-card-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+.skill-card-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.35rem;
+}
+.skill-card-title {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    color: var(--ink);
+    margin-bottom: 0.6rem;
+}
+.skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.skill-tag {
+    background: var(--paper-warm);
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.73rem;
+    font-weight: 500;
+    color: var(--ink-light);
+}
+
+/* ── TIMELINE ─────────────────────────────────────────────── */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin-top: 3rem;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 12px; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 3rem;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+
+.timeline-dot {
+    position: absolute;
+    left: -2.43rem;
+    top: 6px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 3px solid var(--paper-warm);
+    box-shadow: 0 0 0 1px var(--gold);
+}
+
+.timeline-period {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.35rem;
+}
+.timeline-company {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.timeline-role {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    line-height: 1.25;
+}
+.about-section-dark .timeline-role { color: #fff; }
+
+.timeline-desc {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    line-height: 1.7;
+}
+.about-section-dark .timeline-desc { color: rgba(255,255,255,0.5); }
+.about-section-dark .timeline-dot { border-color: var(--navy); }
+
+.timeline-bullets {
+    list-style: none;
+    padding: 0; margin: 0.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.timeline-bullets li {
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    padding-left: 1.1rem;
+    position: relative;
+    line-height: 1.6;
+}
+.about-section-dark .timeline-bullets li { color: rgba(255,255,255,0.5); }
+.timeline-bullets li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 0.75rem;
+    top: 0.05em;
+}
+
+/* ── FORMATION ────────────────────────────────────────────── */
+.edu-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 1.75rem 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    transition: all 0.25s ease;
+}
+.edu-card:hover { background: rgba(255,255,255,0.07); }
+
+.edu-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.edu-year {
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.25rem;
+}
+.edu-title {
+    font-family: var(--serif); font-size: 1.1rem; color: #fff; margin-bottom: 0.2rem;
+}
+.edu-school {
+    font-size: 0.82rem; color: rgba(255,255,255,0.4); font-weight: 500;
+}
+
+/* ── PROJETS ──────────────────────────────────────────────── */
+.project-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 3rem;
+}
+.project-item {
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+}
+.project-num {
+    font-family: var(--serif);
+    font-size: 2.5rem;
+    color: var(--gold-light);
+    line-height: 1;
+    margin-bottom: 0.75rem;
+}
+.project-title {
+    font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 0.4rem;
+}
+.project-type {
+    display: inline-block;
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 0.5rem;
+}
+.project-desc { font-size: 0.84rem; color: var(--ink-light); line-height: 1.65; }
+
+/* ── LANGUES & ATOUTS ─────────────────────────────────────── */
+.lang-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+}
+.lang-name { font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+.lang-level {
+    font-size: 0.78rem; color: var(--ink-muted);
+    background: var(--paper-warm);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+}
+
+/* ── CTA ──────────────────────────────────────────────────── */
+.about-cta {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a2d4d 100%);
+    border-radius: 24px;
+    padding: 4rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.about-cta::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(30,111,202,0.15), transparent);
+}
+.cta-headline {
+    font-family: var(--serif);
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    color: #fff; margin-bottom: 0.75rem;
+    position: relative;
+}
+.cta-sub { color: rgba(255,255,255,0.5); max-width: 460px; margin: 0 auto 2rem; position: relative; font-size: 0.95rem; line-height: 1.7; }
+.cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+
+.btn-gold {
+    background: linear-gradient(135deg, var(--gold), #e8c060);
+    border: none; border-radius: 12px; color: var(--navy);
+    font-weight: 700; padding: 0.8rem 2rem;
+    font-size: 0.9rem; cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.45); color: var(--navy); }
+
+.btn-outline-white {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 12px; color: rgba(255,255,255,0.8);
+    font-weight: 600; padding: 0.8rem 2rem;
+    font-size: 0.9rem; cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    transition: all 0.25s ease;
+}
+.btn-outline-white:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.06); }
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+    .about-hero { grid-template-columns: 1fr; min-height: auto; }
+    .about-hero-left { min-height: 60vh; padding: 3rem 2rem 3rem; }
+    .about-hero-left::after { display: none; }
+    .about-hero-right { padding: 3rem 2rem; }
+    .project-row { grid-template-columns: 1fr; }
+    .about-section { padding: 4rem 0; }
+}
+@media (max-width: 575.98px) {
+    .about-hero-left { min-height: 55vh; padding: 2.5rem 1.25rem 2.5rem; }
+    .about-hero-right { padding: 2.5rem 1.25rem; }
+    .pull-quote { font-size: 1.3rem; padding-left: 1.25rem; }
+    .about-cta { padding: 3rem 1.5rem; }
+    .skills-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════════
+     HERO SPLIT
+══════════════════════════════════════════════════ -->
+<div class="about-hero">
+
+    <!-- Panneau gauche sombre -->
+    <div class="about-hero-left">
+        <div class="hero-left-content">
+            <div class="hero-eyebrow">Fondateur & Développeur</div>
+            <h1 class="hero-name">
+                Maminirina<br>Rolland<br>
+                <span style="color:var(--gold);">Andrianavalona</span>
+            </h1>
+            <div class="hero-role">Développeur Full-Stack · Technicien BTP · Expert CAO/BIM</div>
+            <div class="hero-tags">
+                <span class="hero-tag">École 42 Antananarivo</span>
+                <span class="hero-tag">IST-Tana · BTP</span>
+                <span class="hero-tag">Django / Python</span>
+                <span class="hero-tag">AutoCAD · Revit</span>
+                <span class="hero-tag">BIM/GEM</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panneau droit clair -->
+    <div class="about-hero-right">
+        <div class="section-kicker">Profil · About</div>
+        <blockquote class="pull-quote">
+            "J'allie la rigueur du <em>terrain BTP</em> à la résolution de problèmes complexes <em>par le code.</em>"
+        </blockquote>
+        <p class="hero-bio">
+            Développeur passionné en cours de cursus à l'École 42 et fort d'un bagage de Technicien Supérieur en BTP,
+            je suis spécialisé dans l'automatisation des processus et le développement d'outils sur mesure.
+            Autodidacte et collaboratif, je conçois des solutions logicielles performantes pour optimiser
+            la productivité et la qualité — de l'architecture numérique au suivi de chantier.
+        </p>
+        <div class="hero-contacts">
+            <a href="tel:+261331463377" class="hero-contact-item">
+                <i class="fas fa-phone"></i>
+                <span>033 14 633 77 · 034 90 793 84</span>
+            </a>
+            <a href="mailto:andrianavalonarolland@gmail.com" class="hero-contact-item">
+                <i class="fas fa-envelope"></i>
+                <span>andrianavalonarolland@gmail.com</span>
+            </a>
+            <a href="https://github.com/RollandMami" target="_blank" class="hero-contact-item">
+                <i class="fab fa-github"></i>
+                <span>github.com/RollandMami</span>
+            </a>
+            <div class="hero-contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>VS 15 Y KK Ambolokandrina, Antananarivo</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     COMPÉTENCES
+══════════════════════════════════════════════════ -->
+<section class="about-section about-section-alt">
+    <div class="container">
+        <div class="row mb-2">
+            <div class="col-lg-5">
+                <div class="section-kicker">Savoir-faire · Skills</div>
+                <h2 class="section-headline">Compétences<br><em style="font-style:italic;color:var(--blue);">techniques</em></h2>
+                <p class="section-body">
+                    Un profil rare qui combine expertise logicielle, maîtrise des outils BIM/CAO
+                    et vision terrain acquise sur les chantiers de construction.
+                </p>
+            </div>
+        </div>
+
+        <div class="skills-grid">
+            <div class="skill-card">
+                <div class="skill-card-icon" style="background:#e8f4fd;">
+                    <i class="fas fa-code" style="color:#1e6fca;"></i>
+                </div>
+                <div class="skill-card-label">Langages core</div>
+                <div class="skill-card-title">Développement bas niveau</div>
+                <div class="skill-tags">
+                    <span class="skill-tag">C</span>
+                    <span class="skill-tag">C++</span>
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">Shell/Bash</span>
+                </div>
+            </div>
+
+            <div class="skill-card">
+                <div class="skill-card-icon" style="background:#e8f4fd;">
+                    <i class="fas fa-globe" style="color:#1e6fca;"></i>
+                </div>
+                <div class="skill-card-label">Web & Data</div>
+                <div class="skill-card-title">Full-Stack web</div>
+                <div class="skill-tags">
+                    <span class="skill-tag">Django</span>
+                    <span class="skill-tag">HTML/CSS</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">SQLite</span>
+                    <span class="skill-tag">Bootstrap</span>
+                </div>
+            </div>
+
+            <div class="skill-card">
+                <div class="skill-card-icon" style="background:#fef9e7;">
+                    <i class="fas fa-robot" style="color:#c9a84c;"></i>
+                </div>
+                <div class="skill-card-label">Automatisation</div>
+                <div class="skill-card-title">Scripts & workflows</div>
+                <div class="skill-tags">
+                    <span class="skill-tag">AutoLISP</span>
+                    <span class="skill-tag">pyRevit</span>
+                    <span class="skill-tag">Bash scripts</span>
+                </div>
+            </div>
+
+            <div class="skill-card">
+                <div class="skill-card-icon" style="background:#f0fdf4;">
+                    <i class="fas fa-tools" style="color:#22c55e;"></i>
+                </div>
+                <div class="skill-card-label">Outils & DevOps</div>
+                <div class="skill-card-title">Environnement de travail</div>
+                <div class="skill-tags">
+                    <span class="skill-tag">Git</span>
+                    <span class="skill-tag">Jira</span>
+                    <span class="skill-tag">Linux/Ubuntu</span>
+                </div>
+            </div>
+
+            <div class="skill-card">
+                <div class="skill-card-icon" style="background:#fdf2f8;">
+                    <i class="fas fa-drafting-compass" style="color:#a855f7;"></i>
+                </div>
+                <div class="skill-card-label">Métier BTP / CAO</div>
+                <div class="skill-card-title">Conception & BIM</div>
+                <div class="skill-tags">
+                    <span class="skill-tag">Revit</span>
+                    <span class="skill-tag">AutoCAD</span>
+                    <span class="skill-tag">Blender</span>
+                    <span class="skill-tag">Dessin technique</span>
+                </div>
+            </div>
+
+            <div class="skill-card">
+                <div class="skill-card-icon" style="background:#fef9e7;">
+                    <i class="fas fa-users" style="color:#c9a84c;"></i>
+                </div>
+                <div class="skill-card-label">Management</div>
+                <div class="skill-card-title">Pilotage d'équipe</div>
+                <div class="skill-tags">
+                    <span class="skill-tag">Management 6 pers.</span>
+                    <span class="skill-tag">Qualité</span>
+                    <span class="skill-tag">Reporting</span>
+                    <span class="skill-tag">ERP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     EXPÉRIENCES
+══════════════════════════════════════════════════ -->
+<section class="about-section about-section-dark">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-5 mb-lg-0">
+                <div class="section-kicker">Parcours · Experience</div>
+                <h2 class="section-headline">Expériences<br>professionnelles</h2>
+                <p class="section-body">
+                    6 ans chez FUTURMAP — de dessinateur BIM à Responsable des flux de production —
+                    plus deux stages terrain en gestion de patrimoine et gros œuvre.
+                </p>
+            </div>
+
+            <div class="col-lg-7 offset-lg-1">
+                <div class="timeline">
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-period">2025 — Présent</div>
+                        <div class="timeline-company">FUTURMAP · Antananarivo</div>
+                        <div class="timeline-role">Management & Pilotage</div>
+                        <ul class="timeline-bullets">
+                            <li>Responsable des flux de production, management de 6 personnes</li>
+                            <li>Pilotage des livraisons via Jira, mise à jour de l'ERP</li>
+                            <li>Rédaction de rapports de synthèse qualité</li>
+                        </ul>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-period">2022 — 2024</div>
+                        <div class="timeline-company">FUTURMAP · Antananarivo</div>
+                        <div class="timeline-role">Support Technique & Expert CAO</div>
+                        <ul class="timeline-bullets">
+                            <li>Liaison Méthode/Production, résolution d'incidents complexes</li>
+                            <li>Création de gabarits techniques et normalisation</li>
+                            <li><strong style="color:var(--gold);">+20% de productivité</strong> via des routines d'automatisation AutoLISP</li>
+                        </ul>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-period">2020 — 2022</div>
+                        <div class="timeline-company">FUTURMAP · Antananarivo</div>
+                        <div class="timeline-role">Dessinateur Gestion de Patrimoine</div>
+                        <ul class="timeline-bullets">
+                            <li>Digitalisation BIM/GEM (PDF → CAO/ABYLA) selon cahiers des charges</li>
+                            <li>Développement de scripts d'automatisation AutoLISP et Bash</li>
+                        </ul>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-period">2019 · Stage 2 mois</div>
+                        <div class="timeline-company">ARO-IMMO · Antananarivo</div>
+                        <div class="timeline-role">Stagiaire en Gestion de Patrimoine</div>
+                        <ul class="timeline-bullets">
+                            <li>Audits techniques et devis de réhabilitation</li>
+                            <li>Structuration de bases de données patrimoniales</li>
+                        </ul>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-period">2018 · Stage 2 mois</div>
+                        <div class="timeline-company">Entreprise BATIR</div>
+                        <div class="timeline-role">Stagiaire d'Ouvrier</div>
+                        <ul class="timeline-bullets">
+                            <li>Immersion gros œuvre : ferraillage, maçonnerie</li>
+                            <li>Suivi de chantier Délai-Coût-Qualité</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     FORMATION
+══════════════════════════════════════════════════ -->
+<section class="about-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-kicker" style="justify-content:center;">Formation · Education</div>
+            <h2 class="section-headline">Parcours académique</h2>
+        </div>
+        <div class="row g-3 justify-content-center">
+            <div class="col-lg-5">
+                <div class="edu-card" style="background:var(--navy);">
+                    <div class="edu-icon" style="background:rgba(30,111,202,0.15);">
+                        <i class="fas fa-terminal" style="color:#00c8ff;font-size:1.2rem;"></i>
+                    </div>
+                    <div>
+                        <div class="edu-year">En cours</div>
+                        <div class="edu-title">Développeur C / C++ / Python</div>
+                        <div class="edu-school">École 42 Antananarivo</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="edu-card" style="background:var(--navy);">
+                    <div class="edu-icon" style="background:rgba(201,168,76,0.15);">
+                        <i class="fas fa-hard-hat" style="color:var(--gold);font-size:1.2rem;"></i>
+                    </div>
+                    <div>
+                        <div class="edu-year">2019</div>
+                        <div class="edu-title">Diplôme de Technicien Supérieur BTP</div>
+                        <div class="edu-school">Institut Supérieur de Technologie — IST-Tana</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     PROJETS CLÉS
+══════════════════════════════════════════════════ -->
+<section class="about-section about-section-alt">
+    <div class="container">
+        <div class="section-kicker">Portfolio · Projects</div>
+        <h2 class="section-headline">Projets clés</h2>
+        <div class="project-row">
+            <div class="project-item">
+                <div class="project-num">01</div>
+                <div class="project-type">Django · E-commerce</div>
+                <div class="project-title">Tsitsi Store</div>
+                <p class="project-desc">
+                    Conception et hébergement d'un site web dynamique complet avec Django et Python,
+                    implémentant un système de recherche de produits avancé.
+                </p>
+            </div>
+            <div class="project-item">
+                <div class="project-num">02</div>
+                <div class="project-type">C · Algorithmie · École 42</div>
+                <div class="project-title">Push_swap</div>
+                <p class="project-desc">
+                    Programme de tri de données complexe en C, optimisé pour exécuter
+                    le moins d'opérations possible sous des contraintes mémoire strictes.
+                </p>
+            </div>
+            <div class="project-item">
+                <div class="project-num">03</div>
+                <div class="project-type">C · Système · École 42</div>
+                <div class="project-title">Get_Next_Line</div>
+                <p class="project-desc">
+                    Fonction C lisant une ligne à la fois depuis un descripteur de fichier,
+                    avec gestion rigoureuse de la mémoire tampon (buffers).
+                </p>
+            </div>
+        </div>
+
+        <!-- Projet R-CYBER en avant -->
+        <div style="margin-top:3rem;background:#fff;border:1px solid var(--line);border-radius:20px;padding:2.5rem;display:flex;gap:2rem;align-items:center;flex-wrap:wrap;">
+            <div style="flex:1;min-width:240px;">
+                <div class="project-type" style="margin-bottom:0.5rem;">Django · BIM · Android</div>
+                <div style="font-family:var(--serif);font-size:1.6rem;color:var(--ink);margin-bottom:0.5rem;">R-CYBER Patrimoine</div>
+                <p style="font-size:0.9rem;color:var(--ink-light);line-height:1.7;margin:0;">
+                    Plateforme de gestion de patrimoine immobilier avec visualisation IFC/3D en temps réel (Three.js),
+                    gestion documentaire BIM, viewer multi-étages et application Android offline-first.
+                </p>
+            </div>
+            <a href="{% url 'smartdocs:patrimoine_list' %}" style="background:linear-gradient(135deg,#1e6fca,#2d8aff);color:#fff;border-radius:12px;padding:0.8rem 1.75rem;font-weight:700;text-decoration:none;font-size:0.88rem;white-space:nowrap;display:inline-flex;align-items:center;gap:0.5rem;box-shadow:0 4px 16px rgba(30,111,202,0.3);">
+                <i class="fas fa-building"></i> Voir la plateforme
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     LANGUES & ATOUTS
+══════════════════════════════════════════════════ -->
+<section class="about-section">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-4">
+                <div class="section-kicker">Langues · Languages</div>
+                <h2 class="section-headline" style="font-size:1.8rem;">Langues</h2>
+                <div class="lang-item">
+                    <span class="lang-name">🇫🇷 Français</span>
+                    <span class="lang-level">Lu · Écrit · Parlé</span>
+                </div>
+                <div class="lang-item">
+                    <span class="lang-name">🇬🇧 Anglais</span>
+                    <span class="lang-level">Lu · Écrit</span>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="section-kicker">Atouts · Strengths</div>
+                <h2 class="section-headline" style="font-size:1.8rem;">Atouts</h2>
+                <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem;">
+                    {% for atout in atouts %}
+                    <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.9rem;color:var(--ink-light);">
+                        <span style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;"></span>
+                        {{ atout }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="section-kicker">Chiffres · Numbers</div>
+                <h2 class="section-headline" style="font-size:1.8rem;">En chiffres</h2>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+                    <div style="text-align:center;padding:1.25rem;background:var(--paper-warm);border-radius:14px;">
+                        <div style="font-family:var(--serif);font-size:2.2rem;color:var(--ink);line-height:1;">6<span style="color:var(--gold);">+</span></div>
+                        <div style="font-size:0.72rem;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.25rem;">Ans d'expérience</div>
+                    </div>
+                    <div style="text-align:center;padding:1.25rem;background:var(--paper-warm);border-radius:14px;">
+                        <div style="font-family:var(--serif);font-size:2.2rem;color:var(--ink);line-height:1;">20<span style="color:var(--gold);">%</span></div>
+                        <div style="font-size:0.72rem;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.25rem;">Gain productivité</div>
+                    </div>
+                    <div style="text-align:center;padding:1.25rem;background:var(--paper-warm);border-radius:14px;">
+                        <div style="font-family:var(--serif);font-size:2.2rem;color:var(--ink);line-height:1;">6</div>
+                        <div style="font-size:0.72rem;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.25rem;">Pers. managées</div>
+                    </div>
+                    <div style="text-align:center;padding:1.25rem;background:var(--paper-warm);border-radius:14px;">
+                        <div style="font-family:var(--serif);font-size:2.2rem;color:var(--ink);line-height:1;">42</div>
+                        <div style="font-size:0.72rem;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.25rem;">École — en cours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     CTA
+══════════════════════════════════════════════════ -->
+<section class="about-section" style="padding-bottom:6rem;">
+    <div class="container">
+        <div class="about-cta">
+            <h2 class="cta-headline">Travaillons ensemble</h2>
+            <p class="cta-sub">
+                Vous avez un projet BTP, une application à développer ou besoin d'automatiser vos processus ?
+                Contactez-nous pour en discuter.
+            </p>
+            <div class="cta-actions">
+                <a href="{% url 'home:contact' %}" class="btn-gold">
+                    <i class="fas fa-envelope"></i> Envoyer un message
+                </a>
+                <a href="https://github.com/RollandMami" target="_blank" class="btn-outline-white">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

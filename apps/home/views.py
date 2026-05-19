@@ -142,7 +142,14 @@ def service_detail(request, slug):
 
 
 def about(request):
-    return render(request, 'home/about.html')
+    atout = ["Autodidacte & rigoureux",
+            "Fort esprit collaboratif",
+            "Vision terrain + code",
+            "Permis A & B",
+            "Blender 3D",
+            "Profil rare BTP × Dev",
+            ]
+    return render(request, 'home/about.html', {'atouts' : atout})
 
 
 def contact(request):

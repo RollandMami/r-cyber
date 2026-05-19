@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Services — R-CYBER{% endblock %}
+{% block nav_class %}light{% endblock %}
+{% block nav_services %}active{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'DM Sans', system-ui, sans-serif; }
+
+.services-hero {
+    background: #0d1628;
+    padding: calc(68px + 5rem) 0 5rem;
+    position: relative; overflow: hidden;
+}
+.services-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 70% 40%, rgba(30,111,202,0.18), transparent),
+        radial-gradient(ellipse 40% 40% at 10% 80%, rgba(201,168,76,0.07), transparent);
+}
+.services-hero-inner { position: relative; z-index: 2; }
+
+.sh-eyebrow {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #c9a84c;
+    display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.25rem;
+}
+.sh-eyebrow::before { content: ''; width: 28px; height: 1px; background: #c9a84c; }
+
+.sh-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    color: #fff; line-height: 1.08; margin-bottom: 1.25rem; letter-spacing: -0.02em;
+}
+.sh-title em { color: #00c8ff; font-style: italic; }
+.sh-desc { font-size: 1.05rem; color: rgba(255,255,255,0.5); max-width: 520px; line-height: 1.75; }
+
+/* Stats rapides dans le hero */
+.sh-stats {
+    display: flex; gap: 3rem; margin-top: 3rem; flex-wrap: wrap;
+}
+.sh-stat-num {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 2.5rem; color: #fff; line-height: 1;
+}
+.sh-stat-num span { color: #c9a84c; }
+.sh-stat-label {
+    font-size: 0.72rem; color: rgba(255,255,255,0.35);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.2rem;
+}
+
+/* ── Grille services ─────────────────────────────────────── */
+.services-grid-section { padding: 6rem 0; background: #fafaf8; }
+
+.service-big-card {
+    background: #fff;
+    border: 1px solid #e2e0d8;
+    border-radius: 24px;
+    overflow: hidden;
+    height: 100%;
+    display: flex; flex-direction: column;
+    transition: all 0.35s ease;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+}
+.service-big-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--c), var(--c2, var(--c)));
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.service-big-card:hover { transform: translateY(-8px); box-shadow: 0 20px 56px rgba(0,0,0,0.1); }
+.service-big-card:hover::before { opacity: 1; }
+
+.sbc-top {
+    padding: 2rem 2rem 1.5rem;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+}
+.sbc-icon-wrap {
+    width: 64px; height: 64px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+}
+.sbc-num {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 3.5rem; color: #f1f5f9; font-weight: 400; line-height: 1;
+}
+.sbc-body { padding: 0 2rem 2rem; flex: 1; display: flex; flex-direction: column; }
+.sbc-cat {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; margin-bottom: 0.35rem;
+}
+.sbc-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.5rem; color: #0d1117; margin-bottom: 0.6rem; line-height: 1.2;
+}
+.sbc-desc {
+    font-size: 0.88rem; color: #475569; line-height: 1.7; flex: 1; margin-bottom: 1.5rem;
+}
+.sbc-features {
+    list-style: none; padding: 0; margin: 0 0 1.5rem;
+    display: flex; flex-direction: column; gap: 0.4rem;
+}
+.sbc-features li {
+    font-size: 0.82rem; color: #64748b;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.sbc-features li::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.sbc-arrow {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.82rem; font-weight: 700; transition: gap 0.2s;
+}
+.service-big-card:hover .sbc-arrow { gap: 0.7rem; }
+
+/* Carte patrimoine — spéciale */
+.sbc-special {
+    background: linear-gradient(135deg, #0d1628 0%, #1a2d4d 100%);
+    border: none; color: #fff;
+}
+.sbc-special .sbc-title { color: #fff; }
+.sbc-special .sbc-desc  { color: rgba(255,255,255,0.5); }
+.sbc-special .sbc-num   { color: rgba(255,255,255,0.08); }
+.sbc-special .sbc-features li { color: rgba(255,255,255,0.45); }
+.sbc-special .sbc-arrow { color: #c9a84c; }
+
+/* ── CTA bas de page ─────────────────────────────────────── */
+.services-cta-section { padding: 5rem 0; background: #f5f0e8; }
+.services-cta-inner {
+    background: #0d1628;
+    border-radius: 24px; padding: 4rem 3rem;
+    text-align: center; position: relative; overflow: hidden;
+}
+.services-cta-inner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(30,111,202,0.12), transparent);
+}
+.scta-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem); color: #fff; margin-bottom: 0.75rem;
+    position: relative;
+}
+.scta-desc { color: rgba(255,255,255,0.45); max-width: 480px; margin: 0 auto 2rem; position: relative; line-height: 1.75; }
+.scta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+
+@media (max-width: 575.98px) {
+    .sh-stats { gap: 1.5rem; }
+    .sh-stat-num { font-size: 2rem; }
+    .services-cta-inner { padding: 3rem 1.5rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="services-hero">
+    <div class="container services-hero-inner">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="sh-eyebrow">Ce que nous faisons · What we do</div>
+                <h1 class="sh-title">
+                    Nos <em>services</em>,<br>vos solutions
+                </h1>
+                <p class="sh-desc">
+                    De la conception architecturale au code, du studio d'enregistrement
+                    au cybercafé — R-CYBER regroupe 7 services complémentaires
+                    sous un même toit à Antananarivo.
+                </p>
+                <div class="sh-stats">
+                    <div>
+                        <div class="sh-stat-num">7<span>+</span></div>
+                        <div class="sh-stat-label">Services</div>
+                    </div>
+                    <div>
+                        <div class="sh-stat-num">6<span>ans</span></div>
+                        <div class="sh-stat-label">D'expérience</div>
+                    </div>
+                    <div>
+                        <div class="sh-stat-num">50<span>+</span></div>
+                        <div class="sh-stat-label">Projets</div>
+                    </div>
+                    <div>
+                        <div class="sh-stat-num">24<span>h</span></div>
+                        <div class="sh-stat-label">Réponse devis</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="services-grid-section">
+    <div class="container">
+        <div class="row g-4">
+
+            {% for slug, s in services.items %}
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'home:service_detail' slug %}" class="service-big-card"
+                   style="--c:{{ s.couleur }};">
+
+                    <div class="sbc-top">
+                        <div class="sbc-icon-wrap" style="background:{{ s.couleur }}22;">
+                            <i class="{{ s.icone }}" style="color:{{ s.couleur }};"></i>
+                        </div>
+                        <div class="sbc-num">0{{ forloop.counter }}</div>
+                    </div>
+
+                    <div class="sbc-body">
+                        <div class="sbc-cat" style="color:{{ s.couleur }};">
+                            {{ s.nom_en }}
+                        </div>
+                        <div class="sbc-title">{{ s.nom }}</div>
+                        <p class="sbc-desc">{{ s.hero_desc }}</p>
+
+                        <ul class="sbc-features">
+                            {% for icone, titre, desc in s.features|slice:":3" %}
+                            <li style="--dot-color:{{ s.couleur }};">
+                                <span style="width:6px;height:6px;border-radius:50%;background:{{ s.couleur }};flex-shrink:0;display:inline-block;"></span>
+                                {{ titre }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                        <div class="sbc-arrow" style="color:{{ s.couleur }};">
+                            Voir le service <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+
+            {# Carte spéciale patrimoine #}
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'smartdocs:patrimoine_list' %}" class="service-big-card sbc-special">
+                    <div class="sbc-top">
+                        <div class="sbc-icon-wrap" style="background:rgba(33,150,243,0.15);">
+                            <i class="fas fa-building" style="color:#2196f3;"></i>
+                        </div>
+                        <div class="sbc-num">08</div>
+                    </div>
+                    <div class="sbc-body">
+                        <div class="sbc-cat" style="color:#2196f3;">BIM · Real Estate</div>
+                        <div class="sbc-title">Gestion Patrimoine</div>
+                        <p class="sbc-desc">Plateforme BIM avec visualisation 3D IFC, gestion documentaire et arborescence bâtiment interactive.</p>
+                        <ul class="sbc-features">
+                            <li><span style="width:6px;height:6px;border-radius:50%;background:#2196f3;flex-shrink:0;display:inline-block;"></span> Viewer 3D IFC temps réel</li>
+                            <li><span style="width:6px;height:6px;border-radius:50%;background:#2196f3;flex-shrink:0;display:inline-block;"></span> Gestion documentaire</li>
+                            <li><span style="width:6px;height:6px;border-radius:50%;background:#2196f3;flex-shrink:0;display:inline-block;"></span> App Android offline</li>
+                        </ul>
+                        <div class="sbc-arrow">Accéder <i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="services-cta-section">
+    <div class="container">
+        <div class="services-cta-inner">
+            <h2 class="scta-title">Vous ne trouvez pas ce que vous cherchez ?</h2>
+            <p class="scta-desc">
+                Nos services peuvent être combinés et adaptés à vos besoins spécifiques.
+                Contactez-nous pour discuter d'une solution sur mesure.
+                <br><em style="color:rgba(255,255,255,0.3);font-style:normal;">Can't find what you need? Let's talk.</em>
+            </p>
+            <div class="scta-actions">
+                <a href="{% url 'home:contact' %}"
+                   style="background:linear-gradient(135deg,#c9a84c,#e8c060);color:#0d1628;border-radius:12px;padding:0.85rem 2rem;font-weight:700;font-size:0.92rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;box-shadow:0 4px 20px rgba(201,168,76,0.3);transition:all 0.25s;">
+                    <i class="fas fa-envelope"></i> Demander un devis gratuit
+                </a>
+                <a href="tel:+261331463377"
+                   style="background:transparent;border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);border-radius:12px;padding:0.85rem 2rem;font-weight:600;font-size:0.92rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;transition:all 0.25s;">
+                    <i class="fas fa-phone"></i> Appeler maintenant
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

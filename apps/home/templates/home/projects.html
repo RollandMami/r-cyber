@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Projets — R-CYBER{% endblock %}
+{% block nav_class %}light{% endblock %}
+{% block nav_projects %}active{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'DM Sans', system-ui, sans-serif; }
+
+.projects-hero {
+    background: #0d1628;
+    padding: calc(68px + 5rem) 0 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.projects-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 50%, rgba(30,111,202,0.15), transparent),
+        radial-gradient(ellipse 40% 40% at 10% 80%, rgba(201,168,76,0.06), transparent);
+}
+.projects-hero-inner { position: relative; z-index: 2; }
+
+.ph-label {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #c9a84c; margin-bottom: 1rem;
+}
+.ph-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    color: #fff; line-height: 1.08; margin-bottom: 1.25rem;
+    letter-spacing: -0.02em;
+}
+.ph-desc {
+    font-size: 1.05rem; color: rgba(255,255,255,0.5);
+    max-width: 520px; margin: 0 auto; line-height: 1.75;
+}
+
+/* ── Grille projets ──────────────────────────────────────── */
+.projects-section { padding: 5rem 0; }
+
+.project-card-full {
+    background: #fff;
+    border: 1px solid #e2e0d8;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.project-card-full:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,0,0,0.1); }
+
+.project-img-placeholder {
+    height: 220px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.project-img-placeholder::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.3));
+}
+
+.project-card-body { padding: 1.75rem; flex: 1; display: flex; flex-direction: column; }
+
+.project-meta {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 0.75rem; flex-wrap: wrap;
+}
+.project-cat {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #fff;
+    background: #1e6fca; border-radius: 50px;
+    padding: 0.2rem 0.7rem;
+}
+.project-year {
+    font-size: 0.75rem; color: #94a3b8; font-weight: 500;
+}
+
+.project-card-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.4rem; color: #0d1117; margin-bottom: 0.6rem; line-height: 1.25;
+}
+.project-card-desc {
+    font-size: 0.88rem; color: #475569; line-height: 1.7; flex: 1;
+}
+.project-techs {
+    display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 1.25rem;
+}
+.project-tech {
+    background: #f5f0e8; border-radius: 6px;
+    padding: 0.2rem 0.6rem; font-size: 0.73rem;
+    font-weight: 500; color: #475569;
+}
+.project-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 1.25rem; font-size: 0.85rem; font-weight: 700;
+    color: #1e6fca; text-decoration: none; transition: gap 0.2s;
+}
+.project-link:hover { gap: 0.65rem; color: #1e6fca; }
+
+/* Projet featured */
+.project-featured {
+    background: linear-gradient(135deg, #0d1628, #1a2d4d);
+    border-radius: 24px; padding: 3rem; color: #fff;
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 2rem; align-items: center;
+    margin-bottom: 2rem;
+}
+.pf-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3);
+    color: #c9a84c; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    border-radius: 50px; padding: 0.3rem 0.85rem; margin-bottom: 1rem;
+}
+.pf-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.8rem, 3vw, 2.5rem); color: #fff; margin-bottom: 0.75rem; line-height: 1.15;
+}
+.pf-desc { font-size: 0.95rem; color: rgba(255,255,255,0.55); line-height: 1.75; max-width: 520px; margin-bottom: 1.5rem; }
+.pf-techs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
+.pf-tech {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px; padding: 0.2rem 0.65rem;
+    font-size: 0.75rem; color: rgba(255,255,255,0.65);
+}
+.pf-visual {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 2.5rem;
+    font-size: 5rem; text-align: center; min-width: 180px;
+}
+
+@media (max-width: 767.98px) {
+    .project-featured { grid-template-columns: 1fr; }
+    .pf-visual { display: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="projects-hero">
+    <div class="container projects-hero-inner">
+        <div class="ph-label">Portfolio · Projects</div>
+        <h1 class="ph-title">Nos Projets</h1>
+        <p class="ph-desc">
+            De l'e-commerce au viewer 3D BIM, en passant par les algorithmes système —
+            chaque projet reflète notre passion pour l'ingénierie logicielle et le BTP.
+        </p>
+    </div>
+</div>
+
+<section class="projects-section">
+    <div class="container">
+
+        {# Projet featured — R-CYBER Patrimoine #}
+        <div class="project-featured">
+            <div>
+                <div class="pf-badge">⭐ Projet phare</div>
+                <h2 class="pf-title">R-CYBER Patrimoine<br>Immobilier</h2>
+                <p class="pf-desc">
+                    Plateforme BIM complète avec visualisation IFC 3D en temps réel via Three.js,
+                    gestion documentaire multi-niveaux (bâtiment/étage), viewer avec arborescence interactive,
+                    application Android offline-first et système de mise à jour automatique.
+                </p>
+                <div class="pf-techs">
+                    <span class="pf-tech">Django</span>
+                    <span class="pf-tech">Python</span>
+                    <span class="pf-tech">Three.js</span>
+                    <span class="pf-tech">ifcopenshell</span>
+                    <span class="pf-tech">Android WebView</span>
+                    <span class="pf-tech">Service Worker</span>
+                    <span class="pf-tech">Nginx</span>
+                    <span class="pf-tech">SQLite</span>
+                </div>
+                <a href="{% url 'smartdocs:patrimoine_list' %}"
+                   style="display:inline-flex;align-items:center;gap:0.5rem;background:linear-gradient(135deg,#c9a84c,#e8c060);color:#0d1628;border-radius:10px;padding:0.75rem 1.75rem;font-weight:700;font-size:0.88rem;text-decoration:none;box-shadow:0 4px 16px rgba(201,168,76,0.3);transition:all 0.25s;">
+                    <i class="fas fa-building"></i> Accéder à la plateforme
+                </a>
+            </div>
+            <div class="pf-visual">🏗️</div>
+        </div>
+
+        {# Grille projets #}
+        <div class="row g-4">
+
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card-full">
+                    <div class="project-img-placeholder" style="background:linear-gradient(135deg,#0d1628,#1a3a5f);">
+                        🛒
+                    </div>
+                    <div class="project-card-body">
+                        <div class="project-meta">
+                            <span class="project-cat">E-commerce</span>
+                            <span class="project-year">2024</span>
+                        </div>
+                        <h3 class="project-card-title">Tsitsi Store</h3>
+                        <p class="project-card-desc">
+                            Site e-commerce complet hébergé sur serveur Debian/Nginx.
+                            Système de recherche produits, gestion des stocks, panier,
+                            commandes et interface admin avancée.
+                        </p>
+                        <div class="project-techs">
+                            <span class="project-tech">Django</span>
+                            <span class="project-tech">Python</span>
+                            <span class="project-tech">SQLite</span>
+                            <span class="project-tech">Bootstrap</span>
+                            <span class="project-tech">Nginx</span>
+                        </div>
+                        <a href="https://tsitsistore.ddns.net" target="_blank" class="project-link">
+                            Voir le site <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card-full">
+                    <div class="project-img-placeholder" style="background:linear-gradient(135deg,#1a0a2e,#3a1060);">
+                        🔢
+                    </div>
+                    <div class="project-card-body">
+                        <div class="project-meta">
+                            <span class="project-cat" style="background:#a855f7;">Algorithmie</span>
+                            <span class="project-year">École 42</span>
+                        </div>
+                        <h3 class="project-card-title">Push_swap</h3>
+                        <p class="project-card-desc">
+                            Programme de tri de données complexe en C, optimisé pour exécuter
+                            le minimum d'opérations possible sous des contraintes mémoire strictes.
+                            Implémentation d'algorithmes de tri avancés.
+                        </p>
+                        <div class="project-techs">
+                            <span class="project-tech">C</span>
+                            <span class="project-tech">Algorithmie</span>
+                            <span class="project-tech">École 42</span>
+                        </div>
+                        <a href="https://github.com/RollandMami" target="_blank" class="project-link">
+                            GitHub <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card-full">
+                    <div class="project-img-placeholder" style="background:linear-gradient(135deg,#0a1a2e,#103050);">
+                        📄
+                    </div>
+                    <div class="project-card-body">
+                        <div class="project-meta">
+                            <span class="project-cat" style="background:#06b6d4;">Système</span>
+                            <span class="project-year">École 42</span>
+                        </div>
+                        <h3 class="project-card-title">Get_Next_Line</h3>
+                        <p class="project-card-desc">
+                            Fonction C lisant une ligne à la fois depuis un descripteur de fichier,
+                            avec gestion rigoureuse de la mémoire tampon. Robustesse et performance
+                            sur différentes tailles de buffers.
+                        </p>
+                        <div class="project-techs">
+                            <span class="project-tech">C</span>
+                            <span class="project-tech">Gestion mémoire</span>
+                            <span class="project-tech">École 42</span>
+                        </div>
+                        <a href="https://github.com/RollandMami" target="_blank" class="project-link">
+                            GitHub <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card-full">
+                    <div class="project-img-placeholder" style="background:linear-gradient(135deg,#1a1500,#3a3000);">
+                        ⚙️
+                    </div>
+                    <div class="project-card-body">
+                        <div class="project-meta">
+                            <span class="project-cat" style="background:#f59e0b;color:#1a1000;">Automatisation</span>
+                            <span class="project-year">FUTURMAP 2022</span>
+                        </div>
+                        <h3 class="project-card-title">Routines AutoLISP</h3>
+                        <p class="project-card-desc">
+                            Développement de routines d'automatisation AutoLISP pour AutoCAD
+                            ayant permis d'augmenter la productivité des dessinateurs de 20%.
+                            Gabarits techniques et workflows optimisés.
+                        </p>
+                        <div class="project-techs">
+                            <span class="project-tech">AutoLISP</span>
+                            <span class="project-tech">AutoCAD</span>
+                            <span class="project-tech">Bash</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card-full">
+                    <div class="project-img-placeholder" style="background:linear-gradient(135deg,#0a1a0a,#103010);">
+                        🏛️
+                    </div>
+                    <div class="project-card-body">
+                        <div class="project-meta">
+                            <span class="project-cat" style="background:#22c55e;">BIM/GEM</span>
+                            <span class="project-year">FUTURMAP 2020-22</span>
+                        </div>
+                        <h3 class="project-card-title">Digitalisation BIM/GEM</h3>
+                        <p class="project-card-desc">
+                            Digitalisation de patrimoine immobilier de PDF vers CAO/ABYLA
+                            selon cahiers des charges stricts. Gestion de patrimoine,
+                            audits techniques et bases de données patrimoniales.
+                        </p>
+                        <div class="project-techs">
+                            <span class="project-tech">Revit</span>
+                            <span class="project-tech">AutoCAD</span>
+                            <span class="project-tech">ABYLA</span>
+                            <span class="project-tech">BIM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="project-card-full" style="border: 2px dashed #e2e0d8; background: #fafaf8; display:flex; align-items:center; justify-content:center; min-height:340px;">
+                    <div class="text-center" style="padding:2rem;">
+                        <div style="font-size:2.5rem;margin-bottom:1rem;">🚀</div>
+                        <div style="font-family:'DM Serif Display',Georgia,serif;font-size:1.2rem;color:#0d1117;margin-bottom:0.5rem;">
+                            Prochain projet
+                        </div>
+                        <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:1.25rem;">
+                            Vous avez un projet en tête ?<br>Travaillons ensemble.
+                        </p>
+                        <a href="{% url 'home:contact' %}" style="display:inline-flex;align-items:center;gap:0.4rem;background:#0d1628;color:#fff;border-radius:10px;padding:0.65rem 1.4rem;font-size:0.85rem;font-weight:700;text-decoration:none;">
+                            <i class="fas fa-envelope"></i> Nous contacter
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}
