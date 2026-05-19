@@ -1,29 +1,129 @@
 {% extends 'base.html' %}
 {% block title %}{{ action }} un bâtiment — SmartDocs{% endblock %}
 {% block content %}
-<div class="container py-5" style="max-width:680px;">
+<div class="container py-5" style="max-width:720px;">
     <h1 class="fw-bold mb-1">{{ action }} un bâtiment</h1>
     <p class="text-muted mb-4">
-        {% if action == 'Créer' %}Renseignez les informations de base. Le modèle 3D sera converti automatiquement après l'upload IFC.
-        {% else %}Modifiez les informations. Un nouveau fichier IFC relance la conversion.{% endif %}
+        {% if action == 'Créer' %}
+            Renseignez les informations de base. Si vous uploadez un fichier IFC, la surface habitable
+            sera <strong>calculée automatiquement</strong> à partir des surfaces exactes de chaque pièce (IfcSpace).
+        {% else %}
+            Modifiez les informations. Un nouveau fichier IFC relance la conversion et recalcule les surfaces.
+        {% endif %}
     </p>
 
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
     <div class="card border-0 shadow-sm p-4" style="border-radius:16px;">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="patrimoine-form">
             {% csrf_token %}
 
-            {% for field in form %}
+            <!-- Informations générales -->
+            <h6 class="fw-bold mb-3" style="color:var(--action-color,#a44200);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;">
+                <i class="fas fa-info-circle me-2"></i>Informations générales
+            </h6>
+
             <div class="mb-3">
-                <label class="form-label fw-semibold" style="font-size:0.85rem;">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                <div class="form-text">{{ field.help_text }}</div>
-                {% endif %}
-                {% for error in field.errors %}
-                <div class="invalid-feedback d-block">{{ error }}</div>
-                {% endfor %}
+                <label class="form-label fw-semibold" style="font-size:0.85rem;">Nom du bâtiment *</label>
+                {{ form.nom }}
+                {% for error in form.nom.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
             </div>
-            {% endfor %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:0.85rem;">Adresse</label>
+                {{ form.adresse }}
+                {% for error in form.adresse.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:0.85rem;">Année de construction</label>
+                    {{ form.annee_construction }}
+                    {% for error in form.annee_construction.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                        Surface habitable (m²)
+                        <span id="surface-ifc-badge" class="badge bg-success ms-2 d-none" style="font-size:0.65rem;">
+                            <i class="fas fa-magic me-1"></i>Auto-calculée depuis IFC
+                        </span>
+                    </label>
+                    {{ form.surface_totale }}
+                    {% if form.surface_totale.help_text %}
+                    <div class="form-text" id="surface-help">{{ form.surface_totale.help_text }}</div>
+                    {% endif %}
+                    {% for error in form.surface_totale.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:0.85rem;">Description</label>
+                {{ form.description }}
+                {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Fichiers -->
+            <h6 class="fw-bold mb-3" style="color:var(--action-color,#a44200);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;">
+                <i class="fas fa-file-upload me-2"></i>Fichiers
+            </h6>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:0.85rem;">Photo de couverture</label>
+                    {{ form.photo }}
+                    {% for error in form.photo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                        Fichier IFC
+                        <span class="badge bg-info text-dark ms-1" style="font-size:0.65rem;">généré par ArchiCAD</span>
+                    </label>
+                    {{ form.fichier_ifc }}
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1 text-info"></i>
+                        L'upload IFC déclenche automatiquement : extraction des étages, pièces,
+                        surfaces exactes, revêtements, équipements et sanitaires.
+                    </div>
+                    {% for error in form.fichier_ifc.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+
+                    <!-- Indicateur IFC sélectionné -->
+                    <div id="ifc-info" class="mt-2 d-none">
+                        <div class="alert alert-info py-2 px-3 mb-0" style="font-size:0.82rem;border-radius:8px;">
+                            <i class="fas fa-cube me-2"></i>
+                            <strong id="ifc-filename"></strong> sélectionné.
+                            La surface habitable sera <strong>calculée automatiquement</strong>
+                            depuis les espaces IFC (IfcSpace). Vous n'avez pas besoin de la saisir manuellement.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if patrimoine and patrimoine.fichier_ifc %}
+            <div class="alert alert-success py-2 px-3 mb-3" style="font-size:0.82rem;border-radius:8px;">
+                <i class="fas fa-cube me-2"></i>
+                Fichier IFC actuel : <strong>{{ patrimoine.ifc_filename }}</strong>
+                — Statut :
+                {% if patrimoine.statut_conversion == 'ok' %}
+                    <span class="badge bg-success">Converti</span>
+                {% elif patrimoine.statut_conversion == 'en_cours' %}
+                    <span class="badge bg-warning text-dark">En cours…</span>
+                {% elif patrimoine.statut_conversion == 'erreur' %}
+                    <span class="badge bg-danger">Erreur</span>
+                {% endif %}
+                {% if patrimoine.surface_totale %}
+                    — Surface calculée : <strong>{{ patrimoine.surface_totale }} m²</strong>
+                {% endif %}
+            </div>
+            {% endif %}
 
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-primary">
@@ -48,4 +148,32 @@
         </form>
     </div>
 </div>
+
+<script>
+// Détection sélection fichier IFC → affiche info et masque le champ surface
+const ifcInput = document.querySelector('input[name="fichier_ifc"]');
+const ifcInfo  = document.getElementById('ifc-info');
+const ifcName  = document.getElementById('ifc-filename');
+const surfField = document.querySelector('input[name="surface_totale"]');
+const surfBadge = document.getElementById('surface-ifc-badge');
+const surfHelp  = document.getElementById('surface-help');
+
+if (ifcInput) {
+    ifcInput.addEventListener('change', function() {
+        if (this.files[0]) {
+            const fname = this.files[0].name;
+            ifcInfo.classList.remove('d-none');
+            ifcName.textContent = fname;
+            // Signale visuellement que la surface sera auto-calculée
+            if (surfField && !surfField.value) {
+                surfField.placeholder = 'Sera calculée automatiquement depuis l\'IFC';
+                surfBadge.classList.remove('d-none');
+            }
+        } else {
+            ifcInfo.classList.add('d-none');
+            surfBadge.classList.add('d-none');
+        }
+    });
+}
+</script>
 {% endblock %}

@@ -306,3 +306,31 @@ function _onResize() {
 }
 
 function _animate() { requestAnimationFrame(_animate); renderer.render(scene, camera); }
+
+// ── Réception des filtres depuis la page parent (onglet Plan du site) ─────────
+window.addEventListener('message', function(event) {
+    if (!event.data || event.data.type !== 'FILTER_ETAGE') return;
+    const { etage, piece } = event.data;
+
+    if (etage === 'ext') {
+        // Espace extérieur / plan de masse → vue de dessus, tout visible
+        allMeshes.forEach(({ mesh }) => _restoreMesh(mesh));
+        setCameraMode('top');
+        return;
+    }
+
+    if (piece) {
+        filtrerPiece(null, piece);
+    } else if (etage) {
+        // Cherche l'etagePk depuis le guid
+        const m = allMeshes.find(x => x.mesh.userData.etageGuid === etage || String(x.etageId) === String(etage));
+        if (m) {
+            filtrerEtage(m.etageId, null);
+        } else {
+            allMeshes.forEach(({ mesh }) => _restoreMesh(mesh));
+        }
+    } else {
+        // Tout afficher
+        allMeshes.forEach(({ mesh }) => _restoreMesh(mesh));
+    }
+});

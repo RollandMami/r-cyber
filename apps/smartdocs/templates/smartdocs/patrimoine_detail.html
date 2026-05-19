@@ -4,15 +4,76 @@
 
 {% block title %}{{ patrimoine.nom }} — SmartDocs{% endblock %}
 
+{% block extra_head %}
+<style>
+/* ── Notebook tabs ─────────────────────────────────────────── */
+.nb-tabs { border-bottom: 2px solid var(--border-color, #e0c9a6); margin-bottom: 1.5rem; }
+.nb-tab {
+    display: inline-block; padding: 0.65rem 1.25rem; margin-bottom: -2px;
+    border: 2px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0;
+    font-weight: 600; font-size: 0.88rem; color: #888; cursor: pointer; text-decoration: none;
+    transition: all 0.15s;
+}
+.nb-tab:hover { color: var(--action-color, #a44200); background: rgba(164,66,0,0.05); }
+.nb-tab.active {
+    color: var(--action-color, #a44200);
+    border-color: var(--border-color, #e0c9a6);
+    border-bottom-color: #fff; background: #fff;
+}
+.nb-pane { display: none; }
+.nb-pane.active { display: block; }
+
+/* ── GED ───────────────────────────────────────────────────── */
+.ged-corps-header {
+    background: linear-gradient(135deg, var(--rich-mahogany,#5c1a1a), var(--action-color,#a44200));
+    color: #fff; padding: 0.75rem 1.25rem; border-radius: 10px; cursor: pointer;
+    font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.75rem;
+}
+.ged-dossier-header {
+    padding: 0.6rem 1.25rem 0.6rem 2rem; cursor: pointer;
+    background: var(--bg-fallback,#fdf6f0); border-left: 3px solid var(--border-color,#e0c9a6);
+    font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.6rem;
+    transition: background 0.15s;
+}
+.ged-dossier-header:hover { background: #f5ead8; }
+.ged-dossier-body { padding: 0.5rem 1.25rem 0.5rem 3rem; }
+.ged-file-row {
+    display: flex; align-items: center; gap: 0.75rem; padding: 0.45rem 0.75rem;
+    border-radius: 8px; font-size: 0.83rem;
+}
+.ged-file-row:hover { background: rgba(164,66,0,0.06); }
+.ged-drop-zone {
+    border: 2px dashed var(--border-color,#e0c9a6); border-radius: 10px;
+    padding: 2rem; text-align: center; color: #aaa; font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s; cursor: pointer;
+    margin-top: 0.75rem;
+}
+.ged-drop-zone.drag-over { border-color: var(--action-color,#a44200); background: rgba(164,66,0,0.05); color: var(--action-color,#a44200); }
+
+/* ── Info cards ────────────────────────────────────────────── */
+.info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.info-card { background: var(--bg-fallback,#fdf6f0); border-radius: 12px; padding: 1rem 1.25rem; }
+.info-card .ic-label { font-size: 0.73rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.2rem; }
+.info-card .ic-value { font-size: 1.15rem; font-weight: 700; color: var(--text-primary,#3c1518); }
+
+/* ── Composition ───────────────────────────────────────────── */
+.bat-card {
+    display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem;
+    border-radius: 12px; background: var(--bg-fallback,#fdf6f0); margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4 px-4">
 
-    {# ── En-tête ──────────────────────────────────────────── #}
+    <!-- En-tête -->
     <div class="d-flex flex-wrap align-items-start gap-3 mb-4">
         <div class="flex-grow-1">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1" style="font-size:0.82rem;">
                     <li class="breadcrumb-item"><a href="{% url 'smartdocs:patrimoine_list' %}">Patrimoines</a></li>
+                    {% if site %}<li class="breadcrumb-item">{{ site.nom }}</li>{% endif %}
                     <li class="breadcrumb-item active">{{ patrimoine.nom }}</li>
                 </ol>
             </nav>
@@ -27,12 +88,11 @@
                 <i class="fas fa-cube me-1"></i> Viewer 3D
             </a>
             {% endif %}
-            <a href="{% url 'smartdocs:document_upload' patrimoine.pk %}" class="btn btn-outline-primary">
-                <i class="fas fa-upload me-1"></i> Ajouter document
-            </a>
+            {% if user.is_staff %}
             <a href="{% url 'smartdocs:patrimoine_edit' patrimoine.pk %}" class="btn btn-outline-secondary">
                 <i class="fas fa-edit me-1"></i> Modifier
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -45,179 +105,824 @@
         {% endfor %}
     {% endif %}
 
-    <div class="row g-4">
+    <!-- ══════════════════════════════════════════════════════
+         NOTEBOOK TABS
+    ═══════════════════════════════════════════════════════ -->
+    <div class="nb-tabs">
+        <a class="nb-tab active" href="#" onclick="showTab('info',this);return false;">
+            <i class="fas fa-info-circle me-1"></i> Informations générales
+        </a>
+        <a class="nb-tab" href="#" onclick="showTab('ged',this);return false;">
+            <i class="fas fa-folder-open me-1"></i> Documentation
+            {% if total_docs > 0 %}<span class="badge ms-1" style="background:var(--action-color,#a44200);font-size:0.68rem;">{{ total_docs }}</span>{% endif %}
+        </a>
+        <a class="nb-tab" href="#" onclick="showTab('plan',this);return false;">
+            <i class="fas fa-map me-1"></i> Plan du site
+        </a>
+        <a class="nb-tab" href="#" onclick="showTab('compo',this);return false;">
+            <i class="fas fa-sitemap me-1"></i> Composition du site
+        </a>
+    </div>
 
-        {# ── Colonne gauche — infos + docs globaux ─────────── #}
-        <div class="col-lg-4">
+    <!-- ══ ONGLET 1 — INFORMATIONS GÉNÉRALES ══════════════════ -->
+    <div class="nb-pane active" id="pane-info">
 
-            {# Carte infos #}
-            <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold mb-3" style="color:var(--action-color,#a44200);">
-                        <i class="fas fa-info-circle me-2"></i>Informations
-                    </h6>
-                    <dl class="row mb-0" style="font-size:0.88rem;">
-                        {% if patrimoine.annee_construction %}
-                        <dt class="col-6 text-muted">Construction</dt>
-                        <dd class="col-6">{{ patrimoine.annee_construction }}</dd>
-                        {% endif %}
-                        {% if patrimoine.surface_totale %}
-                        <dt class="col-6 text-muted">Surface</dt>
-                        <dd class="col-6">{{ patrimoine.surface_totale }} m²</dd>
-                        {% endif %}
-                        <dt class="col-6 text-muted">Étages</dt>
-                        <dd class="col-6">{{ etages.count }}</dd>
-                        <dt class="col-6 text-muted">Documents</dt>
-                        <dd class="col-6">{{ patrimoine.documents.count }}</dd>
-                        <dt class="col-6 text-muted">Modèle 3D</dt>
-                        <dd class="col-6">
-                            {% if patrimoine.statut_conversion == 'ok' %}
-                                <span class="badge bg-success">Disponible</span>
-                            {% elif patrimoine.statut_conversion == 'en_cours' %}
-                                <span class="badge bg-warning text-dark">En cours…</span>
-                            {% elif patrimoine.statut_conversion == 'erreur' %}
-                                <span class="badge bg-danger">Erreur</span>
-                            {% else %}
-                                <span class="badge bg-secondary">—</span>
-                            {% endif %}
-                        </dd>
-                    </dl>
-                    {% if patrimoine.description %}
-                    <hr>
-                    <p class="text-muted small mb-0">{{ patrimoine.description }}</p>
-                    {% endif %}
+        <!-- KPI cards -->
+        <div class="info-grid mb-4">
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-calendar me-1"></i> Année de construction</div>
+                <div class="ic-value">{{ patrimoine.annee_construction|default:"—" }}</div>
+            </div>
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-ruler-combined me-1"></i> Surface habitable</div>
+                <div class="ic-value">
+                    {% if surface_ifc %}{{ surface_ifc|floatformat:0 }} m²
+                    <small style="font-size:0.65rem;color:#aaa;display:block;margin-top:2px;">calculée depuis IFC</small>
+                    {% elif patrimoine.surface_totale %}{{ patrimoine.surface_totale }} m²
+                    {% else %}—{% endif %}
                 </div>
             </div>
-
-            {# Documents du bâtiment entier #}
-            <div class="card border-0 shadow-sm" style="border-radius:14px;">
-                <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
-                    <h6 class="fw-bold mb-0">
-                        <i class="fas fa-folder me-2" style="color:var(--action-color,#a44200);"></i>
-                        Documents — Bâtiment entier
-                    </h6>
-                </div>
-                <div class="card-body p-3">
-                    {% if docs_batiment %}
-                    <div class="d-flex flex-column gap-2">
-                        {% for doc in docs_batiment %}
-                        <div class="d-flex align-items-center gap-2 p-2 rounded"
-                             style="background:var(--bg-fallback,#fdf6f0);font-size:0.85rem;">
-                            <i class="fas {{ doc.type_doc.icone }} fa-fw" style="color:var(--action-color,#a44200);"></i>
-                            <div class="flex-grow-1 overflow-hidden">
-                                <div class="fw-semibold text-truncate">{{ doc.titre }}</div>
-                                <div class="text-muted" style="font-size:0.75rem;">
-                                    {{ doc.type_doc.nom }}{% if doc.version %} · {{ doc.version }}{% endif %}
-                                </div>
-                            </div>
-                            <a href="{% url 'smartdocs:document_download' doc.pk %}"
-                               class="btn btn-sm btn-outline-secondary py-0 px-2" title="Télécharger">
-                                <i class="fas fa-download" style="font-size:0.75rem;"></i>
-                            </a>
-                            <form method="post" action="{% url 'smartdocs:document_delete' doc.pk %}"
-                                  onsubmit="return confirm('Supprimer ce document ?');" class="d-inline">
-                                {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-danger py-0 px-2" title="Supprimer">
-                                    <i class="fas fa-trash" style="font-size:0.75rem;"></i>
-                                </button>
-                            </form>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="text-muted small text-center py-2 mb-0">Aucun document global.</p>
-                    {% endif %}
-                </div>
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-layer-group me-1"></i> Nombre d'étages</div>
+                <div class="ic-value">{{ nb_etages }}</div>
+            </div>
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-file-alt me-1"></i> Documents sur la plateforme</div>
+                <div class="ic-value">{{ total_docs }}</div>
+            </div>
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-door-open me-1"></i> Ouvertures (portes / fenêtres)</div>
+                <div class="ic-value">{{ ouvertures.count }}</div>
+            </div>
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-toilet me-1"></i> Sanitaires</div>
+                <div class="ic-value">{{ sanitaires.count }}</div>
+            </div>
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-tools me-1"></i> Équipements MEP</div>
+                <div class="ic-value">{{ mep.count }}</div>
+            </div>
+            <div class="info-card">
+                <div class="ic-label"><i class="fas fa-couch me-1"></i> Mobilier</div>
+                <div class="ic-value">{{ mobilier.count }}</div>
             </div>
         </div>
 
-        {# ── Colonne droite — étages & documents ────────────── #}
-        <div class="col-lg-8">
-            <div class="accordion" id="accordionEtages">
-                {% for etage in etages %}
-                <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius:14px !important;overflow:hidden;">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#etage-{{ etage.pk }}"
-                                style="background:var(--bg-fallback,#fdf6f0);">
-                            <i class="fas fa-layer-group me-2" style="color:var(--action-color,#a44200);"></i>
-                            {{ etage.nom }}
-                            <span class="badge bg-secondary ms-2" style="font-size:0.7rem;">
-                                {{ etage.pieces.count }} pièce{{ etage.pieces.count|pluralize }}
-                            </span>
-                            <span class="badge ms-1" style="font-size:0.7rem;background:var(--action-color,#a44200);">
-                                {{ etage.documents.count }} doc{{ etage.documents.count|pluralize }}
-                            </span>
-                        </button>
-                    </h2>
-                    <div id="etage-{{ etage.pk }}"
-                         class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
-                         data-bs-parent="#accordionEtages">
-                        <div class="accordion-body pt-3">
-
-                            {# Pièces de l'étage #}
-                            {% if etage.pieces.all %}
-                            <h6 class="text-muted fw-bold mb-2" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;">
-                                Pièces
-                            </h6>
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                {% for piece in etage.pieces.all %}
-                                <span class="badge" style="background:var(--neutral-light,#f0e8d8);color:var(--text-primary,#3c1518);font-size:0.78rem;font-weight:500;padding:0.4rem 0.75rem;border-radius:50px;">
-                                    {{ piece.nom }}
-                                    {% if piece.surface %}<small style="opacity:0.6;"> · {{ piece.surface|floatformat:0 }} m²</small>{% endif %}
-                                </span>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-
-                            {# Documents de l'étage #}
-                            <h6 class="text-muted fw-bold mb-2" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;">
-                                Documents de cet étage
-                            </h6>
-                            {% if etage.documents.all %}
-                            <div class="d-flex flex-column gap-2">
-                                {% for doc in etage.documents.all %}
-                                <div class="d-flex align-items-center gap-2 p-2 rounded"
-                                     style="background:var(--bg-fallback,#fdf6f0);font-size:0.85rem;">
-                                    <i class="fas {{ doc.type_doc.icone }} fa-fw" style="color:var(--action-color,#a44200);"></i>
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <div class="fw-semibold text-truncate">{{ doc.titre }}</div>
-                                        <div class="text-muted" style="font-size:0.75rem;">
-                                            {{ doc.type_doc.nom }}{% if doc.version %} · {{ doc.version }}{% endif %}
-                                            {% if doc.date_doc %} · {{ doc.date_doc }}{% endif %}
-                                        </div>
-                                    </div>
-                                    <a href="{% url 'smartdocs:document_download' doc.pk %}"
-                                       class="btn btn-sm btn-outline-secondary py-0 px-2">
-                                        <i class="fas fa-download" style="font-size:0.75rem;"></i>
-                                    </a>
-                                    <form method="post" action="{% url 'smartdocs:document_delete' doc.pk %}"
-                                          onsubmit="return confirm('Supprimer ce document ?');" class="d-inline">
-                                        {% csrf_token %}
-                                        <button class="btn btn-sm btn-outline-danger py-0 px-2">
-                                            <i class="fas fa-trash" style="font-size:0.75rem;"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                            <p class="text-muted small mb-0">Aucun document pour cet étage.</p>
-                            {% endif %}
-
-                        </div>
+        <div class="row g-4">
+            <!-- Revêtements de murs -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                        <h6 class="fw-bold mb-0">
+                            <i class="fas fa-paint-roller me-2" style="color:var(--action-color,#a44200);"></i>
+                            Revêtements de murs
+                        </h6>
+                    </div>
+                    <div class="card-body p-3 pt-0" style="max-height:340px;overflow-y:auto;">
+                        {% if revetements %}
+                        <table class="table table-sm mb-0" style="font-size:0.83rem;">
+                            <thead style="position:sticky;top:0;background:#fff;">
+                                <tr><th>Élément</th><th>Matériau</th><th class="text-end">Surface</th></tr>
+                            </thead>
+                            <tbody>
+                            {% for r in revetements %}
+                            <tr>
+                                <td>{{ r.nom }}<small class="text-muted d-block">{{ r.etage.nom|default:"—" }}</small></td>
+                                <td class="text-muted">{{ r.materiau|default:"—" }}</td>
+                                <td class="text-end">{% if r.surface %}{{ r.surface|floatformat:1 }} m²{% else %}—{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p class="text-muted small text-center py-3 mb-0">
+                            Aucun revêtement extrait.
+                            {% if not patrimoine.fichier_ifc %}Uploadez un fichier IFC pour extraire automatiquement.{% endif %}
+                        </p>
+                        {% endif %}
                     </div>
                 </div>
-                {% empty %}
-                <div class="text-center py-5">
-                    <i class="fas fa-layer-group fa-3x mb-3" style="color:var(--border-color,#e0c9a6);"></i>
-                    <p class="text-muted">Aucun étage détecté. Uploadez un fichier IFC pour générer l'arborescence automatiquement.</p>
+            </div>
+
+            <!-- Équipements & ouvertures -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                        <h6 class="fw-bold mb-0">
+                            <i class="fas fa-cogs me-2" style="color:var(--action-color,#a44200);"></i>
+                            Équipements & Ouvertures
+                        </h6>
+                    </div>
+                    <div class="card-body p-3 pt-0" style="max-height:340px;overflow-y:auto;">
+                        {% if ouvertures or sanitaires or mep or mobilier %}
+                        {% for label, qs, icon in equipment_groups %}
+                        {% endfor %}
+                        <!-- Ouvertures -->
+                        {% if ouvertures %}
+                        <div class="mb-3">
+                            <div class="fw-bold text-muted mb-1" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;">
+                                <i class="fas fa-door-open me-1"></i> Ouvertures
+                            </div>
+                            {% for eq in ouvertures %}
+                            <div style="font-size:0.82rem;padding:0.2rem 0.5rem;display:flex;justify-content:space-between;">
+                                <span>{{ eq.nom }}</span>
+                                <span class="text-muted">{{ eq.type_ifc }} · {{ eq.etage.nom|default:"" }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <!-- Sanitaires -->
+                        {% if sanitaires %}
+                        <div class="mb-3">
+                            <div class="fw-bold text-muted mb-1" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;">
+                                <i class="fas fa-toilet me-1"></i> Sanitaires
+                            </div>
+                            {% for eq in sanitaires %}
+                            <div style="font-size:0.82rem;padding:0.2rem 0.5rem;display:flex;justify-content:space-between;">
+                                <span>{{ eq.nom }}</span>
+                                <span class="text-muted">{{ eq.etage.nom|default:"" }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <!-- MEP -->
+                        {% if mep %}
+                        <div class="mb-3">
+                            <div class="fw-bold text-muted mb-1" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;">
+                                <i class="fas fa-tools me-1"></i> MEP / Équipements techniques
+                            </div>
+                            {% for eq in mep %}
+                            <div style="font-size:0.82rem;padding:0.2rem 0.5rem;display:flex;justify-content:space-between;">
+                                <span>{{ eq.nom }}</span>
+                                <span class="text-muted">{{ eq.type_ifc }} · {{ eq.etage.nom|default:"" }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <p class="text-muted small text-center py-3 mb-0">Aucun équipement extrait depuis l'IFC.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pièces par étage -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                        <h6 class="fw-bold mb-0">
+                            <i class="fas fa-layer-group me-2" style="color:var(--action-color,#a44200);"></i>
+                            Pièces par étage
+                        </h6>
+                    </div>
+                    <div class="card-body p-3 pt-0">
+                        {% if etages %}
+                        <div class="accordion accordion-flush" id="accEtages">
+                            {% for etage in etages %}
+                            <div class="accordion-item border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-semibold py-2"
+                                            type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#etage-{{ etage.pk }}"
+                                            style="background:var(--bg-fallback,#fdf6f0);font-size:0.87rem;">
+                                        <i class="fas fa-layer-group me-2" style="color:var(--action-color,#a44200);"></i>
+                                        {{ etage.nom }}
+                                        <span class="badge bg-secondary ms-2" style="font-size:0.68rem;">
+                                            {{ etage.pieces.count }} pièce{{ etage.pieces.count|pluralize }}
+                                        </span>
+                                        {% with etage.pieces.all|length as nb %}
+                                        {% if nb %}
+                                        <span class="badge ms-1" style="font-size:0.68rem;background:#e8f5e9;color:#2e7d32;">
+                                            {% with total=etage.pieces.all %}
+                                            Surf. calculée
+                                            {% endwith %}
+                                        </span>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </button>
+                                </h2>
+                                <div id="etage-{{ etage.pk }}"
+                                     class="accordion-collapse collapse {% if forloop.first %}show{% endif %}">
+                                    <div class="accordion-body py-2">
+                                        {% if etage.pieces.all %}
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for piece in etage.pieces.all %}
+                                            <span class="badge" style="background:var(--neutral-light,#f0e8d8);color:var(--text-primary,#3c1518);font-size:0.78rem;font-weight:500;padding:0.4rem 0.75rem;border-radius:50px;">
+                                                {{ piece.nom }}
+                                                {% if piece.surface %}
+                                                <small style="opacity:0.65;"> · {{ piece.surface|floatformat:0 }} m²</small>
+                                                {% endif %}
+                                                {% if piece.usage %}
+                                                <small style="opacity:0.45;"> — {{ piece.usage }}</small>
+                                                {% endif %}
+                                            </span>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <p class="text-muted small mb-0">Aucune pièce pour cet étage.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted small text-center py-3 mb-0">Uploadez un fichier IFC pour extraire l'arborescence.</p>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted small text-center py-3 mb-0">Aucun étage détecté.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══ ONGLET 2 — DOCUMENTATION GED ═══════════════════════ -->
+    <div class="nb-pane" id="pane-ged">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Gestionnaire de documents</h5>
+            {% if user.is_staff %}
+            <button class="btn btn-primary btn-sm" onclick="toggleUploadPanel()">
+                <i class="fas fa-upload me-1"></i> Ajouter un document
+            </button>
+            {% endif %}
+        </div>
+
+        {% if user.is_staff %}
+        <!-- Panel upload (admin) -->
+        <div id="upload-panel" class="card border-0 shadow-sm mb-4" style="border-radius:14px;display:none;">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3"><i class="fas fa-cloud-upload-alt me-2" style="color:var(--action-color,#a44200);"></i>Déposer un document</h6>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" style="font-size:0.82rem;">Corps d'état</label>
+                        <select class="form-select" id="up-corps" onchange="updateDossiers()">
+                            <option value="">— Choisir —</option>
+                            <option value="CEA">CEA — Corps d'État Architectural</option>
+                            <option value="CET">CET — Corps d'État Technique</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold" style="font-size:0.82rem;">Dossier</label>
+                        <select class="form-select" id="up-dossier">
+                            <option value="">— Choisir le corps d'abord —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold" style="font-size:0.82rem;">Titre du document</label>
+                        <input type="text" class="form-control" id="up-titre" placeholder="Nom du document">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:0.82rem;">Fichier</label>
+                        <div class="ged-drop-zone" id="drop-zone" onclick="document.getElementById('up-file').click()">
+                            <i class="fas fa-cloud-upload-alt fa-2x mb-2 d-block"></i>
+                            <span id="drop-label">Glissez un fichier ici ou cliquez pour sélectionner</span>
+                        </div>
+                        <input type="file" id="up-file" class="d-none" onchange="fileSelected(this)">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" style="font-size:0.82rem;">Version</label>
+                        <input type="text" class="form-control" id="up-version" placeholder="ex. v1.0">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" style="font-size:0.82rem;">Date du document</label>
+                        <input type="date" class="form-control" id="up-date">
+                    </div>
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                    <button class="btn btn-primary" onclick="submitUpload()">
+                        <i class="fas fa-save me-1"></i> Enregistrer
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="toggleUploadPanel()">Annuler</button>
+                </div>
+                <div id="upload-progress" class="mt-3 d-none">
+                    <div class="progress"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%"></div></div>
+                    <small class="text-muted">Envoi en cours…</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Arborescence GED -->
+        {% if ged_arbo %}
+        {% for corps_key, corps_data in ged_arbo.items %}
+        <div class="mb-3">
+            <div class="ged-corps-header" onclick="toggleCorps('corps-{{ corps_key }}')">
+                <i class="fas {{ corps_data.icone }}"></i>
+                <span>{{ corps_key }} — {{ corps_data.label }}</span>
+                <i class="fas fa-chevron-down ms-auto" id="chevron-corps-{{ corps_key }}"></i>
+            </div>
+            <div id="corps-{{ corps_key }}" style="border:1px solid var(--border-color,#e0c9a6);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;">
+                {% for dossier_key, dossier_data in corps_data.dossiers.items %}
+                <div>
+                    <div class="ged-dossier-header" onclick="toggleDossier('dos-{{ corps_key }}-{{ dossier_key }}')">
+                        <i class="fas fa-folder" style="color:var(--action-color,#a44200);"></i>
+                        <span>{{ dossier_data.label }}</span>
+                        {% if dossier_data.count > 0 %}
+                        <span class="badge ms-auto" style="background:var(--action-color,#a44200);font-size:0.68rem;">{{ dossier_data.count }}</span>
+                        {% else %}
+                        <span class="ms-auto text-muted" style="font-size:0.75rem;">vide</span>
+                        {% endif %}
+                        <i class="fas fa-chevron-down" id="chevron-dos-{{ corps_key }}-{{ dossier_key }}"></i>
+                    </div>
+                    <div id="dos-{{ corps_key }}-{{ dossier_key }}" style="display:none;">
+                        <div class="ged-dossier-body">
+                            {% if dossier_data.docs %}
+                            {% for doc in dossier_data.docs %}
+                            <div class="ged-file-row" id="ged-doc-{{ doc.pk }}">
+                                <!-- Icône -->
+                                {% if doc.is_pdf %}
+                                <i class="fas fa-file-pdf" style="color:#e53935;"></i>
+                                {% elif doc.is_image %}
+                                <i class="fas fa-file-image" style="color:#1e88e5;"></i>
+                                {% else %}
+                                <i class="fas fa-file-alt" style="color:#888;"></i>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ doc.titre }}</div>
+                                    <div class="text-muted" style="font-size:0.75rem;">
+                                        {{ doc.extension }}
+                                        {% if doc.version %} · {{ doc.version }}{% endif %}
+                                        {% if doc.date_doc %} · {{ doc.date_doc }}{% endif %}
+                                        · {{ doc.uploade_le|date:"d/m/Y" }}
+                                    </div>
+                                </div>
+                                <a href="{% url 'smartdocs:ged_download' doc.pk %}"
+                                   class="btn btn-sm btn-outline-secondary py-0 px-2" title="Télécharger">
+                                    <i class="fas fa-download" style="font-size:0.75rem;"></i>
+                                </a>
+                                {% if user.is_staff %}
+                                <button class="btn btn-sm btn-outline-danger py-0 px-2"
+                                        title="Supprimer" onclick="deleteGedDoc({{ doc.pk }})">
+                                    <i class="fas fa-trash" style="font-size:0.75rem;"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            {% if user.is_staff %}
+                            <div class="ged-drop-zone admin-drop"
+                                 data-corps="{{ corps_key }}" data-dossier="{{ dossier_key }}"
+                                 onclick="quickUpload('{{ corps_key }}','{{ dossier_key }}')"
+                                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                                 ondragleave="this.classList.remove('drag-over')"
+                                 ondrop="handleQuickDrop(event,'{{ corps_key }}','{{ dossier_key }}')">
+                                <i class="fas fa-plus-circle mb-1"></i>
+                                <div>Déposez un fichier ici</div>
+                            </div>
+                            {% else %}
+                            <p class="text-muted small py-2 mb-0 text-center">Aucun document dans ce dossier.</p>
+                            {% endif %}
+                            {% endif %}
+                            {% if dossier_data.docs and user.is_staff %}
+                            <div class="ged-drop-zone admin-drop mt-2"
+                                 data-corps="{{ corps_key }}" data-dossier="{{ dossier_key }}"
+                                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                                 ondragleave="this.classList.remove('drag-over')"
+                                 ondrop="handleQuickDrop(event,'{{ corps_key }}','{{ dossier_key }}')"
+                                 onclick="quickUpload('{{ corps_key }}','{{ dossier_key }}')">
+                                <i class="fas fa-plus me-1"></i> Ajouter un fichier
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-3x mb-3" style="color:var(--border-color,#e0c9a6);"></i>
+            <p class="text-muted">Aucun document dans la GED.
+                {% if user.is_staff %}Cliquez sur « Ajouter un document » pour commencer.{% endif %}
+            </p>
+        </div>
+        {% endif %}
     </div>
-</div>
+
+
+    <!-- ══ ONGLET 3 — PLAN DU SITE ════════════════════════════ -->
+    <div class="nb-pane" id="pane-plan">
+        {% if patrimoine.has_viewer %}
+        <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+            <span class="fw-semibold me-2" style="font-size:0.88rem;">Filtrer :</span>
+
+            <!-- Bâtiment (si site multi-bâtiment) -->
+            {% if site_batiments %}
+            <select class="form-select form-select-sm" style="width:auto;" id="plan-bat-filter" onchange="filterPlan()">
+                <option value="">Tous les bâtiments</option>
+                {% for b in site_batiments %}
+                <option value="{{ b.pk }}" {% if b.pk == patrimoine.pk %}selected{% endif %}>{{ b.nom }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            <!-- Étage -->
+            <select class="form-select form-select-sm" style="width:auto;" id="plan-etage-filter" onchange="filterPlan()">
+                <option value="">Tous les étages</option>
+                <option value="ext">Espace extérieur (plan de masse)</option>
+                {% for etage in etages_plan %}
+                <option value="{{ etage.ifc_guid }}">{{ etage.nom }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Pièce (peuplé dynamiquement) -->
+            <select class="form-select form-select-sm" style="width:auto;" id="plan-piece-filter" onchange="filterPlan()">
+                <option value="">Toutes les pièces</option>
+            </select>
+
+            <button class="btn btn-sm btn-outline-secondary" onclick="resetPlanFilters()">
+                <i class="fas fa-undo me-1"></i> Réinitialiser
+            </button>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;height:600px;background:#1a1a2e;">
+            <iframe id="plan-iframe"
+                    src="{% url 'viewer:viewer' patrimoine.pk %}"
+                    style="width:100%;height:100%;border:none;"></iframe>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-map fa-3x mb-3" style="color:var(--border-color,#e0c9a6);"></i>
+            <p class="text-muted">Aucun modèle 3D disponible. Uploadez un fichier IFC pour accéder au plan du site.</p>
+            {% if user.is_staff %}
+            <a href="{% url 'smartdocs:patrimoine_edit' patrimoine.pk %}" class="btn btn-primary">
+                <i class="fas fa-upload me-1"></i> Uploader un fichier IFC
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+
+    <!-- ══ ONGLET 4 — COMPOSITION DU SITE ════════════════════ -->
+    <div class="nb-pane" id="pane-compo">
+        <div class="row g-4">
+
+            <!-- Plan de masse -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                        <h6 class="fw-bold mb-0">
+                            <i class="fas fa-map me-2" style="color:var(--action-color,#a44200);"></i>
+                            Plan de masse
+                        </h6>
+                    </div>
+                    <div class="card-body p-3 pt-0">
+                        {% if patrimoine.has_viewer %}
+                        <div style="border-radius:10px;overflow:hidden;height:280px;background:#1a1a2e;">
+                            <iframe src="{% url 'viewer:viewer' patrimoine.pk %}?mode=masse"
+                                    style="width:100%;height:100%;border:none;"></iframe>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-map fa-2x mb-2" style="color:var(--border-color,#e0c9a6);"></i>
+                            <p class="text-muted small mb-0">Plan de masse non disponible.<br>Requiert un modèle IFC.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bâtiments du site -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0">
+                            <i class="fas fa-building me-2" style="color:var(--action-color,#a44200);"></i>
+                            {% if site %}Bâtiments du site : {{ site.nom }}{% else %}Composition du site{% endif %}
+                        </h6>
+                        {% if user.is_staff %}
+                        <button class="btn btn-sm btn-outline-primary" onclick="toggleCompoPanel()">
+                            <i class="fas fa-cog me-1"></i> Gérer
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    {% if user.is_staff %}
+                    <div id="compo-panel" class="px-4 pb-3" style="display:none;background:var(--bg-fallback,#fdf6f0);border-bottom:1px solid var(--border-color,#e0c9a6);">
+                        {% if not site %}
+                        <div class="py-3">
+                            <p class="text-muted small mb-2">Ce bâtiment n'appartient à aucun site. Créez un nouveau site ou assignez-le à un existant.</p>
+                            <form method="post" action="{% url 'smartdocs:site_gerer' patrimoine.pk %}" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="create_site">
+                                <input type="text" name="site_nom" class="form-control form-control-sm" placeholder="Nom du nouveau site">
+                                <button class="btn btn-sm btn-primary">Créer</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="py-3">
+                            <p class="text-muted small mb-2">Ajouter un bâtiment existant au site :</p>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="select-bat-add" style="max-width:280px;">
+                                    <option value="">Chargement…</option>
+                                </select>
+                                <button class="btn btn-sm btn-primary" onclick="addBatiment()">Ajouter</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="card-body p-4 pt-2">
+                        {% if site %}
+                        <!-- Bâtiment courant -->
+                        <div class="bat-card" style="border:2px solid var(--action-color,#a44200);">
+                            <div style="width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#5c1a1a,#a44200);display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-building text-white" style="font-size:1rem;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">{{ patrimoine.nom }} <span class="badge bg-primary ms-1" style="font-size:0.65rem;">courant</span></div>
+                                <div class="text-muted" style="font-size:0.78rem;">{{ patrimoine.adresse|default:"—" }}{% if patrimoine.surface_totale %} · {{ patrimoine.surface_totale }} m²{% endif %}</div>
+                            </div>
+                        </div>
+
+                        {% for b in site_batiments %}
+                        {% if b.pk != patrimoine.pk %}
+                        <div class="bat-card" id="bat-card-{{ b.pk }}">
+                            <div style="width:40px;height:40px;border-radius:8px;background:var(--neutral-light,#f0e8d8);display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-building" style="color:var(--action-color,#a44200);font-size:1rem;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <a href="{% url 'smartdocs:patrimoine_detail' b.pk %}" class="fw-semibold text-decoration-none">{{ b.nom }}</a>
+                                <div class="text-muted" style="font-size:0.78rem;">{{ b.adresse|default:"—" }}{% if b.surface_totale %} · {{ b.surface_totale }} m²{% endif %}</div>
+                            </div>
+                            {% if user.is_staff %}
+                            <form method="post" action="{% url 'smartdocs:site_gerer' patrimoine.pk %}"
+                                  onsubmit="return confirm('Retirer ce bâtiment du site ?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="remove_batiment">
+                                <input type="hidden" name="batiment_pk" value="{{ b.pk }}">
+                                <button class="btn btn-sm btn-outline-danger py-0 px-2" title="Retirer du site">
+                                    <i class="fas fa-times" style="font-size:0.75rem;"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-sitemap fa-2x mb-2" style="color:var(--border-color,#e0c9a6);"></i>
+                            <p class="text-muted small mb-0">Ce bâtiment n'est pas encore rattaché à un site.</p>
+                            {% if user.is_staff %}
+                            <p class="text-muted small">Cliquez sur « Gérer » pour créer ou associer un site.</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+
+<!-- ── JS ──────────────────────────────────────────────────── -->
+<script>
+// ── Notebook ────────────────────────────────────────────────
+function showTab(id, el) {
+    document.querySelectorAll('.nb-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nb-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pane-' + id).classList.add('active');
+    el.classList.add('active');
+    if (id === 'compo') loadBatimentsSansSite();
+}
+
+// ── Accordéon GED ────────────────────────────────────────────
+function toggleCorps(id) {
+    const el = document.getElementById(id);
+    const ch = document.getElementById('chevron-' + id);
+    const open = el.style.display !== 'none';
+    el.style.display = open ? 'none' : 'block';
+    ch.style.transform = open ? 'rotate(-90deg)' : '';
+}
+function toggleDossier(id) {
+    const el = document.getElementById(id);
+    const ch = document.getElementById('chevron-' + id);
+    const open = el.style.display !== 'none';
+    el.style.display = open ? 'none' : 'block';
+    ch.style.transform = open ? 'rotate(-90deg)' : '';
+}
+
+// ── Upload panel ─────────────────────────────────────────────
+function toggleUploadPanel() {
+    const p = document.getElementById('upload-panel');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+// GED dossiers data (pour le select dynamique)
+const GED_DATA = {
+    CEA: { {% for k, v in ged_arborescence.CEA.sous_dossiers.items %}"{{ k }}":"{{ v }}"{% if not forloop.last %},{% endif %}{% endfor %} },
+    CET: { {% for k, v in ged_arborescence.CET.sous_dossiers.items %}"{{ k }}":"{{ v }}"{% if not forloop.last %},{% endif %}{% endfor %} },
+};
+
+function updateDossiers() {
+    const corps = document.getElementById('up-corps').value;
+    const sel = document.getElementById('up-dossier');
+    sel.innerHTML = '<option value="">— Choisir un dossier —</option>';
+    if (corps && GED_DATA[corps]) {
+        Object.entries(GED_DATA[corps]).forEach(([k, v]) => {
+            const opt = document.createElement('option');
+            opt.value = k;
+            opt.textContent = v;
+            sel.appendChild(opt);
+        });
+    }
+}
+
+function fileSelected(input) {
+    const label = document.getElementById('drop-label');
+    if (input.files[0]) {
+        label.textContent = input.files[0].name;
+        if (!document.getElementById('up-titre').value)
+            document.getElementById('up-titre').value = input.files[0].name.replace(/\.[^/.]+$/, '');
+    }
+}
+
+// Drag-and-drop sur la zone principale
+const dropZone = document.getElementById('drop-zone');
+if (dropZone) {
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault(); dropZone.classList.remove('drag-over');
+        const f = e.dataTransfer.files[0];
+        if (f) {
+            const dt = new DataTransfer();
+            dt.items.add(f);
+            const inp = document.getElementById('up-file');
+            inp.files = dt.files;
+            fileSelected(inp);
+        }
+    });
+}
+
+async function submitUpload() {
+    const corps   = document.getElementById('up-corps').value;
+    const dossier = document.getElementById('up-dossier').value;
+    const titre   = document.getElementById('up-titre').value.trim();
+    const file    = document.getElementById('up-file').files[0];
+    if (!corps || !dossier || !titre || !file) {
+        alert('Veuillez remplir tous les champs obligatoires et choisir un fichier.');
+        return;
+    }
+    const fd = new FormData();
+    fd.append('corps',    corps);
+    fd.append('dossier',  dossier);
+    fd.append('titre',    titre);
+    fd.append('fichier',  file);
+    fd.append('version',  document.getElementById('up-version').value);
+    fd.append('date_doc', document.getElementById('up-date').value);
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    document.getElementById('upload-progress').classList.remove('d-none');
+    try {
+        const resp = await fetch('{% url "smartdocs:ged_upload" patrimoine.pk %}', {
+            method: 'POST', body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Erreur lors de l\'upload.');
+        }
+    } catch (e) {
+        alert('Erreur réseau.');
+    }
+    document.getElementById('upload-progress').classList.add('d-none');
+}
+
+// Upload rapide depuis une drop-zone inline
+function quickUpload(corps, dossier) {
+    document.getElementById('up-corps').value = corps;
+    updateDossiers();
+    setTimeout(() => {
+        document.getElementById('up-dossier').value = dossier;
+    }, 50);
+    toggleUploadPanel();
+    document.getElementById('upload-panel').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function handleQuickDrop(event, corps, dossier) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+    const file = event.dataTransfer.files[0];
+    if (!file) return;
+    const titre = file.name.replace(/\.[^/.]+$/, '');
+    const fd = new FormData();
+    fd.append('corps',    corps);
+    fd.append('dossier',  dossier);
+    fd.append('titre',    titre);
+    fd.append('fichier',  file);
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    try {
+        const resp = await fetch('{% url "smartdocs:ged_upload" patrimoine.pk %}', {
+            method: 'POST', body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
+        if (data.success) location.reload();
+        else alert(data.error || 'Erreur upload.');
+    } catch (e) {
+        alert('Erreur réseau.');
+    }
+}
+
+async function deleteGedDoc(id) {
+    if (!confirm('Supprimer ce document de la GED ?')) return;
+    const resp = await fetch(`/patrimoines/ged/${id}/supprimer/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await resp.json();
+    if (data.success) document.getElementById('ged-doc-' + id)?.remove();
+}
+
+// ── Plan du site ─────────────────────────────────────────────
+const ETAGE_PIECES = {
+    {% for etage in etages_plan %}
+    "{{ etage.ifc_guid }}": [
+        {% for p in etage.pieces.all %}{"guid":"{{ p.ifc_guid }}","nom":"{{ p.nom|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}
+    ]{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+function filterPlan() {
+    const etageVal = document.getElementById('plan-etage-filter').value;
+    const pieceVal = document.getElementById('plan-piece-filter')?.value;
+
+    // Met à jour la liste des pièces selon l'étage sélectionné
+    const pieceSelect = document.getElementById('plan-piece-filter');
+    if (pieceSelect) {
+        pieceSelect.innerHTML = '<option value="">Toutes les pièces</option>';
+        if (etageVal && ETAGE_PIECES[etageVal]) {
+            ETAGE_PIECES[etageVal].forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.guid;
+                opt.textContent = p.nom;
+                pieceSelect.appendChild(opt);
+            });
+        }
+    }
+
+    // Envoie les filtres au viewer via postMessage
+    const iframe = document.getElementById('plan-iframe');
+    if (iframe) {
+        iframe.contentWindow?.postMessage({ type: 'FILTER_ETAGE', etage: etageVal, piece: pieceVal || '' }, '*');
+    }
+}
+
+function resetPlanFilters() {
+    ['plan-bat-filter','plan-etage-filter','plan-piece-filter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    filterPlan();
+}
+
+// ── Composition ──────────────────────────────────────────────
+function toggleCompoPanel() {
+    const p = document.getElementById('compo-panel');
+    if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadBatimentsSansSite() {
+    const sel = document.getElementById('select-bat-add');
+    if (!sel || sel.dataset.loaded) return;
+    try {
+        const resp = await fetch('{% url "smartdocs:api_sans_site" %}');
+        const data = await resp.json();
+        sel.innerHTML = '<option value="">— Choisir un bâtiment —</option>';
+        data.patrimoines.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.nom + (b.adresse ? ' — ' + b.adresse : '');
+            sel.appendChild(opt);
+        });
+        sel.dataset.loaded = '1';
+    } catch (e) {}
+}
+
+function addBatiment() {
+    const batPk = document.getElementById('select-bat-add')?.value;
+    if (!batPk) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "smartdocs:site_gerer" patrimoine.pk %}';
+    form.innerHTML = `
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="add_batiment">
+        <input type="hidden" name="batiment_pk" value="${batPk}">
+    `;
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
 {% endblock %}
