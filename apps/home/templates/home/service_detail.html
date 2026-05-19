@@ -9,7 +9,7 @@
 {% block extra_head %}
 <style>
 .service-hero {
-    padding: calc(var(--navbar-h) + 3rem) 0 4rem;
+    padding: var(--navbar-h) 0 4rem;
     background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-navy-light) 100%);
     position: relative; overflow: hidden;
 }
@@ -36,6 +36,111 @@
 }
 .feature-title { font-size: 0.95rem; font-weight: 700; color: var(--t-primary); margin-bottom: 0.4rem; }
 .feature-desc  { font-size: 0.84rem; color: var(--t-secondary); line-height: 1.6; }
+
+/* ── VITRINE CONSTRUCTION ─────────────────────────────────── */
+.const-section {
+    padding: 4rem 0;
+    background: var(--c-gray-50);
+    border-top: 1px solid var(--c-gray-100);
+}
+.const-section-header {
+    display: flex; align-items: flex-end;
+    justify-content: space-between; flex-wrap: wrap;
+    gap: 1rem; margin-bottom: 2.5rem;
+}
+.const-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+.const-card {
+    background: var(--c-white);
+    border: 1px solid var(--c-gray-100);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex; flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.const-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    color: inherit;
+}
+.const-card-img {
+    height: 200px; overflow: hidden; position: relative;
+    background: linear-gradient(135deg, var(--c-gray-100), var(--c-gray-200));
+    display: flex; align-items: center; justify-content: center;
+}
+.const-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.4s ease;
+}
+.const-card:hover .const-card-img img { transform: scale(1.05); }
+.const-card-img-placeholder {
+    font-size: 3rem; color: var(--c-gray-400);
+}
+
+/* Miniatures survol */
+.const-thumb-strip {
+    position: absolute; bottom: 8px; left: 8px;
+    display: flex; gap: 4px;
+}
+.const-thumb {
+    width: 38px; height: 30px; border-radius: 5px;
+    overflow: hidden; cursor: pointer; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.6);
+    transition: border-color 0.2s;
+}
+.const-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.const-thumb.active { border-color: #fff; }
+
+/* Badge statut sur la carte */
+.const-badge {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.2rem 0.55rem; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.const-badge-termine   { background: rgba(34,197,94,0.9);  color: #fff; }
+.const-badge-en_cours  { background: rgba(245,158,11,0.9); color: #fff; }
+.const-badge-reception { background: rgba(99,102,241,0.9); color: #fff; }
+
+.const-card-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+.const-card-type {
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.09em;
+    color: #f59e0b; margin-bottom: 0.4rem;
+}
+.const-card-title {
+    font-family: var(--font-head);
+    font-size: 1rem; font-weight: 800;
+    margin-bottom: 0.5rem; line-height: 1.25;
+    color: var(--t-primary);
+}
+.const-card-desc {
+    font-size: 0.82rem; color: var(--t-secondary);
+    line-height: 1.6; flex: 1;
+}
+.const-card-footer {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--c-gray-100);
+    font-size: 0.75rem; color: var(--t-muted);
+}
+.const-card-cta {
+    color: var(--c-blue); font-weight: 600; font-size: 0.8rem;
+    display: flex; align-items: center; gap: 0.3rem;
+}
+
+/* État vide */
+.const-empty {
+    text-align: center; padding: 3rem 2rem;
+    color: var(--t-muted); grid-column: 1/-1;
+}
+.const-empty i { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; opacity: 0.25; }
 
 /* Autres services */
 .other-service {
@@ -132,4 +237,133 @@
         </div>
     </div>
 </div>
+
+{# ══════ VITRINE CONSTRUCTION — visible uniquement sur ce service ═════ #}
+{% if service.slug == 'construction' %}
+<div class="const-section">
+    <div class="container">
+        <div class="const-section-header">
+            <div>
+                <div class="section-label">Réalisations · Our projects</div>
+                <h2 class="section-title" style="margin-bottom:0.25rem;">Nos chantiers réalisés</h2>
+                <p style="color:var(--t-secondary);font-size:0.9rem;margin:0;">
+                    Sélection de projets de construction, rénovation et aménagement livrés.
+                </p>
+            </div>
+            <a href="{% url 'construction:vitrine' %}"
+               style="display:inline-flex;align-items:center;gap:0.5rem;
+                      padding:0.6rem 1.25rem;border-radius:var(--radius-sm);
+                      border:1.5px solid var(--c-gray-200);color:var(--t-primary);
+                      font-size:0.85rem;font-weight:600;text-decoration:none;
+                      transition:all 0.2s ease;white-space:nowrap;"
+               onmouseover="this.style.background='var(--c-navy)';this.style.color='#fff';this.style.borderColor='var(--c-navy)'"
+               onmouseout="this.style.background='';this.style.color='var(--t-primary)';this.style.borderColor='var(--c-gray-200)'">
+                Tous les projets <i class="fas fa-arrow-right" style="font-size:0.75rem;"></i>
+            </a>
+        </div>
+
+        {% if projets_vitrine %}
+        <div class="const-grid">
+            {% for projet in projets_vitrine %}
+            <a href="{% url 'construction:vitrine_detail' pk=projet.pk %}" class="const-card">
+
+                {# Visuel photo #}
+                <div class="const-card-img">
+                    {% with ph=projet.photo_principale %}
+                    {% if ph %}
+                        <img src="{{ ph.image.url }}"
+                             alt="{{ ph.legende }}"
+                             id="constImg_{{ projet.pk }}">
+                    {% else %}
+                        <div class="const-card-img-placeholder">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    {# Miniatures cliquables #}
+                    {% with photos=projet.photos.all %}
+                    {% if photos|length > 1 %}
+                    <div class="const-thumb-strip">
+                        {% for photo in photos|slice:":4" %}
+                        <div class="const-thumb {% if forloop.first %}active{% endif %}"
+                             onclick="event.preventDefault();
+                                      constSwap({{ projet.pk }},'{{ photo.image.url }}',this)">
+                            <img src="{{ photo.image.url }}" alt="">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    {# Badge statut #}
+                    {% if projet.statut == 'termine' %}
+                        <span class="const-badge const-badge-termine">Livré</span>
+                    {% elif projet.statut == 'en_cours' %}
+                        <span class="const-badge const-badge-en_cours">En cours</span>
+                    {% elif projet.statut == 'reception' %}
+                        <span class="const-badge const-badge-reception">Réception</span>
+                    {% endif %}
+                </div>
+
+                {# Corps de la carte #}
+                <div class="const-card-body">
+                    <div class="const-card-type">{{ projet.get_type_projet_display }}</div>
+                    <h3 class="const-card-title">{{ projet.titre }}</h3>
+                    <p class="const-card-desc">
+                        {{ projet.description_courte|default:projet.cahier_des_charges|truncatechars:110 }}
+                    </p>
+                    <div class="const-card-footer">
+                        <span>
+                            {% if projet.date_fin_reelle %}
+                                <i class="fas fa-calendar-check me-1"></i>{{ projet.date_fin_reelle|date:"Y" }}
+                            {% elif projet.date_debut %}
+                                <i class="fas fa-calendar me-1"></i>{{ projet.date_debut|date:"Y" }}
+                            {% endif %}
+                        </span>
+                        <span class="const-card-cta">
+                            Voir le projet <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        {# Aucun projet publié #}
+        <div class="const-grid">
+            <div class="const-empty">
+                <i class="fas fa-building"></i>
+                Nos réalisations arrivent bientôt.
+                {% if user.is_authenticated %}
+                <br>
+                <a href="{% url 'construction:projet_create' %}"
+                   style="display:inline-flex;align-items:center;gap:0.4rem;
+                          margin-top:0.75rem;padding:0.5rem 1rem;
+                          background:var(--c-blue);color:#fff;
+                          border-radius:var(--radius-sm);
+                          font-size:0.82rem;font-weight:600;text-decoration:none;">
+                    <i class="fas fa-plus"></i> Ajouter un projet
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+/* Swap photo miniature — ne propage pas le clic vers le lien parent */
+function constSwap(projetId, url, thumbEl) {
+    const img = document.getElementById('constImg_' + projetId);
+    if (img) img.src = url;
+    thumbEl.closest('.const-thumb-strip')
+            .querySelectorAll('.const-thumb')
+            .forEach(t => t.classList.remove('active'));
+    thumbEl.classList.add('active');
+}
+</script>
+{% endif %}
+
 {% endblock %}

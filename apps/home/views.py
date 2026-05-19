@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+from apps.construction.models import Projet
 
 # ── Données des services ──────────────────────────────────────
 SERVICES = {
@@ -138,7 +139,15 @@ def service_detail(request, slug):
     if not service:
         from django.http import Http404
         raise Http404(f'Service « {slug} » introuvable')
-    return render(request, 'home/service_detail.html', {'service': service, 'services': SERVICES})
+    context = {'service': service, 'services': SERVICES}
+    if slug == 'construction':
+        context['projets_vitrine'] = (
+            Projet.objects
+                .filter(visible_vitrine=True)
+                .prefetch_related('photos')
+                .order_by('-date_fin_reelle', '-cree_le')[:6]
+        )
+    return render(request, 'home/service_detail.html', context)
 
 
 def about(request):
