@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ projet.titre }} — R-CYBER BTP</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --gold:#f59e0b; --primary:#0a1628; --accent:#00b4d8; --muted:#64748b; }
+body { font-family:'DM Sans',sans-serif; background:#f4f7fb; color:#1a2332; }
+
+/* Nav */
+.vit-nav { background:#fff; border-bottom:1px solid #dde6f0; position:sticky; top:0; z-index:100; }
+.vit-nav .inner { display:flex; align-items:center; gap:1rem; padding:.75rem 1.5rem; justify-content:space-between; max-width:1100px; margin:0 auto; }
+.vit-nav a { color:var(--muted); text-decoration:none; font-size:.85rem; font-weight:500; display:flex; align-items:center; gap:.4rem; transition:color .2s; }
+.vit-nav a:hover { color:var(--primary); }
+
+/* Hero galerie */
+.gallery-hero { background:var(--primary); position:relative; }
+.gallery-main { width:100%; height:480px; object-fit:cover; display:block; }
+.gallery-main-wrap { position:relative; overflow:hidden; max-height:480px; }
+.gallery-main-wrap .no-photo {
+    height:480px; display:flex; align-items:center; justify-content:center;
+    font-size:5rem; color:rgba(255,255,255,.15);
+    background:linear-gradient(135deg,#0a1628,#1e3a5f);
+}
+.gallery-overlay {
+    position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(10,22,40,.7) 0%, transparent 50%);
+    pointer-events:none;
+}
+.gallery-info {
+    position:absolute; bottom:0; left:0; right:0;
+    padding:2rem 2rem 1.5rem; color:#fff;
+}
+.gallery-type {
+    display:inline-block; padding:.25rem .75rem;
+    border:1px solid rgba(245,158,11,.5); border-radius:50px;
+    font-size:.68rem; font-weight:700; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--gold);
+    background:rgba(245,158,11,.1); margin-bottom:.75rem;
+}
+.gallery-title {
+    font-family:'Syne',sans-serif; font-size:clamp(1.5rem,4vw,2.5rem);
+    font-weight:800; line-height:1.1; margin-bottom:.5rem; letter-spacing:-.025em;
+}
+.gallery-meta { font-size:.82rem; color:rgba(255,255,255,.6); display:flex; gap:1.25rem; flex-wrap:wrap; }
+.gallery-meta span { display:flex; align-items:center; gap:.35rem; }
+
+/* Miniatures */
+.thumb-strip {
+    display:flex; gap:.5rem; padding:.75rem 1rem;
+    background:#0f1f38; overflow-x:auto;
+}
+.thumb-strip::-webkit-scrollbar { height:3px; }
+.thumb-strip::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:2px; }
+.thumb {
+    width:72px; height:54px; border-radius:6px;
+    overflow:hidden; flex-shrink:0; cursor:pointer;
+    border:2px solid transparent; transition:border-color .2s;
+}
+.thumb img { width:100%; height:100%; object-fit:cover; }
+.thumb.active { border-color:var(--accent); }
+
+/* Contenu */
+.content-wrap { max-width:1100px; margin:0 auto; padding:2.5rem 1.5rem; }
+
+.project-grid { display:grid; grid-template-columns:1fr 320px; gap:2rem; align-items:start; }
+@media(max-width:768px){ .project-grid { grid-template-columns:1fr; } }
+
+/* Sections */
+.section-card { background:#fff; border:1px solid #dde6f0; border-radius:14px; padding:1.5rem; margin-bottom:1.5rem; }
+.section-eyebrow { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:.6rem; }
+.section-title-lg { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; margin-bottom:1rem; }
+
+/* Info sidebar */
+.info-item { display:flex; gap:.75rem; align-items:flex-start; padding:.6rem 0; border-bottom:1px solid #f1f5f9; }
+.info-item:last-child { border:none; }
+.info-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.8rem; flex-shrink:0; }
+.info-label { font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.info-val { font-size:.88rem; font-weight:600; margin-top:1px; }
+
+/* Statut badge */
+.badge-statut { font-size:.75rem; font-weight:700; padding:.35rem .8rem; border-radius:20px; }
+.s-prospection{background:#f1f5f9;color:#64748b;} .s-etude{background:#eff6ff;color:#2563eb;}
+.s-en_cours{background:#f0fdf4;color:#15803d;} .s-reception{background:#fef3c7;color:#92400e;}
+.s-termine{background:#e0e7ff;color:#3730a3;} .s-suspendu{background:#fef2f2;color:#b91c1c;}
+
+/* CTA sidebar */
+.cta-card { background:linear-gradient(135deg,#0a1628,#1e3a5f); color:#fff; border-radius:14px; padding:1.5rem; }
+.cta-card h5 { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; margin-bottom:.4rem; }
+.cta-card p  { font-size:.82rem; color:rgba(255,255,255,.6); margin-bottom:1.25rem; }
+.btn-cta { display:block; text-align:center; padding:.7rem 1rem; border-radius:10px; background:var(--accent); color:#fff; font-weight:700; font-size:.88rem; text-decoration:none; transition:opacity .2s; }
+.btn-cta:hover { color:#fff; opacity:.88; }
+.btn-cta-outline { background:transparent; border:1.5px solid rgba(255,255,255,.2); margin-top:.5rem; color:rgba(255,255,255,.8); }
+</style>
+</head>
+<body>
+
+<nav class="vit-nav">
+    <div class="inner">
+        <a href="{% url 'construction:vitrine' %}"><i class="fas fa-arrow-left"></i> Toutes les réalisations</a>
+        <a href="{% url 'home:index' %}"><i class="fas fa-home"></i> Accueil</a>
+    </div>
+</nav>
+
+<!-- Galerie -->
+<div class="gallery-hero">
+    <div class="gallery-main-wrap">
+        {% if photos %}
+            <img src="{{ photos.0.image.url }}" alt="{{ photos.0.legende }}" class="gallery-main" id="mainPhoto">
+        {% else %}
+            <div class="no-photo"><i class="fas fa-building"></i></div>
+        {% endif %}
+        <div class="gallery-overlay"></div>
+        <div class="gallery-info">
+            <span class="gallery-type">{{ projet.get_type_projet_display }}</span>
+            <h1 class="gallery-title">{{ projet.titre }}</h1>
+            <div class="gallery-meta">
+                {% if projet.adresse_chantier %}
+                <span><i class="fas fa-map-marker-alt"></i>{{ projet.adresse_chantier|truncatechars:50 }}</span>
+                {% endif %}
+                {% if projet.date_fin_reelle %}
+                <span><i class="fas fa-calendar-check"></i>Livré en {{ projet.date_fin_reelle|date:"F Y" }}</span>
+                {% elif projet.date_debut %}
+                <span><i class="fas fa-calendar"></i>{{ projet.date_debut|date:"Y" }}</span>
+                {% endif %}
+                <span class="badge-statut s-{{ projet.statut }}">{{ projet.get_statut_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if photos|length > 1 %}
+    <div class="thumb-strip">
+        {% for photo in photos %}
+        <div class="thumb {% if forloop.first %}active{% endif %}"
+             onclick="swapPhoto('{{ photo.image.url }}', this)"
+             title="{{ photo.legende }}">
+            <img src="{{ photo.image.url }}" alt="{{ photo.legende }}">
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Contenu -->
+<div class="content-wrap">
+    <div class="project-grid">
+        <!-- Colonne principale -->
+        <div>
+            {% if projet.description_courte %}
+            <div class="section-card">
+                <div class="section-eyebrow">À propos du projet</div>
+                <p style="font-size:.95rem;line-height:1.7;color:#475569;">{{ projet.description_courte }}</p>
+            </div>
+            {% endif %}
+
+            {% if projet.cahier_des_charges %}
+            <div class="section-card">
+                <div class="section-eyebrow">Cahier des charges</div>
+                <div class="section-title-lg">Ce que le client attendait</div>
+                <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;">{{ projet.cahier_des_charges }}</div>
+            </div>
+            {% endif %}
+
+            {% if photos %}
+            <div class="section-card">
+                <div class="section-eyebrow">Galerie photos</div>
+                <div class="row g-2">
+                    {% for photo in photos %}
+                    <div class="col-6 col-md-4">
+                        <div style="border-radius:10px;overflow:hidden;cursor:pointer;"
+                             onclick="swapPhotoTop('{{ photo.image.url }}')">
+                            <img src="{{ photo.image.url }}" alt="{{ photo.legende }}"
+                                 style="width:100%;height:130px;object-fit:cover;display:block;
+                                        transition:transform .3s;"
+                                 onmouseover="this.style.transform='scale(1.04)'"
+                                 onmouseout="this.style.transform=''">
+                        </div>
+                        {% if photo.legende %}
+                        <div style="font-size:.73rem;color:var(--muted);margin-top:4px;padding:0 2px;">{{ photo.legende }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <!-- Infos projet -->
+            <div class="section-card mb-3">
+                <div class="section-eyebrow">Détails</div>
+                <div class="info-item">
+                    <div class="info-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-tag"></i></div>
+                    <div><div class="info-label">Référence</div><div class="info-val">{{ projet.reference }}</div></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon" style="background:#f0fdf4;color:#15803d;"><i class="fas fa-hard-hat"></i></div>
+                    <div><div class="info-label">Type de travaux</div><div class="info-val">{{ projet.get_type_projet_display }}</div></div>
+                </div>
+                {% if projet.date_debut %}
+                <div class="info-item">
+                    <div class="info-icon" style="background:#fef3c7;color:#92400e;"><i class="fas fa-calendar-alt"></i></div>
+                    <div><div class="info-label">Début des travaux</div><div class="info-val">{{ projet.date_debut|date:"d/m/Y" }}</div></div>
+                </div>
+                {% endif %}
+                {% if projet.date_fin_reelle %}
+                <div class="info-item">
+                    <div class="info-icon" style="background:#f0fdf4;color:#15803d;"><i class="fas fa-check-circle"></i></div>
+                    <div><div class="info-label">Date de livraison</div><div class="info-val">{{ projet.date_fin_reelle|date:"d/m/Y" }}</div></div>
+                </div>
+                {% endif %}
+                {% if projet.adresse_chantier %}
+                <div class="info-item">
+                    <div class="info-icon" style="background:#fdf4ff;color:#7209b7;"><i class="fas fa-map-marker-alt"></i></div>
+                    <div><div class="info-label">Localisation</div><div class="info-val">{{ projet.adresse_chantier }}</div></div>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <div class="info-icon" style="background:#f1f5f9;color:#64748b;"><i class="fas fa-circle-dot"></i></div>
+                    <div><div class="info-label">Statut</div><div class="info-val"><span class="badge-statut s-{{ projet.statut }}">{{ projet.get_statut_display }}</span></div></div>
+                </div>
+            </div>
+
+            <!-- CTA contact -->
+            <div class="cta-card">
+                <h5>Vous avez un projet similaire ?</h5>
+                <p>Contactez-nous pour une étude gratuite et un devis personnalisé.</p>
+                <a href="{% url 'home:index' %}#contact" class="btn-cta">
+                    <i class="fas fa-phone me-2"></i>Nous contacter
+                </a>
+                <a href="{% url 'construction:vitrine' %}" class="btn-cta btn-cta-outline">
+                    <i class="fas fa-th me-2"></i>Voir toutes nos réalisations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function swapPhoto(url, thumbEl) {
+    const main = document.getElementById('mainPhoto');
+    if (main) main.src = url;
+    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    thumbEl.classList.add('active');
+}
+function swapPhotoTop(url) {
+    const main = document.getElementById('mainPhoto');
+    if (main) { main.src = url; window.scrollTo({top:0,behavior:'smooth'}); }
+}
+</script>
+</body>
+</html>

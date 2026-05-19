@@ -1,0 +1,157 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}Budget — {{ projet.titre }}{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Budget</li>
+        </ol></nav>
+        <h1><i class="fas fa-coins me-2" style="color:#f59e0b;"></i>Budget — {{ projet.titre }}</h1>
+    </div>
+    <a href="{% url 'construction:budget_ligne_add' projet_pk=projet.pk %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouvelle ligne
+    </a>
+</div>
+
+<!-- Résumé financier -->
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+    {% if projet.budget_contractuel %}
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-file-contract"></i></div>
+        <div class="stat-card-val" style="font-size:1.3rem;">{{ projet.budget_contractuel|floatformat:0 }}</div>
+        <div class="stat-card-lbl">Budget contractuel (Ar)</div>
+    </div>
+    {% endif %}
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-calculator"></i></div>
+        <div class="stat-card-val" style="font-size:1.3rem;">{{ total_prevu|floatformat:0 }}</div>
+        <div class="stat-card-lbl">Total prévu (Ar)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-receipt"></i></div>
+        <div class="stat-card-val" style="font-size:1.3rem;">{{ total_reel|floatformat:0 }}</div>
+        <div class="stat-card-lbl">Total réel (Ar)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="{% if ecart > 0 %}background:#fef2f2;color:#b91c1c;{% else %}background:#f0fdf4;color:#15803d;{% endif %}">
+            <i class="fas fa-{% if ecart > 0 %}arrow-up{% else %}arrow-down{% endif %}"></i>
+        </div>
+        <div class="stat-card-val" style="font-size:1.3rem;{% if ecart > 0 %}color:#ef4444;{% else %}color:#22c55e;{% endif %}">
+            {% if ecart > 0 %}+{% endif %}{{ ecart|floatformat:0 }}
+        </div>
+        <div class="stat-card-lbl">Écart réel/prévu (Ar)</div>
+    </div>
+</div>
+
+<!-- Résumé par catégorie -->
+{% if resume %}
+<div class="card p-3 mb-3">
+    <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2" style="color:#7209b7;"></i>Répartition par catégorie</h6>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem;">
+        {% for r in resume %}
+        {% with pct_reel=r.reel|default:0 pct_prevu=r.prevu|default:1 %}
+        <div style="border:1px solid #eef3f9;border-radius:10px;padding:.9rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;">
+                <span style="font-size:.78rem;font-weight:700;text-transform:uppercase;color:#475569;letter-spacing:.05em;">{{ r.categorie }}</span>
+                {% if r.reel > r.prevu %}
+                <span style="font-size:.68rem;background:#fef2f2;color:#b91c1c;padding:2px 6px;border-radius:4px;font-weight:700;">DÉPASSÉ</span>
+                {% endif %}
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.4rem;">
+                <span style="color:#94a3b8;">Prévu : {{ r.prevu|floatformat:0 }} Ar</span>
+                <span style="font-weight:700;{% if r.reel > r.prevu %}color:#ef4444;{% else %}color:#15803d;{% endif %}">Réel : {{ r.reel|floatformat:0 }} Ar</span>
+            </div>
+            <div class="progress-rc">
+                <div class="bar" style="width:{% if r.prevu %}{% widthratio r.reel r.prevu 100 %}{% else %}0{% endif %}%;
+                    background:{% if r.reel > r.prevu %}#ef4444{% else %}#22c55e{% endif %};"></div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Tableau des lignes -->
+<div class="card">
+    <div style="padding:.9rem 1.25rem;border-bottom:1px solid #eef3f9;">
+        <h6 class="fw-bold mb-0"><i class="fas fa-list me-2"></i>Détail des lignes ({{ lignes|length }})</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.83rem;">
+            <thead style="background:#f8fafc;">
+                <tr>
+                    <th class="px-3 py-2">Catégorie</th>
+                    <th>Désignation</th>
+                    <th>Tâche</th>
+                    <th class="text-center">Qté</th>
+                    <th class="text-center">Unité</th>
+                    <th class="text-end">P.U.</th>
+                    <th class="text-end">Prévu</th>
+                    <th class="text-end">Réel</th>
+                    <th class="text-end" style="color:#64748b;">Écart</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% regroup lignes by get_categorie_display as lignes_by_cat %}
+                {% for cat in lignes_by_cat %}
+                <tr style="background:#f8fafc;">
+                    <td colspan="10" class="px-3 py-1" style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;">
+                        {{ cat.grouper }}
+                    </td>
+                </tr>
+                {% for l in cat.list %}
+                <tr>
+                    <td class="px-3"></td>
+                    <td style="font-weight:500;">{{ l.designation }}</td>
+                    <td style="color:#94a3b8;font-size:.78rem;">{{ l.tache.titre|default:"—"|truncatechars:20 }}</td>
+                    <td class="text-center">{{ l.quantite|floatformat:2 }}</td>
+                    <td class="text-center" style="color:#94a3b8;">{{ l.unite|default:"—" }}</td>
+                    <td class="text-end">{{ l.prix_unitaire|floatformat:0 }}</td>
+                    <td class="text-end" style="font-weight:600;">{{ l.montant_prevu|floatformat:0 }}</td>
+                    <td class="text-end" style="font-weight:700;{% if l.montant_reel > l.montant_prevu %}color:#ef4444;{% else %}color:#15803d;{% endif %}">{{ l.montant_reel|floatformat:0 }}</td>
+                    <td class="text-end" style="font-size:.78rem;{% if l.ecart > 0 %}color:#ef4444;{% else %}color:#22c55e;{% endif %}">
+                        {% if l.ecart > 0 %}+{% endif %}{{ l.ecart|floatformat:0 }}
+                    </td>
+                    <td class="text-end pe-3">
+                        <a href="{% url 'construction:budget_ligne_edit' pk=l.pk %}" class="btn btn-outline-secondary" style="padding:2px 7px;font-size:.7rem;">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'construction:budget_ligne_delete' pk=l.pk %}"
+                           onclick="return confirm('Supprimer cette ligne ?')"
+                           class="btn btn-outline-danger" style="padding:2px 7px;font-size:.7rem;">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+            <tfoot style="background:#0a1628;color:#fff;">
+                <tr>
+                    <td colspan="6" class="px-3 py-2" style="font-weight:700;font-size:.85rem;">TOTAL</td>
+                    <td class="text-end" style="font-weight:800;">{{ total_prevu|floatformat:0 }} Ar</td>
+                    <td class="text-end" style="font-weight:800;">{{ total_reel|floatformat:0 }} Ar</td>
+                    <td class="text-end" style="font-weight:700;{% if ecart > 0 %}color:#fca5a5;{% else %}color:#86efac;{% endif %}">
+                        {% if ecart > 0 %}+{% endif %}{{ ecart|floatformat:0 }}
+                    </td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    {% if not lignes %}
+    <div style="text-align:center;padding:3rem;color:#94a3b8;">
+        <i class="fas fa-coins fa-2x mb-2 d-block opacity-25"></i>
+        Aucune ligne budgétaire.
+        <br><a href="{% url 'construction:budget_ligne_add' projet_pk=projet.pk %}" class="btn btn-primary btn-sm mt-2">
+            <i class="fas fa-plus me-1"></i>Ajouter la première ligne
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

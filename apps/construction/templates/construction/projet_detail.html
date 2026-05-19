@@ -1,0 +1,352 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ projet.titre }} — Construction{% endblock %}
+
+{% block construction_content %}
+<!-- Breadcrumb + header -->
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+                <li class="breadcrumb-item active">{{ projet.reference }}</li>
+            </ol>
+        </nav>
+        <h1 style="font-size:1.4rem;">
+            <span class="badge-statut s-{{ projet.statut }} me-2">{{ projet.get_statut_display }}</span>
+            {{ projet.titre }}
+        </h1>
+        <div style="font-size:.8rem;color:#64748b;margin-top:.3rem;">
+            <i class="fas fa-tag me-1"></i>{{ projet.reference }}
+            &nbsp;·&nbsp;<i class="fas fa-user me-1"></i>{{ projet.client_nom }}
+            {% if projet.responsable %}&nbsp;·&nbsp;<i class="fas fa-hard-hat me-1"></i>{{ projet.responsable.get_full_name|default:projet.responsable.username }}{% endif %}
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'construction:projet_edit' pk=projet.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-edit me-1"></i>Modifier
+        </a>
+        {% if projet.visible_vitrine %}
+        <a href="{% url 'construction:vitrine_detail' pk=projet.pk %}" class="btn btn-outline-secondary btn-sm" target="_blank">
+            <i class="fas fa-eye me-1"></i>Vitrine
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Avancement global -->
+<div class="card p-3 mb-3">
+    <div class="d-flex justify-content-between mb-1">
+        <span style="font-size:.85rem;font-weight:600;"><i class="fas fa-chart-line me-2" style="color:#7209b7;"></i>Avancement global</span>
+        <strong style="font-size:1rem;">{{ projet.avancement_global }}%</strong>
+    </div>
+    <div class="progress-rc" style="height:8px;">
+        <div class="bar" style="width:{{ projet.avancement_global }}%;"></div>
+    </div>
+    <div class="d-flex justify-content-between mt-2" style="font-size:.72rem;color:#94a3b8;">
+        {% if projet.date_debut %}<span><i class="fas fa-play me-1"></i>{{ projet.date_debut|date:"d/m/Y" }}</span>{% endif %}
+        {% if projet.date_fin_prevue %}
+        <span>
+            {% if projet.nb_jours_restants is not None and projet.statut not in 'termine suspendu' %}
+                {% if projet.nb_jours_restants < 0 %}
+                <span style="color:#ef4444;font-weight:700;"><i class="fas fa-exclamation-triangle me-1"></i>{{ projet.nb_jours_restants|phone2numeric }}j de retard</span>
+                {% elif projet.nb_jours_restants < 7 %}
+                <span style="color:#f59e0b;font-weight:700;"><i class="fas fa-clock me-1"></i>J-{{ projet.nb_jours_restants }}</span>
+                {% else %}
+                <i class="fas fa-flag-checkered me-1"></i>{{ projet.date_fin_prevue|date:"d/m/Y" }}
+                {% endif %}
+            {% else %}
+                <i class="fas fa-flag-checkered me-1"></i>{{ projet.date_fin_prevue|date:"d/m/Y" }}
+            {% endif %}
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Raccourcis -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;margin-bottom:1.5rem;">
+    <a href="{% url 'construction:gantt' projet_pk=projet.pk %}" style="text-decoration:none;">
+        <div class="stat-card" style="text-align:center;cursor:pointer;transition:box-shadow .2s;"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+            <div class="stat-card-icon mx-auto" style="background:#ede9fe;color:#7209b7;">
+                <i class="fas fa-bars-progress"></i>
+            </div>
+            <div class="stat-card-val">{{ projet.taches.count }}</div>
+            <div class="stat-card-lbl">Tâches</div>
+        </div>
+    </a>
+    <a href="{% url 'construction:budget' projet_pk=projet.pk %}" style="text-decoration:none;">
+        <div class="stat-card" style="text-align:center;cursor:pointer;transition:box-shadow .2s;"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+            <div class="stat-card-icon mx-auto" style="background:#fef3c7;color:#d97706;">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="stat-card-val" style="font-size:1rem;">{{ projet.total_depenses|floatformat:0 }}</div>
+            <div class="stat-card-lbl">Dép. réelles (Ar)</div>
+        </div>
+    </a>
+    <a href="{% url 'construction:facture_list' projet_pk=projet.pk %}" style="text-decoration:none;">
+        <div class="stat-card" style="text-align:center;cursor:pointer;transition:box-shadow .2s;"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+            <div class="stat-card-icon mx-auto" style="background:#dcfce7;color:#15803d;">
+                <i class="fas fa-file-invoice"></i>
+            </div>
+            <div class="stat-card-val" style="font-size:1rem;">{{ projet.total_facture|floatformat:0 }}</div>
+            <div class="stat-card-lbl">Facturé (Ar)</div>
+        </div>
+    </a>
+    <a href="{% url 'construction:bon_list' projet_pk=projet.pk %}" style="text-decoration:none;">
+        <div class="stat-card" style="text-align:center;cursor:pointer;transition:box-shadow .2s;"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
+            <div class="stat-card-icon mx-auto" style="background:#ffe4e6;color:#be123c;">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-card-val">{{ projet.bons_commande.count }}</div>
+            <div class="stat-card-lbl">Commandes</div>
+        </div>
+    </a>
+</div>
+
+<div class="row g-3">
+<!-- Col principale -->
+<div class="col-lg-8">
+
+    <!-- Photos vitrine -->
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0"><i class="fas fa-images me-2" style="color:#00b4d8;"></i>Photos vitrine ({{ photos|length }}/5)</h6>
+            {% if photos|length < 5 %}
+            <a href="{% url 'construction:photo_add' projet_pk=projet.pk %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-plus me-1"></i>Ajouter
+            </a>
+            {% endif %}
+        </div>
+        {% if photos %}
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            {% for photo in photos %}
+            <div style="position:relative;width:100px;height:80px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                <img src="{{ photo.image.url }}" alt="{{ photo.legende }}"
+                     style="width:100%;height:100%;object-fit:cover;">
+                {% if photo.principale %}
+                <span style="position:absolute;top:4px;left:4px;background:rgba(0,180,216,.9);
+                             color:#fff;font-size:.55rem;font-weight:700;padding:2px 5px;border-radius:4px;">
+                    ★ COUV.
+                </span>
+                {% endif %}
+                <a href="{% url 'construction:photo_delete' pk=photo.pk %}"
+                   onclick="return confirm('Supprimer cette photo ?')"
+                   style="position:absolute;top:4px;right:4px;background:rgba(239,68,68,.85);
+                          color:#fff;width:20px;height:20px;border-radius:50%;
+                          display:flex;align-items:center;justify-content:center;font-size:.6rem;text-decoration:none;">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:.85rem;">
+            <i class="fas fa-images fa-2x d-block mb-2 opacity-25"></i>
+            Aucune photo. Ajoutez jusqu'à 5 photos pour la vitrine.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Documents client -->
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0"><i class="fas fa-inbox me-2" style="color:#f59e0b;"></i>Documents client</h6>
+            <a href="{% url 'construction:doc_client_add' projet_pk=projet.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-upload me-1"></i>Ajouter
+            </a>
+        </div>
+        {% for doc in docs_client %}
+        <div class="doc-card">
+            <div class="doc-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-file"></i></div>
+            <div class="doc-info">
+                <div class="doc-title">{{ doc.titre }}</div>
+                <div class="doc-meta">{{ doc.get_type_doc_display }} &middot; {{ doc.date_reception|date:"d/m/Y" }}{% if doc.version %} &middot; {{ doc.version }}{% endif %}</div>
+            </div>
+            <a href="{{ doc.fichier.url }}" class="btn btn-outline-secondary btn-sm" target="_blank" title="Télécharger">
+                <i class="fas fa-download"></i>
+            </a>
+            <a href="{% url 'construction:doc_client_delete' pk=doc.pk %}"
+               onclick="return confirm('Supprimer ce document ?')"
+               class="btn btn-outline-danger btn-sm" title="Supprimer">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+        {% empty %}
+        <div style="color:#94a3b8;font-size:.83rem;text-align:center;padding:1rem;">Aucun document client.</div>
+        {% endfor %}
+    </div>
+
+    <!-- Documents chantier -->
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0"><i class="fas fa-folder-open me-2" style="color:#7209b7;"></i>Documents chantier</h6>
+            <a href="{% url 'construction:doc_chantier_add' projet_pk=projet.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-upload me-1"></i>Ajouter
+            </a>
+        </div>
+        {% for doc in docs_chantier %}
+        <div class="doc-card">
+            <div class="doc-icon" style="background:#ede9fe;color:#7209b7;"><i class="fas fa-drafting-compass"></i></div>
+            <div class="doc-info">
+                <div class="doc-title">{{ doc.titre }}</div>
+                <div class="doc-meta">
+                    {{ doc.get_type_doc_display }} &middot; {{ doc.get_phase_display }}
+                    &middot; {{ doc.version }}{% if doc.indice %}/{{ doc.indice }}{% endif %}
+                    {% if doc.valide %}<span style="color:#15803d;font-weight:600;"> ✓ Validé</span>{% endif %}
+                </div>
+            </div>
+            <a href="{{ doc.fichier.url }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                <i class="fas fa-download"></i>
+            </a>
+            <a href="{% url 'construction:doc_chantier_delete' pk=doc.pk %}"
+               onclick="return confirm('Supprimer ?')" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+        {% empty %}
+        <div style="color:#94a3b8;font-size:.83rem;text-align:center;padding:1rem;">Aucun document chantier.</div>
+        {% endfor %}
+    </div>
+
+    <!-- Tâches récentes -->
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0"><i class="fas fa-bars-progress me-2" style="color:#2563eb;"></i>Planning</h6>
+            <a href="{% url 'construction:gantt' projet_pk=projet.pk %}" class="btn btn-outline-primary btn-sm">
+                Voir le Gantt
+            </a>
+        </div>
+        {% for t in taches|slice:":5" %}
+        <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid #f1f5f9;">
+            <div style="width:10px;height:10px;border-radius:50%;background:{{ t.couleur }};flex-shrink:0;"></div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.titre }}</div>
+                <div style="font-size:.72rem;color:#94a3b8;">{{ t.date_debut|date:"d/m" }} → {{ t.date_fin|date:"d/m/Y" }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+                <div class="progress-rc" style="width:60px;">
+                    <div class="bar" style="width:{{ t.avancement }}%;background:{{ t.couleur }};"></div>
+                </div>
+                <span style="font-size:.72rem;font-weight:700;color:#475569;min-width:28px;">{{ t.avancement }}%</span>
+                {% if t.est_en_retard %}<i class="fas fa-exclamation-triangle" style="color:#ef4444;font-size:.75rem;"></i>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="color:#94a3b8;font-size:.83rem;text-align:center;padding:1rem;">
+            Aucune tâche.
+            <a href="{% url 'construction:tache_create' projet_pk=projet.pk %}" style="color:#00b4d8;">Ajouter une tâche</a>
+        </div>
+        {% endfor %}
+        {% if projet.taches.count > 5 %}
+        <div style="text-align:center;padding-top:.5rem;">
+            <a href="{% url 'construction:gantt' projet_pk=projet.pk %}" style="font-size:.8rem;color:#00b4d8;">
+                +{{ projet.taches.count|add:"-5" }} tâches supplémentaires
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Col droite -->
+<div class="col-lg-4">
+
+    <!-- Infos client -->
+    <div class="card p-3 mb-3">
+        <h6 class="fw-bold mb-3"><i class="fas fa-user me-2" style="color:#00b4d8;"></i>Client</h6>
+        <div style="font-size:.88rem;">
+            <div style="font-weight:700;font-size:.95rem;margin-bottom:.4rem;">{{ projet.client_nom }}</div>
+            {% if projet.client_contact %}<div style="color:#64748b;"><i class="fas fa-id-badge me-2"></i>{{ projet.client_contact }}</div>{% endif %}
+            {% if projet.client_tel %}<div style="color:#64748b;"><i class="fas fa-phone me-2"></i>{{ projet.client_tel }}</div>{% endif %}
+            {% if projet.client_email %}<div style="color:#64748b;"><i class="fas fa-envelope me-2"></i>{{ projet.client_email }}</div>{% endif %}
+            {% if projet.client_adresse %}<div style="color:#64748b;margin-top:.4rem;"><i class="fas fa-map-marker-alt me-2"></i>{{ projet.client_adresse }}</div>{% endif %}
+        </div>
+    </div>
+
+    <!-- Budget résumé -->
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0"><i class="fas fa-coins me-2" style="color:#f59e0b;"></i>Budget</h6>
+            <a href="{% url 'construction:budget' projet_pk=projet.pk %}" style="font-size:.78rem;color:#00b4d8;">Détail</a>
+        </div>
+        {% if projet.budget_contractuel %}
+        <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem;">
+            <span style="color:#64748b;">Contractuel</span>
+            <strong>{{ projet.budget_contractuel|floatformat:0 }} Ar</strong>
+        </div>
+        {% endif %}
+        {% for r in budget_resume %}
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;padding:.2rem 0;border-bottom:1px solid #f8fafc;">
+            <span style="color:#64748b;">{{ r.categorie|title }}</span>
+            <span>
+                <span style="color:#15803d;">{{ r.reel|floatformat:0 }}</span>
+                <span style="color:#94a3b8;"> / {{ r.prevu|floatformat:0 }} Ar</span>
+            </span>
+        </div>
+        {% empty %}
+        <div style="color:#94a3b8;font-size:.78rem;text-align:center;padding:.75rem 0;">
+            <a href="{% url 'construction:budget' projet_pk=projet.pk %}" style="color:#00b4d8;">Saisir le budget</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Rapports récents -->
+    <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0"><i class="fas fa-file-alt me-2" style="color:#f72585;"></i>Rapports</h6>
+            <a href="{% url 'construction:rapport_create' projet_pk=projet.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        {% for r in rapports %}
+        <a href="{% url 'construction:rapport_detail' pk=r.pk %}"
+           style="display:block;padding:.45rem 0;border-bottom:1px solid #f8fafc;text-decoration:none;color:inherit;">
+            <div style="font-size:.83rem;font-weight:500;">{{ r.titre }}</div>
+            <div style="font-size:.72rem;color:#94a3b8;">{{ r.get_type_rapport_display }} &middot; {{ r.periode_fin|date:"d/m/Y" }}</div>
+        </a>
+        {% empty %}
+        <div style="color:#94a3b8;font-size:.78rem;text-align:center;padding:.75rem 0;">Aucun rapport.</div>
+        {% endfor %}
+        {% if projet.rapports.count > 5 %}
+        <a href="{% url 'construction:rapport_list' projet_pk=projet.pk %}" style="font-size:.78rem;color:#00b4d8;display:block;text-align:center;margin-top:.5rem;">
+            Voir tous les rapports →
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Dernières factures -->
+    <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0"><i class="fas fa-file-invoice me-2" style="color:#22c55e;"></i>Factures</h6>
+            <a href="{% url 'construction:facture_create' projet_pk=projet.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        {% for f in factures|slice:":4" %}
+        <a href="{% url 'construction:facture_detail' pk=f.pk %}"
+           style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;
+                  border-bottom:1px solid #f8fafc;text-decoration:none;color:inherit;">
+            <div>
+                <div style="font-size:.82rem;font-weight:600;">{{ f.numero }}</div>
+                <div style="font-size:.7rem;color:#94a3b8;">{{ f.get_type_facture_display }}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:.82rem;font-weight:700;">{{ f.montant_ttc|floatformat:0 }} Ar</div>
+                <span class="badge {% if f.statut == 'payee' %}bg-success{% elif f.statut == 'retard' %}bg-danger{% elif f.statut == 'envoyee' %}bg-primary{% else %}bg-secondary{% endif %}"
+                      style="font-size:.62rem;">{{ f.get_statut_display }}</span>
+            </div>
+        </a>
+        {% empty %}
+        <div style="color:#94a3b8;font-size:.78rem;text-align:center;padding:.75rem 0;">Aucune facture.</div>
+        {% endfor %}
+        {% if factures|length > 4 %}
+        <a href="{% url 'construction:facture_list' projet_pk=projet.pk %}" style="font-size:.78rem;color:#00b4d8;display:block;text-align:center;margin-top:.5rem;">
+            Toutes les factures →
+        </a>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

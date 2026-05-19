@@ -1,0 +1,165 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ bon.numero }} — Bon de commande{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=bon.projet.pk %}">{{ bon.projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:bon_list' projet_pk=bon.projet.pk %}">Commandes</a></li>
+            <li class="breadcrumb-item active">{{ bon.numero }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-shopping-cart me-2" style="color:#7209b7;"></i>{{ bon.numero }}</h1>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-print me-1"></i>Imprimer
+        </button>
+    </div>
+</div>
+
+<div class="row g-3">
+<div class="col-lg-8">
+
+    <!-- En-tête bon -->
+    <div class="card p-4 mb-3">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+            <div>
+                <div style="font-size:.68rem;font-weight:700;color:#7209b7;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;">
+                    Bon de commande
+                </div>
+                <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;">{{ bon.numero }}</div>
+                <div style="color:#64748b;font-size:.82rem;margin-top:.2rem;">
+                    Projet : <strong>{{ bon.projet.titre }}</strong>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <span class="badge {% if bon.statut == 'valide' %}bg-success{% elif bon.statut == 'livre' %}bg-primary{% elif bon.statut == 'annule' %}bg-danger{% elif bon.statut == 'envoye' %}bg-warning text-dark{% else %}bg-secondary{% endif %}"
+                      style="font-size:.8rem;padding:.4rem .8rem;">
+                    {{ bon.get_statut_display }}
+                </span>
+                <div style="font-size:.75rem;color:#94a3b8;margin-top:.4rem;">{{ bon.date_commande|date:"d/m/Y" }}</div>
+            </div>
+        </div>
+
+        <hr style="border-color:#eef3f9;margin:1.25rem 0;">
+
+        <!-- Fournisseur -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div>
+                <div style="font-size:.68rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;">Fournisseur</div>
+                <div style="font-weight:700;font-size:.95rem;">{{ bon.fournisseur_nom }}</div>
+                {% if bon.fournisseur_contact %}<div style="color:#64748b;font-size:.82rem;">{{ bon.fournisseur_contact }}</div>{% endif %}
+                {% if bon.fournisseur_tel %}<div style="color:#64748b;font-size:.82rem;"><i class="fas fa-phone me-1"></i>{{ bon.fournisseur_tel }}</div>{% endif %}
+            </div>
+            <div>
+                <div style="font-size:.68rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;">Livraison</div>
+                {% if bon.date_livraison %}
+                <div style="font-size:.88rem;"><i class="fas fa-calendar me-1"></i>{{ bon.date_livraison|date:"d/m/Y" }}</div>
+                {% endif %}
+                {% if bon.lieu_livraison %}
+                <div style="color:#64748b;font-size:.82rem;"><i class="fas fa-map-marker-alt me-1"></i>{{ bon.lieu_livraison }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Lignes -->
+    <div class="card mb-3">
+        <div style="padding:.9rem 1.25rem;border-bottom:1px solid #eef3f9;">
+            <h6 class="fw-bold mb-0">Articles commandés</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0" style="font-size:.84rem;">
+                <thead style="background:#f8fafc;">
+                    <tr>
+                        <th class="px-3 py-2">Désignation</th>
+                        <th class="text-center">Unité</th>
+                        <th class="text-center">Quantité</th>
+                        <th class="text-end">P.U. HT</th>
+                        <th class="text-end pe-3">Montant HT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in bon.lignes.all %}
+                    <tr>
+                        <td class="px-3" style="font-weight:500;">{{ ligne.designation }}</td>
+                        <td class="text-center" style="color:#94a3b8;">{{ ligne.unite|default:"—" }}</td>
+                        <td class="text-center">{{ ligne.quantite|floatformat:2 }}</td>
+                        <td class="text-end">{{ ligne.prix_unitaire|floatformat:2 }} Ar</td>
+                        <td class="text-end pe-3" style="font-weight:700;">{{ ligne.montant_ht|floatformat:2 }} Ar</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-3 text-muted">Aucun article.</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot style="background:#f8fafc;">
+                    <tr>
+                        <td colspan="4" class="px-3 py-2 text-end" style="font-size:.8rem;color:#64748b;">Total HT</td>
+                        <td class="text-end pe-3 py-2" style="font-weight:700;">{{ bon.montant_ht|floatformat:2 }} Ar</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="px-3 py-1 text-end" style="font-size:.8rem;color:#64748b;">TVA ({{ bon.tva_pct }}%)</td>
+                        <td class="text-end pe-3 py-1" style="font-size:.82rem;">{% widthratio bon.montant_ht 1 bon.tva_pct %} Ar</td>
+                    </tr>
+                    <tr style="background:#0a1628;color:#fff;">
+                        <td colspan="4" class="px-3 py-2 text-end" style="font-weight:700;">TOTAL TTC</td>
+                        <td class="text-end pe-3 py-2" style="font-weight:800;font-size:.95rem;">{{ bon.montant_ttc|floatformat:2 }} Ar</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    {% if bon.note %}
+    <div class="card p-3">
+        <h6 class="fw-bold mb-2"><i class="fas fa-sticky-note me-2"></i>Note</h6>
+        <p style="font-size:.88rem;color:#475569;margin:0;">{{ bon.note|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Sidebar statut -->
+<div class="col-lg-4">
+    <div class="card p-3 mb-3">
+        <h6 class="fw-bold mb-3">Changer le statut</h6>
+        <form method="post" action="{% url 'construction:bon_statut' pk=bon.pk %}">
+            {% csrf_token %}
+            <select name="statut" class="form-select form-select-sm mb-2">
+                {% for val, lbl in bon.STATUT %}
+                <option value="{{ val }}" {% if bon.statut == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm w-100">
+                <i class="fas fa-sync me-1"></i>Mettre à jour
+            </button>
+        </form>
+    </div>
+
+    <div class="card p-3">
+        <h6 class="fw-bold mb-3">Récapitulatif</h6>
+        <div style="font-size:.82rem;">
+            <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:#64748b;">Référence</span><strong>{{ bon.numero }}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:#64748b;">Date commande</span><span>{{ bon.date_commande|date:"d/m/Y" }}</span>
+            </div>
+            {% if bon.date_livraison %}
+            <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:#64748b;">Livraison prévue</span><span>{{ bon.date_livraison|date:"d/m/Y" }}</span>
+            </div>
+            {% endif %}
+            <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;">
+                <span style="color:#64748b;">Montant HT</span><strong>{{ bon.montant_ht|floatformat:0 }} Ar</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.5rem 0;background:#f8fafc;margin:0 -.5rem;padding-left:.5rem;padding-right:.5rem;border-radius:6px;margin-top:.25rem;">
+                <span style="font-weight:700;">Total TTC</span>
+                <strong style="color:#0a1628;font-size:.95rem;">{{ bon.montant_ttc|floatformat:0 }} Ar</strong>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

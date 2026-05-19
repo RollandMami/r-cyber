@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 	'apps.viewer.apps.ViewerConfig',
 	'apps.core_api.apps.CoreApiConfig',
 	'apps.home.apps.HomeConfig',
+	'apps.construction.apps.ConstructionConfig',
 	
 	# rest framework
 	'rest_framework',

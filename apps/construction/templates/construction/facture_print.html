@@ -1,0 +1,299 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>{{ facture.numero }}</title>
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        body { margin: 0; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1a1a2e; background: #fff; }
+
+    .no-print {
+        position: fixed; top: 1rem; right: 1rem; z-index: 999;
+        display: flex; gap: 0.5rem;
+    }
+    .btn-print {
+        padding: 0.5rem 1.25rem; border-radius: 8px;
+        border: none; cursor: pointer; font-weight: 600;
+        font-size: 0.88rem;
+    }
+    .btn-print.primary { background: #00b4d8; color: #fff; }
+    .btn-print.secondary { background: #f1f5f9; color: #475569; }
+
+    .page { max-width: 794px; margin: 0 auto; padding: 40px 48px; min-height: 100vh; }
+
+    /* En-tête */
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; }
+    .logo-box {
+        display: flex; align-items: center; gap: 10px;
+    }
+    .logo-icon {
+        width: 44px; height: 44px; border-radius: 10px;
+        background: linear-gradient(135deg,#7209b7,#00b4d8);
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 1.1rem; font-weight: 900;
+    }
+    .logo-name { font-size: 1.3rem; font-weight: 900; color: #0a1628; }
+    .logo-sub  { font-size: 0.65rem; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .facture-badge {
+        text-align: right;
+    }
+    .facture-type {
+        font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+        text-transform: uppercase; color: #64748b;
+        border: 1px solid #dde6f0; border-radius: 4px;
+        padding: 2px 8px; display: inline-block; margin-bottom: 4px;
+    }
+    .facture-num {
+        font-size: 1.5rem; font-weight: 900; color: #0a1628; display: block;
+    }
+    .facture-date { font-size: 0.75rem; color: #64748b; }
+
+    /* Bande décorative */
+    .stripe { height: 3px; background: linear-gradient(90deg,#7209b7,#00b4d8,#f72585); margin-bottom: 28px; border-radius: 2px; }
+
+    /* Parties émetteur/destinataire */
+    .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+    .partie-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.1em; color: #7209b7; margin-bottom: 6px; }
+    .partie-name  { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+    .partie-info  { font-size: 0.78rem; color: #475569; line-height: 1.6; }
+
+    /* Infos facture */
+    .facture-infos {
+        display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
+        background: #f8fafc; border-radius: 8px; padding: 14px 16px;
+        margin-bottom: 24px;
+        border: 1px solid #eef3f9;
+    }
+    .fi-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
+    .fi-val   { font-size: 0.82rem; font-weight: 600; color: #1a2332; margin-top: 2px; }
+
+    /* Objet */
+    .objet-box { margin-bottom: 20px; }
+    .objet-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .objet-val   { font-size: 0.88rem; font-weight: 600; }
+
+    /* Tableau */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    thead tr { background: #0a1628; color: #fff; }
+    thead th { padding: 8px 10px; font-size: 0.72rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.05em; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; }
+    tbody tr:last-child { border: none; }
+    tbody td { padding: 8px 10px; font-size: 0.82rem; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    /* Totaux */
+    .totaux { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+    .totaux-box {
+        min-width: 260px;
+        border: 1px solid #eef3f9; border-radius: 8px; overflow: hidden;
+    }
+    .totaux-row {
+        display: flex; justify-content: space-between;
+        padding: 6px 14px; font-size: 0.82rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .totaux-row:last-child {
+        background: #0a1628; color: #fff; border: none;
+        font-weight: 800; font-size: 0.95rem; padding: 10px 14px;
+    }
+    .totaux-row .lbl { color: inherit; opacity: .8; }
+
+    /* Avancement situation */
+    .situation-box {
+        background: #eff6ff; border: 1px solid #bfdbfe;
+        border-radius: 8px; padding: 12px 14px; margin-bottom: 20px;
+        font-size: 0.82rem;
+    }
+    .situation-box strong { display: block; margin-bottom: 4px; color: #1d4ed8; }
+
+    /* Conditions + note */
+    .conditions { font-size: 0.75rem; color: #64748b; margin-bottom: 16px; line-height: 1.6; }
+
+    /* Pied de page */
+    .footer {
+        margin-top: 36px;
+        padding-top: 16px;
+        border-top: 1px solid #eef3f9;
+        text-align: center;
+        font-size: 0.7rem; color: #94a3b8;
+    }
+
+    /* Statut */
+    .statut-stamp {
+        position: absolute; top: 80px; right: 40px;
+        transform: rotate(-20deg);
+        border: 3px solid; border-radius: 6px;
+        padding: 4px 12px; font-size: 1rem; font-weight: 900;
+        letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.18;
+        pointer-events: none;
+    }
+    .statut-stamp.payee { color: #15803d; border-color: #15803d; }
+    .statut-stamp.annulee { color: #b91c1c; border-color: #b91c1c; }
+</style>
+</head>
+<body>
+
+<!-- Boutons impression -->
+<div class="no-print">
+    <button class="btn-print secondary" onclick="window.close()">← Retour</button>
+    <button class="btn-print primary" onclick="window.print()">🖨 Imprimer / PDF</button>
+</div>
+
+<div class="page" style="position:relative;">
+    {% if facture.statut == 'payee' %}
+    <div class="statut-stamp payee">PAYÉE</div>
+    {% elif facture.statut == 'annulee' %}
+    <div class="statut-stamp annulee">ANNULÉE</div>
+    {% endif %}
+
+    <!-- En-tête -->
+    <div class="header">
+        <div class="logo-box">
+            <div class="logo-icon">RC</div>
+            <div>
+                <div class="logo-name">{{ facture.emetteur_nom }}</div>
+                <div class="logo-sub">Multi-services BTP</div>
+            </div>
+        </div>
+        <div class="facture-badge">
+            <span class="facture-type">{{ facture.get_type_facture_display }}</span>
+            <span class="facture-num">{{ facture.numero }}</span>
+            <div class="facture-date">Émise le {{ facture.date_emission|date:"d/m/Y" }}</div>
+        </div>
+    </div>
+
+    <div class="stripe"></div>
+
+    <!-- Émetteur / Client -->
+    <div class="parties">
+        <div>
+            <div class="partie-title">Émetteur</div>
+            <div class="partie-name">{{ facture.emetteur_nom }}</div>
+            <div class="partie-info">
+                {{ facture.emetteur_adresse|linebreaksbr }}<br>
+                {% if facture.emetteur_tel %}Tél : {{ facture.emetteur_tel }}<br>{% endif %}
+                {% if facture.emetteur_email %}{{ facture.emetteur_email }}<br>{% endif %}
+                {% if facture.emetteur_nif %}NIF/STAT : {{ facture.emetteur_nif }}{% endif %}
+            </div>
+        </div>
+        <div>
+            <div class="partie-title">Facturé à</div>
+            <div class="partie-name">{{ facture.client_nom }}</div>
+            <div class="partie-info">{{ facture.client_adresse|linebreaksbr }}</div>
+        </div>
+    </div>
+
+    <!-- Infos clés -->
+    <div class="facture-infos">
+        <div>
+            <div class="fi-label">Numéro</div>
+            <div class="fi-val">{{ facture.numero }}</div>
+        </div>
+        <div>
+            <div class="fi-label">Date d'échéance</div>
+            <div class="fi-val">{% if facture.date_echeance %}{{ facture.date_echeance|date:"d/m/Y" }}{% else %}—{% endif %}</div>
+        </div>
+        <div>
+            <div class="fi-label">Projet</div>
+            <div class="fi-val">{{ facture.projet.reference }}</div>
+        </div>
+    </div>
+
+    <!-- Objet -->
+    {% if facture.objet %}
+    <div class="objet-box">
+        <div class="objet-label">Objet</div>
+        <div class="objet-val">{{ facture.objet }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Situation de travaux -->
+    {% if facture.type_facture == 'situation' and facture.pct_avancement %}
+    <div class="situation-box">
+        <strong>Situation de travaux n° — Avancement {{ facture.pct_avancement }}%</strong>
+        Montant travaux exécutés : {{ facture.montant_ht|floatformat:2 }} Ar HT<br>
+        {% if facture.montant_precedent %}
+        Situation précédente : {{ facture.montant_precedent|floatformat:2 }} Ar HT<br>
+        Solde de la présente situation : {{ facture.montant_ht|floatformat:2 }} Ar HT
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Lignes -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width:45%;">Désignation</th>
+                <th class="text-center" style="width:10%;">Unité</th>
+                <th class="text-center" style="width:10%;">Qté</th>
+                <th class="text-right" style="width:15%;">P.U. HT</th>
+                <th class="text-right" style="width:20%;">Montant HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in facture.lignes.all %}
+            <tr>
+                <td>{{ ligne.designation }}</td>
+                <td class="text-center">{{ ligne.unite|default:"—" }}</td>
+                <td class="text-center">{{ ligne.quantite|floatformat:2 }}</td>
+                <td class="text-right">{{ ligne.prix_unitaire|floatformat:2 }}</td>
+                <td class="text-right" style="font-weight:600;">{{ ligne.montant_ht|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:1rem;">Aucune ligne.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totaux -->
+    <div class="totaux">
+        <div class="totaux-box">
+            <div class="totaux-row">
+                <span class="lbl">Total HT</span>
+                <strong>{{ facture.montant_ht|floatformat:2 }} Ar</strong>
+            </div>
+            <div class="totaux-row">
+                <span class="lbl">TVA ({{ facture.tva_pct }}%)</span>
+                <strong>{{ facture.montant_tva|floatformat:2 }} Ar</strong>
+            </div>
+            <div class="totaux-row">
+                <span class="lbl">Total TTC</span>
+                <strong>{{ facture.montant_ttc|floatformat:2 }} Ar</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conditions -->
+    {% if facture.conditions_paiement %}
+    <div class="conditions">
+        <strong style="color:#475569;">Conditions de paiement :</strong><br>
+        {{ facture.conditions_paiement|linebreaksbr }}
+    </div>
+    {% endif %}
+
+    {% if facture.note %}
+    <div class="conditions">
+        <strong style="color:#475569;">Note :</strong><br>
+        {{ facture.note|linebreaksbr }}
+    </div>
+    {% endif %}
+
+    <!-- Pied -->
+    <div class="footer">
+        {{ facture.emetteur_nom }} — {{ facture.emetteur_adresse|truncatechars:80 }}
+        {% if facture.emetteur_nif %} — NIF/STAT : {{ facture.emetteur_nif }}{% endif %}<br>
+        Document généré par R-CYBER — {{ facture.date_emission|date:"d/m/Y" }}
+    </div>
+</div>
+
+</body>
+</html>

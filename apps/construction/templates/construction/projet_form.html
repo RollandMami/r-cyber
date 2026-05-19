@@ -1,0 +1,148 @@
+{% extends "construction/base_construction.html" %}
+{% block title %}{{ action }} projet — Construction{% endblock %}
+
+{% block construction_content %}
+<div class="page-header">
+    <div>
+        {% if projet %}
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Modifier</li>
+        </ol></nav>
+        {% endif %}
+        <h1>{{ action }} un projet</h1>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row g-3">
+
+        <!-- Identité -->
+        <div class="col-12">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#00b4d8;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-info-circle me-2"></i>Identité du projet
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Titre du projet *</label>
+                        {{ form.titre }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Type de travaux</label>
+                        {{ form.type_projet }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Statut</label>
+                        {{ form.statut }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Responsable</label>
+                        {{ form.responsable }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" style="display:flex;align-items:center;gap:.5rem;">
+                            {{ form.visible_vitrine }} Publier sur la vitrine
+                        </label>
+                        <div style="font-size:.73rem;color:#94a3b8;">Le projet sera visible publiquement</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Client -->
+        <div class="col-md-6">
+            <div class="card p-4 h-100">
+                <h6 class="fw-bold mb-3" style="color:#f59e0b;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-user me-2"></i>Client
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label">Nom *</label>
+                        {{ form.client_nom }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Contact</label>
+                        {{ form.client_contact }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Téléphone</label>
+                        {{ form.client_tel }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Email</label>
+                        {{ form.client_email }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Adresse client</label>
+                        {{ form.client_adresse }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chantier -->
+        <div class="col-md-6">
+            <div class="card p-4 h-100">
+                <h6 class="fw-bold mb-3" style="color:#7209b7;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-map-marker-alt me-2"></i>Chantier & Planning
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label">Adresse du chantier</label>
+                        {{ form.adresse_chantier }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date de début</label>
+                        {{ form.date_debut }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date de fin prévue</label>
+                        {{ form.date_fin_prevue }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Budget estimé (Ar)</label>
+                        {{ form.budget_estime }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Budget contractuel (Ar)</label>
+                        {{ form.budget_contractuel }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vitrine -->
+        <div class="col-12">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#f72585;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-eye me-2"></i>Description vitrine
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label">Description courte <span style="color:#94a3b8;font-weight:400;">(affichée sur la liste)</span></label>
+                        {{ form.description_courte }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Cahier des charges <span style="color:#94a3b8;font-weight:400;">(ce que le client attendait)</span></label>
+                        {{ form.cahier_des_charges }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fas fa-save me-2"></i>{{ action }}
+            </button>
+            {% if projet %}
+            <a href="{% url 'construction:projet_detail' pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+            {% else %}
+            <a href="{% url 'construction:projet_list' %}" class="btn btn-outline-secondary">Annuler</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}
