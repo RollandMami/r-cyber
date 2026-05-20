@@ -17,6 +17,7 @@ urlpatterns = [
     path('<int:pk>/',                         views.patrimoine_detail,           name='patrimoine_detail'),
     path('<int:pk>/modifier/',                views.patrimoine_edit,             name='patrimoine_edit'),
     path('<int:pk>/supprimer/',               views.patrimoine_delete,           name='patrimoine_delete'),
+	path('patrimoine/', views.patrimoine_list, name='patrimoine_list'),
 
     # ── Documents ─────────────────────────────────────────────────
     path('<int:patrimoine_pk>/documents/ajouter/', views.document_upload,   name='document_upload'),
