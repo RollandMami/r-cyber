@@ -103,29 +103,6 @@ def site_delete(request, pk):
     messages.success(request, f'Site « {nom} » supprimé.')
     return redirect('smartdocs:site_list')
 
-@login_required
-@require_POST
-def site_gerer(request, pk):
-    """Gère l'ajout ou le retrait de bâtiments au sein d'un site."""
-    site = get_object_or_404(Site, pk=pk)
-    action = request.POST.get('action')
-
-    if action == 'add_batiment':
-        if not request.user.is_staff:
-            messages.error(request, 'Permission refusée.')
-            return redirect('smartdocs:site_detail', pk=site.pk)
-            
-        batiment_pk = request.POST.get('batiment_pk')
-        if batiment_pk:
-            batiment = get_object_or_404(Patrimoine, pk=batiment_pk)
-            batiment.site = site
-            batiment.save()
-            messages.success(request, f'Le bâtiment « {batiment.nom} » a été ajouté au site « {site.nom} ».')
-        else:
-            messages.error(request, 'Aucun bâtiment sélectionné.')
-
-    # Redirection vers le détail du site une fois l'action effectuée
-    return redirect('smartdocs:site_detail', pk=site.pk)
 
 # ═══════════════════════════════════════════════════════════
 #  PATRIMOINES (BÂTIMENTS)
@@ -147,10 +124,17 @@ def patrimoine_detail(request, pk):
     nb_etages   = patrimoine.nombre_etages()
     revetements = RevetementMur.objects.filter(patrimoine=patrimoine).select_related('etage')
     equipements = EquipementOuverture.objects.filter(patrimoine=patrimoine).select_related('etage')
+
+    # Groupes simples (pour les KPI cards)
     sanitaires  = equipements.filter(type_element='sanitaire')
     ouvertures  = equipements.filter(type_element='ouverture')
     mep         = equipements.filter(type_element__in=['mep', 'equipement'])
+    electrique  = equipements.filter(type_element='electrique')
+    protection  = equipements.filter(type_element='protection')
     mobilier    = equipements.filter(type_element='mobilier')
+
+    # Groupes enrichis avec regroupement nomenclature → lignes agrégées
+    groupes_tableau = _build_equipment_groups(equipements)
 
     docs_ged = DocumentGED.objects.filter(patrimoine=patrimoine).select_related('uploade_par')
     ged_arbo = _build_ged_arbo(docs_ged, request.user.is_staff)
@@ -159,23 +143,100 @@ def patrimoine_detail(request, pk):
     site_batiments = site.batiments.all() if site else []
 
     return render(request, 'smartdocs/patrimoine_detail.html', {
-        'patrimoine':       patrimoine,
-        'etages':           etages,
-        'types_docs':       types_docs,
-        'surface_ifc':      surface_ifc,
-        'nb_etages':        nb_etages,
-        'revetements':      revetements,
-        'sanitaires':       sanitaires,
-        'ouvertures':       ouvertures,
-        'mep':              mep,
-        'mobilier':         mobilier,
-        'ged_arbo':         ged_arbo,
-        'ged_arborescence': GED_ARBORESCENCE,
-        'etages_plan':      list(etages),
-        'site':             site,
-        'site_batiments':   site_batiments,
-        'total_docs':       patrimoine.total_documents(),
+        'patrimoine':         patrimoine,
+        'etages':             etages,
+        'types_docs':         types_docs,
+        'surface_ifc':        surface_ifc,
+        'nb_etages':          nb_etages,
+        'revetements':        revetements,
+        'sanitaires':         sanitaires,
+        'ouvertures':         ouvertures,
+        'mep':                mep,
+        'electrique':         electrique,
+        'protection':         protection,
+        'mobilier':           mobilier,
+        'groupes_tableau':    groupes_tableau,
+        'ged_arbo':           ged_arbo,
+        'ged_arborescence':   GED_ARBORESCENCE,
+        'etages_plan':        list(etages),
+        'site':               site,
+        'site_batiments':     site_batiments,
+        'total_docs':         patrimoine.total_documents(),
     })
+
+
+def _build_equipment_groups(equipements):
+    """
+    Regroupe les équipements par (type_element, nomenclature, largeur, hauteur, longueur,
+    vitrage, puissance, marque, materiau) et cumule la quantité.
+    Retourne une liste ordonnée de groupes :
+      { 'type': ..., 'label': ..., 'icone': ..., 'lignes': [...] }
+    Chaque ligne = dict avec tous les champs + quantite cumulée.
+    """
+    from collections import defaultdict
+
+    TYPE_CONFIG = [
+        ('ouverture',  'Ouvertures',                 'fa-door-open'),
+        ('sanitaire',  'Sanitaires',                 'fa-toilet'),
+        ('electrique', 'Électrique / Éclairage',     'fa-lightbulb'),
+        ('protection', 'Garde-corps & Protection',   'fa-shield-alt'),
+        ('mep',        'MEP / Technique',             'fa-tools'),
+        ('equipement', 'Équipements',                 'fa-cogs'),
+        ('mobilier',   'Mobilier',                   'fa-couch'),
+        ('autre',      'Autres éléments',             'fa-cube'),
+    ]
+
+    # Regroupement
+    buckets = defaultdict(lambda: defaultdict(int))
+    meta    = {}  # clé → propriétés
+
+    for eq in equipements:
+        nom_affichage = eq.nomenclature or eq.nom or eq.type_ifc
+        # Clé de regroupement : type + nomenclature + dimensions + vitrage + puissance
+        key = (
+            eq.type_element,
+            nom_affichage,
+            str(eq.largeur or ''),
+            str(eq.hauteur or ''),
+            str(eq.longueur or ''),
+            eq.vitrage or '',
+            eq.puissance or '',
+            eq.marque or '',
+            eq.materiau or '',
+        )
+        buckets[eq.type_element][key] += eq.quantite
+        if key not in meta:
+            meta[key] = {
+                'type_element': eq.type_element,
+                'nomenclature': nom_affichage,
+                'largeur':   eq.largeur,
+                'hauteur':   eq.hauteur,
+                'longueur':  eq.longueur,
+                'vitrage':   eq.vitrage or '',
+                'puissance': eq.puissance or '',
+                'marque':    eq.marque or '',
+                'materiau':  eq.materiau or '',
+                'type_ifc':  eq.type_ifc,
+            }
+
+    groupes = []
+    for type_key, label, icone in TYPE_CONFIG:
+        if type_key not in buckets:
+            continue
+        lignes = []
+        for key, quantite in sorted(buckets[type_key].items(), key=lambda x: x[0][1]):
+            row = dict(meta[key])
+            row['quantite'] = quantite
+            # Formate dimensions : retire les None et convertit Decimal → str propre
+            for dim in ('largeur', 'hauteur', 'longueur'):
+                v = row[dim]
+                if v is not None:
+                    row[dim] = int(v) if float(v) == int(float(v)) else float(v)
+            lignes.append(row)
+        if lignes:
+            groupes.append({'type': type_key, 'label': label, 'icone': icone, 'lignes': lignes})
+
+    return groupes
 
 
 def _build_ged_arbo(docs_ged, is_admin):
@@ -367,6 +428,43 @@ def ged_upload(request, patrimoine_pk):
 
 
 @login_required
+def ged_download_dossier(request, patrimoine_pk):
+    """Télécharge tous les fichiers d'un dossier GED en ZIP."""
+    patrimoine = get_object_or_404(Patrimoine, pk=patrimoine_pk)
+    corps   = request.GET.get('corps', '').upper()
+    dossier = request.GET.get('dossier', '')
+
+    if not corps or not dossier:
+        raise Http404
+
+    docs = DocumentGED.objects.filter(
+        patrimoine=patrimoine, corps=corps, dossier=dossier
+    )
+    if not docs.exists():
+        raise Http404
+
+    import zipfile, io
+    from django.http import HttpResponse
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for doc in docs:
+            try:
+                fname = os.path.basename(doc.fichier.name)
+                with doc.fichier.open('rb') as fh:
+                    zf.writestr(fname, fh.read())
+            except Exception:
+                pass
+    buf.seek(0)
+
+    label = dossier.replace('_', '-')
+    zip_name = f'{patrimoine.nom}_{corps}_{label}.zip'.replace(' ', '_')
+    response = HttpResponse(buf.read(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{zip_name}"'
+    return response
+
+
+@login_required  # N'oublie pas de sécuriser l'accès au téléchargement
 def ged_download(request, pk):
     doc = get_object_or_404(DocumentGED, pk=pk)
     if not doc.fichier:

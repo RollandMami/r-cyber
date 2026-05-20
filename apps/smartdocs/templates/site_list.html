@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sites — SmartDocs{% endblock %}
+{% block content %}
+<div class="container py-5">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Sites &amp; Patrimoines</h1>
+            <p class="text-muted mb-0">{{ sites|length }} site{{ sites|length|pluralize }} enregistré{{ sites|length|pluralize }}</p>
+        </div>
+        {% if user.is_staff %}
+        <a href="{% url 'smartdocs:site_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouveau site
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Recherche -->
+    <form method="get" class="mb-4">
+        <div class="input-group" style="max-width:440px;">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" name="q" value="{{ q }}" class="form-control border-start-0" placeholder="Rechercher un site ou un bâtiment…">
+            {% if q %}<a href="{% url 'smartdocs:site_list' %}" class="btn btn-outline-secondary"><i class="fas fa-times"></i></a>
+            {% else %}<button type="submit" class="btn btn-outline-primary">Chercher</button>{% endif %}
+        </div>
+    </form>
+
+    {% if messages %}{% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}{% endif %}
+
+    {% if sites %}
+    <div class="d-flex flex-column gap-3">
+        {% for site in sites %}
+        <div class="card border-0 shadow-sm" style="border-radius:16px;overflow:hidden;">
+            <!-- En-tête site -->
+            <div class="card-header d-flex align-items-center gap-3 px-4 py-3"
+                 style="background:linear-gradient(135deg,var(--c-navy,#0d1628),var(--c-blue,#1e6fca));color:#fff;">
+                <div>
+                    <div class="fw-bold" style="font-size:1.05rem;">
+                        <i class="fas fa-map-marker-alt me-2" style="opacity:0.7;"></i>{{ site.nom }}
+                    </div>
+                    {% if site.adresse %}<div style="font-size:0.8rem;opacity:0.75;">{{ site.adresse }}</div>{% endif %}
+                </div>
+                <div class="ms-auto d-flex gap-2 align-items-center flex-shrink-0">
+                    <span class="badge" style="background:rgba(255,255,255,0.2);font-size:0.72rem;">
+                        {{ site.batiments.count }} bâtiment{{ site.batiments.count|pluralize }}
+                    </span>
+                    <a href="{% url 'smartdocs:site_detail' site.pk %}" class="btn btn-sm"
+                       style="background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:0.78rem;">
+                        <i class="fas fa-folder-open me-1"></i>Ouvrir
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'smartdocs:site_edit' site.pk %}" class="btn btn-sm"
+                       style="background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:0.78rem;">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    {% endif %}
+                    {% if user.is_superuser %}
+                    <button class="btn btn-sm" style="background:rgba(229,57,53,0.3);color:#fff;border:none;font-size:0.78rem;"
+                            onclick="confirmDeleteSite({{ site.pk }},'{{ site.nom|escapejs }}')" title="Supprimer le site">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Bâtiments du site -->
+            {% if site.batiments.all %}
+            <div class="card-body p-0">
+                <div class="row g-0">
+                    {% for bat in site.batiments.all %}
+                    <div class="col-sm-6 col-lg-4" style="border-right:1px solid var(--border-color,#e8f2ff);border-bottom:1px solid var(--border-color,#e8f2ff);">
+                        <div class="p-3 d-flex gap-3 align-items-center h-100">
+                            <!-- Miniature photo -->
+                            <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#1a2d4d 0%,#2d8aff 100%);">
+                                {% if bat.photo %}
+                                <img src="{{ bat.photo.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                {% else %}
+                                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-building" style="color:rgba(255,255,255,0.5);font-size:1.1rem;"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="fw-semibold text-truncate" style="font-size:0.88rem;">{{ bat.nom }}</div>
+                                <div class="text-muted text-truncate" style="font-size:0.75rem;">
+                                    {% if bat.surface_totale %}{{ bat.surface_totale }} m² · {% endif %}
+                                    {{ bat.etages.count }} étage{{ bat.etages.count|pluralize }}
+                                    {% if bat.statut_conversion == 'ok' %} · <span style="color:#2e7d32;">3D ✓</span>{% endif %}
+                                </div>
+                            </div>
+                            <div class="d-flex gap-1 flex-shrink-0">
+                                <a href="{% url 'smartdocs:patrimoine_detail' bat.pk %}"
+                                   class="btn btn-sm btn-outline-primary py-0 px-2" title="Ouvrir">
+                                    <i class="fas fa-folder-open" style="font-size:0.75rem;"></i>
+                                </a>
+                                {% if bat.has_viewer %}
+                                <a href="{% url 'viewer:viewer' bat.pk %}"
+                                   class="btn btn-sm btn-primary py-0 px-2" title="Viewer 3D">
+                                    <i class="fas fa-cube" style="font-size:0.75rem;"></i>
+                                </a>
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                <button class="btn btn-sm btn-outline-danger py-0 px-2"
+                                        onclick="confirmDeleteBat({{ bat.pk }},'{{ bat.nom|escapejs }}')" title="Supprimer">
+                                    <i class="fas fa-trash" style="font-size:0.75rem;"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <!-- Bouton ajouter bâtiment -->
+                    {% if user.is_staff %}
+                    <div class="col-sm-6 col-lg-4" style="border-right:1px solid var(--border-color,#e8f2ff);border-bottom:1px solid var(--border-color,#e8f2ff);">
+                        <a href="{% url 'smartdocs:patrimoine_create_in_site' site.pk %}"
+                           class="d-flex gap-3 align-items-center p-3 h-100 text-decoration-none"
+                           style="color:#aaa;transition:background 0.15s;" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background=''">
+                            <div style="width:52px;height:52px;border-radius:10px;border:2px dashed #ddd;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fas fa-plus" style="font-size:1rem;color:#ccc;"></i>
+                            </div>
+                            <span style="font-size:0.85rem;">Ajouter un bâtiment</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card-body text-center py-4">
+                <p class="text-muted small mb-2">Aucun bâtiment dans ce site.</p>
+                {% if user.is_staff %}
+                <a href="{% url 'smartdocs:patrimoine_create_in_site' site.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i>Ajouter un bâtiment
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-map-marker-alt fa-4x mb-4" style="color:#e2e8f0;"></i>
+        <h4 class="fw-bold mb-2">{% if q %}Aucun résultat{% else %}Aucun site enregistré{% endif %}</h4>
+        {% if not q and user.is_staff %}
+        <p class="text-muted mb-4">Commencez par créer votre premier site patrimonial.</p>
+        <a href="{% url 'smartdocs:site_create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Créer un site
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modals suppression -->
+{% if user.is_superuser %}
+<div class="modal fade" id="deleteSiteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:14px;">
+            <div class="modal-body text-center p-4">
+                <div style="width:52px;height:52px;border-radius:50%;background:#fff0f0;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                    <i class="fas fa-map-marker-alt" style="color:#e53935;font-size:1.2rem;"></i>
+                </div>
+                <h6 class="fw-bold mb-1">Supprimer ce site ?</h6>
+                <p class="text-muted small mb-1" id="delete-site-name">—</p>
+                <p class="text-muted" style="font-size:0.75rem;">Tous les bâtiments et documents associés seront supprimés.</p>
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-danger" onclick="submitDeleteSite()"><i class="fas fa-trash me-1"></i>Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="deleteBatModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:14px;">
+            <div class="modal-body text-center p-4">
+                <div style="width:52px;height:52px;border-radius:50%;background:#fff0f0;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                    <i class="fas fa-building" style="color:#e53935;font-size:1.2rem;"></i>
+                </div>
+                <h6 class="fw-bold mb-1">Supprimer ce bâtiment ?</h6>
+                <p class="text-muted small mb-1" id="delete-bat-name">—</p>
+                <p class="text-muted" style="font-size:0.75rem;">Action irréversible. Tous ses documents seront supprimés.</p>
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-danger" onclick="submitDeleteBat()"><i class="fas fa-trash me-1"></i>Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<form id="delete-site-form" method="post" action="" style="display:none;">{% csrf_token %}</form>
+<form id="delete-bat-form"  method="post" action="" style="display:none;">{% csrf_token %}</form>
+{% endif %}
+
+<script>
+{% if user.is_superuser %}
+let _delSitePk=null, _delBatPk=null;
+function confirmDeleteSite(pk,nom){_delSitePk=pk;document.getElementById('delete-site-name').textContent=nom;new bootstrap.Modal(document.getElementById('deleteSiteModal')).show();}
+function submitDeleteSite(){if(!_delSitePk)return;const f=document.getElementById('delete-site-form');f.action='/patrimoines/sites/'+_delSitePk+'/supprimer/';f.submit();}
+function confirmDeleteBat(pk,nom){_delBatPk=pk;document.getElementById('delete-bat-name').textContent=nom;new bootstrap.Modal(document.getElementById('deleteBatModal')).show();}
+function submitDeleteBat(){if(!_delBatPk)return;const f=document.getElementById('delete-bat-form');f.action='/patrimoines/'+_delBatPk+'/supprimer/';f.submit();}
+{% endif %}
+</script>
+{% endblock %}

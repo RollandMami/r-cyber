@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} un site — SmartDocs{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:620px;">
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb" style="font-size:0.8rem;">
+            <li class="breadcrumb-item"><a href="{% url 'smartdocs:site_list' %}">Sites</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol>
+    </nav>
+    <h1 class="fw-bold mb-4" style="font-size:1.6rem;">{{ action }} un site</h1>
+
+    {% if messages %}{% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>{% endfor %}{% endif %}
+
+    <div class="card border-0 shadow-sm p-4" style="border-radius:16px;">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:0.85rem;">Nom du site *</label>
+                <input type="text" name="nom" value="{{ form.nom.value|default:'' }}" class="form-control" placeholder="ex. Résidence Les Palmiers" required>
+                {% for e in form.nom.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:0.85rem;">Adresse du site</label>
+                <input type="text" name="adresse" value="{{ form.adresse.value|default:'' }}" class="form-control" placeholder="Adresse complète">
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold" style="font-size:0.85rem;">Description</label>
+                <textarea name="description" class="form-control" rows="3">{{ form.description.value|default:'' }}</textarea>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold" style="font-size:0.85rem;">Photo du site</label>
+                <input type="file" name="photo" class="form-control" accept="image/*">
+                {% if form.instance.photo %}
+                <div class="mt-2"><img src="{{ form.instance.photo.url }}" style="height:60px;border-radius:8px;object-fit:cover;"></div>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>{{ action }}</button>
+                <a href="{% url 'smartdocs:site_list' %}" class="btn btn-outline-secondary">Annuler</a>
+                {% if form.instance.pk and user.is_superuser %}
+                <form method="post" action="{% url 'smartdocs:site_delete' form.instance.pk %}"
+                      class="ms-auto" onsubmit="return confirm('Supprimer ce site et tous ses bâtiments ?');">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger"><i class="fas fa-trash me-1"></i>Supprimer</button>
+                </form>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

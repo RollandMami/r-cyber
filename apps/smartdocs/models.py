@@ -205,26 +205,43 @@ class RevetementMur(models.Model):
 
 class EquipementOuverture(models.Model):
     TYPE_CHOICES = [
-        ('ouverture',  'Ouverture (porte / fenêtre)'),
-        ('sanitaire',  'Sanitaire'),
-        ('equipement', 'Équipement'),
-        ('mep',        'MEP / Technique'),
-        ('mobilier',   'Mobilier'),
-        ('autre',      'Autre'),
+        ('ouverture',   'Ouverture (porte / fenêtre)'),
+        ('sanitaire',   'Sanitaire'),
+        ('equipement',  'Équipement'),
+        ('electrique',  'Électrique / Éclairage'),
+        ('mep',         'MEP / Technique'),
+        ('protection',  'Protection / Garde-corps'),
+        ('mobilier',    'Mobilier'),
+        ('autre',       'Autre'),
     ]
-    patrimoine   = models.ForeignKey(Patrimoine, on_delete=models.CASCADE, related_name='equipements')
-    etage        = models.ForeignKey(Etage, on_delete=models.SET_NULL, null=True, blank=True,
-                                      related_name='equipements')
-    nom          = models.CharField(max_length=200)
-    type_element = models.CharField(max_length=20, choices=TYPE_CHOICES, default='autre')
-    type_ifc     = models.CharField(max_length=100, blank=True)
-    quantite     = models.PositiveIntegerField(default=1)
-    ifc_guid     = models.CharField(max_length=100, blank=True)
-    description  = models.TextField(blank=True)
+    patrimoine    = models.ForeignKey(Patrimoine, on_delete=models.CASCADE, related_name='equipements')
+    etage         = models.ForeignKey(Etage, on_delete=models.SET_NULL, null=True, blank=True,
+                                       related_name='equipements')
+    nom           = models.CharField(max_length=200,
+                                      help_text='Nom IFC brut')
+    nomenclature  = models.CharField(max_length=300, blank=True,
+                                      help_text='Nom lisible (ex: Porte int. bois, Fenêtre oscillo-battant)')
+    type_element  = models.CharField(max_length=20, choices=TYPE_CHOICES, default='autre')
+    type_ifc      = models.CharField(max_length=100, blank=True)
+    quantite      = models.PositiveIntegerField(default=1)
+    ifc_guid      = models.CharField(max_length=100, blank=True)
+    description   = models.TextField(blank=True)
+    # Dimensions (mm)
+    largeur       = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    hauteur       = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    longueur      = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    # Propriétés complémentaires
+    marque        = models.CharField(max_length=150, blank=True)
+    materiau      = models.CharField(max_length=150, blank=True)
+    vitrage       = models.CharField(max_length=100, blank=True,
+                                      help_text='Simple, Double, Triple vitrage')
+    puissance     = models.CharField(max_length=50, blank=True,
+                                      help_text='Ex: 60W, 2×36W')
+    reference     = models.CharField(max_length=100, blank=True)
 
     class Meta:
         verbose_name = 'Équipement / Ouverture'
-        ordering = ['etage__niveau', 'type_element', 'nom']
+        ordering = ['etage__niveau', 'type_element', 'nomenclature', 'nom']
 
 
 # ─── Type de document ─────────────────────────────────────────────────────────
