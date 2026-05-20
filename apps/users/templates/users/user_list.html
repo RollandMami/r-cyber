@@ -1,0 +1,69 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block title %}Gestion des Utilisateurs{% endblock %}
+
+{% block sb_users %}active{% endblock %} {# Pour mettre en surbrillance l'onglet Utilisateurs #}
+
+{% block content %}
+<div class="db-header">
+    <h2><i class="fas fa-users"></i> Gestion des Utilisateurs</h2>
+    <p>Liste des membres inscrits sur la plateforme r-cyber.</p>
+</div>
+
+<div class="db-card">
+    <!-- Barre de recherche -->
+    <div class="search-bar-container" style="margin-bottom: 20px;">
+        <form method="GET" action="" class="form-inline">
+            <div class="input-group">
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Rechercher un utilisateur (nom, email...)...">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Filtrer
+                </button>
+                {% if q %}
+                    <a href="{% url 'users:user_list' %}" class="btn btn-secondary">Réinitialiser</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau des utilisateurs -->
+    <div class="table-responsive">
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                    <th style="padding: 10px;">Utilisateur</th>
+                    <th style="padding: 10px;">Email</th>
+                    <th style="padding: 10px;">Statut</th>
+                    <th style="padding: 10px;">Date d'inscription</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;">
+                        <strong>{{ u.username }}</strong><br>
+                        <small style="color: #666;">{{ u.first_name }} {{ u.last_name }}</small>
+                    </td>
+                    <td style="padding: 10px;">{{ u.email|default:"—" }}</td>
+                    <td style="padding: 10px;">
+                        {% if u.is_superuser %}
+                            <span class="badge" style="background: #dc3545; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em;">Superadmin</span>
+                        {% elif u.is_staff %}
+                            <span class="badge" style="background: #ffc107; color: black; padding: 3px 8px; border-radius: 4px; font-size: 0.8em;">Staff</span>
+                        {% else %}
+                            <span class="badge" style="background: #28a745; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em;">Client / Utilisateur</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 10px;">{{ u.date_joined|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="padding: 20px; text-align: center; color: #888;">
+                        Aucun utilisateur trouvé.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

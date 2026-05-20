@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import LoginForm, RegisterForm, ProfileForm
+from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 
 def login_view(request):
@@ -66,3 +68,31 @@ def profile_view(request):
         form = ProfileForm(instance=request.user)
 
     return render(request, 'users/profile.html', {'form': form})
+
+User = get_user_model()
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)  # Sécurité : réservé au staff / admin
+def user_list(request):
+    """
+    Affiche la liste de tous les utilisateurs inscrits sur la plateforme
+    avec une option de recherche.
+    """
+    q = request.GET.get('q', '').strip()
+    
+    # On récupère tous les utilisateurs en triant par date d'inscription (les plus récents en premier)
+    users = User.objects.all().order_by('-date_joined')
+    
+    # Si une recherche est effectuée, on filtre par nom, prénom ou email
+    if q:
+        users = users.filter(
+            Q(username__icontains=q) |
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(email__icontains=q)
+        ).distinct()
+        
+    return render(request, 'users/user_list.html', {
+        'users': users,
+        'q': q
+    })
