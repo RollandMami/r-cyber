@@ -17,7 +17,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    border-bottom: 2px solid var(--border-color, #e0c9a6);
+    border-bottom: 2px solid #e2e8f0;
     gap: 0;
 }
 .nb-tabs::-webkit-scrollbar { display: none; }
@@ -33,10 +33,10 @@
     white-space: nowrap;
     transition: color 0.15s, background 0.15s;
 }
-.nb-tab:hover { color: var(--action-color, #a44200); background: rgba(164,66,0,0.05); }
+.nb-tab:hover { color: var(--c-blue,#1e6fca); background: rgba(30,111,202,0.05); }
 .nb-tab.active {
-    color: var(--action-color, #a44200);
-    border-color: var(--border-color, #e0c9a6);
+    color: var(--c-blue,#1e6fca);
+    border-color: #e2e8f0;
     border-bottom-color: var(--bg-white, #fff);
     background: var(--bg-white, #fff);
 }
@@ -50,7 +50,7 @@
     .nb-tab.active .tab-label { display: inline; }  /* affiche le texte de l'onglet actif */
     .nb-tab.active {
         border-color: transparent;
-        border-bottom: 3px solid var(--action-color, #a44200);
+        border-bottom: 3px solid var(--c-blue,#1e6fca);
         background: transparent;
     }
 }
@@ -66,7 +66,7 @@
     margin-bottom: 1.25rem;
 }
 .info-card {
-    background: var(--bg-fallback, #fdf6f0);
+    background: #f8fafc;
     border-radius: 12px;
     padding: 0.9rem 1rem;
 }
@@ -74,38 +74,38 @@
     font-size: 0.70rem; color: #aaa;
     text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;
 }
-.info-card .ic-value { font-size: 1.1rem; font-weight: 700; color: var(--text-primary, #3c1518); }
+.info-card .ic-value { font-size: 1.1rem; font-weight: 700; color: var(--text-primary, #1e293b); }
 
 /* ══ GED ═══════════════════════════════════════════════════════ */
 .ged-corps-header {
-    background: linear-gradient(135deg, var(--rich-mahogany,#5c1a1a), var(--action-color,#a44200));
+    background: linear-gradient(135deg, var(--c-navy,#0d1628), var(--c-blue,#1e6fca));
     color: #fff; padding: 0.7rem 1.1rem; border-radius: 10px;
     cursor: pointer; font-weight: 700; font-size: 0.88rem;
     display: flex; align-items: center; gap: 0.7rem;
 }
 .ged-dossier-header {
     padding: 0.55rem 1rem 0.55rem 1.75rem; cursor: pointer;
-    background: var(--bg-fallback,#fdf6f0);
-    border-left: 3px solid var(--border-color,#e0c9a6);
+    background: #f8fafc;
+    border-left: 3px solid #e2e8f0;
     font-size: 0.83rem; font-weight: 600;
     display: flex; align-items: center; gap: 0.55rem;
     transition: background 0.15s;
 }
-.ged-dossier-header:hover { background: #f5ead8; }
+.ged-dossier-header:hover { background: #dbeafe; }
 .ged-dossier-body { padding: 0.4rem 1rem 0.4rem 2.5rem; }
 .ged-file-row {
     display: flex; align-items: center; gap: 0.65rem;
     padding: 0.4rem 0.6rem; border-radius: 8px; font-size: 0.82rem;
 }
-.ged-file-row:hover { background: rgba(164,66,0,0.06); }
+.ged-file-row:hover { background: rgba(30,111,202,0.06); }
 .ged-drop-zone {
-    border: 2px dashed var(--border-color,#e0c9a6); border-radius: 10px;
+    border: 2px dashed #e2e8f0; border-radius: 10px;
     padding: 1.25rem; text-align: center; color: #bbb; font-size: 0.82rem;
     transition: border-color 0.2s, background 0.2s; cursor: pointer; margin-top: 0.6rem;
 }
 .ged-drop-zone.drag-over {
-    border-color: var(--action-color,#a44200);
-    background: rgba(164,66,0,0.05); color: var(--action-color,#a44200);
+    border-color: var(--c-blue,#1e6fca);
+    background: rgba(30,111,202,0.05); color: var(--c-blue,#1e6fca);
 }
 
 /* ══ Equipment tab filter ══════════════════════════════════════ */
@@ -150,7 +150,7 @@ div[style*="overflow-x:auto"]::after {
 .bat-card {
     display: flex; align-items: center; gap: 0.9rem;
     padding: 0.7rem 0.9rem; border-radius: 12px;
-    background: var(--bg-fallback, #fdf6f0); margin-bottom: 0.5rem;
+    background: #f8fafc; margin-bottom: 0.5rem;
 }
 .bat-avatar {
     width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
@@ -209,7 +209,7 @@ div[style*="overflow-x:auto"]::after {
                 <i class="fas fa-folder-open"></i>
                 <span class="tab-label">Documentation</span>
                 {% if total_docs > 0 %}
-                <span class="badge rounded-pill" style="background:var(--action-color,#a44200);font-size:0.63rem;padding:0.2em 0.45em;">{{ total_docs }}</span>
+                <span class="badge rounded-pill" style="background:var(--c-blue,#1e6fca);font-size:0.63rem;padding:0.2em 0.45em;">{{ total_docs }}</span>
                 {% endif %}
             </a>
             <a class="nb-tab" role="tab" href="#" onclick="showTab('plan',this);return false;">
@@ -271,7 +271,7 @@ div[style*="overflow-x:auto"]::after {
                     <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
                         <div class="card-header bg-transparent border-0 pt-3 pb-1 px-3">
                             <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
-                                <i class="fas fa-paint-roller me-2" style="color:var(--action-color,#a44200);"></i>Revêtements de murs
+                                <i class="fas fa-paint-roller me-2" style="color:var(--c-blue,#1e6fca);"></i>Revêtements de murs
                             </h6>
                         </div>
                         <div class="card-body p-2" style="max-height:300px;overflow-y:auto;">
@@ -302,19 +302,19 @@ div[style*="overflow-x:auto"]::after {
                     <div class="card border-0 shadow-sm" style="border-radius:14px;">
                         <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex align-items-center gap-3 flex-wrap">
                             <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
-                                <i class="fas fa-cogs me-2" style="color:var(--action-color,#a44200);"></i>Équipements &amp; Ouvertures
+                                <i class="fas fa-cogs me-2" style="color:var(--c-blue,#1e6fca);"></i>Équipements &amp; Ouvertures
                             </h6>
                             <!-- Filtres onglets par catégorie -->
                             <div class="d-flex flex-wrap gap-1 ms-auto">
                                 <button class="eq-tab-btn active" onclick="filterEqTab('all',this)"
-                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid var(--border-color,#e0c9a6);background:var(--action-color,#a44200);color:#fff;cursor:pointer;">
+                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid #e2e8f0;background:var(--c-blue,#1e6fca);color:#fff;cursor:pointer;">
                                     Tout
                                 </button>
                                 {% for groupe in groupes_tableau %}
                                 <button class="eq-tab-btn" onclick="filterEqTab('{{ groupe.type }}',this)"
-                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid var(--border-color,#e0c9a6);background:#fff;color:#888;cursor:pointer;">
+                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid #e2e8f0;background:#fff;color:#888;cursor:pointer;">
                                     <i class="fas {{ groupe.icone }} me-1"></i>{{ groupe.label }}
-                                    <span class="badge" style="background:var(--border-color,#e0c9a6);color:#555;font-size:0.6rem;margin-left:2px;">{{ groupe.lignes|length }}</span>
+                                    <span class="badge" style="background:#e2e8f0;color:#555;font-size:0.6rem;margin-left:2px;">{{ groupe.lignes|length }}</span>
                                 </button>
                                 {% endfor %}
                             </div>
@@ -325,13 +325,13 @@ div[style*="overflow-x:auto"]::after {
                             <div class="eq-groupe" data-type="{{ groupe.type }}">
                                 <!-- Sous-header groupe -->
                                 <div class="px-3 py-2 d-flex align-items-center gap-2"
-                                     style="background:var(--bg-fallback,#fdf6f0);border-top:1px solid var(--border-color,#f0e8d8);">
-                                    <i class="fas {{ groupe.icone }}" style="color:var(--action-color,#a44200);font-size:0.82rem;"></i>
-                                    <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:0.07em;color:var(--action-color,#a44200);">
+                                     style="background:#f8fafc;border-top:1px solid var(--border-color,#e8f2ff);">
+                                    <i class="fas {{ groupe.icone }}" style="color:var(--c-blue,#1e6fca);font-size:0.82rem;"></i>
+                                    <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:0.07em;color:var(--c-blue,#1e6fca);">
                                         {{ groupe.label }}
                                     </span>
                                     <span class="badge rounded-pill ms-1"
-                                          style="background:var(--action-color,#a44200);color:#fff;font-size:0.6rem;">
+                                          style="background:var(--c-blue,#1e6fca);color:#fff;font-size:0.6rem;">
                                         {{ groupe.lignes|length }} type{{ groupe.lignes|length|pluralize }}
                                         / {% with total=0 %}{% for l in groupe.lignes %}{% endfor %}{% endwith %}
                                     </span>
@@ -341,7 +341,7 @@ div[style*="overflow-x:auto"]::after {
                                     <table class="table table-sm table-hover mb-0"
                                            style="font-size:0.8rem;min-width:700px;white-space:nowrap;">
                                         <thead style="position:sticky;top:0;background:#fff;z-index:1;">
-                                            <tr style="border-bottom:2px solid var(--border-color,#e0c9a6);">
+                                            <tr style="border-bottom:2px solid #e2e8f0;">
                                                 <th style="min-width:220px;padding:0.5rem 0.75rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">
                                                     Nomenclature
                                                 </th>
@@ -350,10 +350,10 @@ div[style*="overflow-x:auto"]::after {
                                                 </th>
                                                 <!-- Colspan Dimensions -->
                                                 <th colspan="3" class="text-center"
-                                                    style="padding:0.5rem 0.5rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;border-left:2px solid var(--border-color,#f0e8d8);">
+                                                    style="padding:0.5rem 0.5rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;border-left:2px solid var(--border-color,#e8f2ff);">
                                                     Dimensions (mm)
                                                 </th>
-                                                <th style="min-width:120px;padding:0.5rem 0.75rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;border-left:2px solid var(--border-color,#f0e8d8);">
+                                                <th style="min-width:120px;padding:0.5rem 0.75rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;border-left:2px solid var(--border-color,#e8f2ff);">
                                                     Matériau
                                                 </th>
                                                 <th style="min-width:110px;padding:0.5rem 0.75rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;">
@@ -371,13 +371,13 @@ div[style*="overflow-x:auto"]::after {
                                                 {% endif %}
                                             </tr>
                                             <!-- Sous-entête dimensions -->
-                                            <tr style="background:var(--bg-fallback,#fdf6f0);">
+                                            <tr style="background:#f8fafc;">
                                                 <th colspan="2"></th>
-                                                <th class="text-center" style="border-left:2px solid var(--border-color,#f0e8d8);padding:0.3rem 0.5rem;font-size:0.68rem;color:#bbb;font-weight:600;">L</th>
+                                                <th class="text-center" style="border-left:2px solid var(--border-color,#e8f2ff);padding:0.3rem 0.5rem;font-size:0.68rem;color:#bbb;font-weight:600;">L</th>
                                                 <th class="text-center" style="padding:0.3rem 0.5rem;font-size:0.68rem;color:#bbb;font-weight:600;">l</th>
                                                 <th class="text-center" style="padding:0.3rem 0.5rem;font-size:0.68rem;color:#bbb;font-weight:600;">H</th>
                                                 <th colspan="{% if groupe.type == 'ouverture' or groupe.type == 'electrique' %}3{% else %}2{% endif %}"
-                                                    style="border-left:2px solid var(--border-color,#f0e8d8);"></th>
+                                                    style="border-left:2px solid var(--border-color,#e8f2ff);"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -393,7 +393,7 @@ div[style*="overflow-x:auto"]::after {
                                                 <!-- Quantité -->
                                                 <td class="text-center" style="padding:0.5rem 0.5rem;">
                                                     <span class="badge rounded-pill"
-                                                          style="background:{% if ligne.quantite > 1 %}var(--action-color,#a44200){% else %}#e0e0e0{% endif %};
+                                                          style="background:{% if ligne.quantite > 1 %}var(--c-blue,#1e6fca){% else %}#e0e0e0{% endif %};
                                                                  color:{% if ligne.quantite > 1 %}#fff{% else %}#555{% endif %};
                                                                  font-size:0.75rem;min-width:24px;">
                                                         {{ ligne.quantite }}
@@ -401,7 +401,7 @@ div[style*="overflow-x:auto"]::after {
                                                 </td>
                                                 <!-- Longueur -->
                                                 <td class="text-center text-muted"
-                                                    style="padding:0.5rem 0.5rem;border-left:2px solid var(--border-color,#f0e8d8);">
+                                                    style="padding:0.5rem 0.5rem;border-left:2px solid var(--border-color,#e8f2ff);">
                                                     {% if ligne.longueur %}{{ ligne.longueur }}{% else %}<span style="opacity:0.3;">—</span>{% endif %}
                                                 </td>
                                                 <!-- Largeur -->
@@ -413,7 +413,7 @@ div[style*="overflow-x:auto"]::after {
                                                     {% if ligne.hauteur %}{{ ligne.hauteur }}{% else %}<span style="opacity:0.3;">—</span>{% endif %}
                                                 </td>
                                                 <!-- Matériau -->
-                                                <td style="padding:0.5rem 0.75rem;color:#666;border-left:2px solid var(--border-color,#f0e8d8);">
+                                                <td style="padding:0.5rem 0.75rem;color:#666;border-left:2px solid var(--border-color,#e8f2ff);">
                                                     {{ ligne.materiau|default:"—" }}
                                                 </td>
                                                 <!-- Marque -->
@@ -461,7 +461,7 @@ div[style*="overflow-x:auto"]::after {
                     <div class="card border-0 shadow-sm" style="border-radius:14px;">
                         <div class="card-header bg-transparent border-0 pt-3 pb-1 px-3">
                             <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
-                                <i class="fas fa-layer-group me-2" style="color:var(--action-color,#a44200);"></i>Pièces par étage
+                                <i class="fas fa-layer-group me-2" style="color:var(--c-blue,#1e6fca);"></i>Pièces par étage
                             </h6>
                         </div>
                         <div class="card-body p-2">
@@ -473,8 +473,8 @@ div[style*="overflow-x:auto"]::after {
                                         <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} py-2"
                                                 type="button" data-bs-toggle="collapse"
                                                 data-bs-target="#etage-{{ etage.pk }}"
-                                                style="background:var(--bg-fallback,#fdf6f0);font-size:0.84rem;font-weight:600;">
-                                            <i class="fas fa-layer-group me-2" style="color:var(--action-color,#a44200);font-size:0.8rem;"></i>
+                                                style="background:#f8fafc;font-size:0.84rem;font-weight:600;">
+                                            <i class="fas fa-layer-group me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>
                                             {{ etage.nom }}
                                             <span class="badge bg-secondary ms-2" style="font-size:0.65rem;">{{ etage.pieces.count }} pièce{{ etage.pieces.count|pluralize }}</span>
                                         </button>
@@ -484,7 +484,7 @@ div[style*="overflow-x:auto"]::after {
                                             {% if etage.pieces.all %}
                                             <div class="d-flex flex-wrap gap-1">
                                                 {% for piece in etage.pieces.all %}
-                                                <span class="badge" style="background:var(--neutral-light,#f0e8d8);color:var(--text-primary,#3c1518);font-size:0.75rem;font-weight:500;padding:0.3rem 0.6rem;border-radius:50px;">
+                                                <span class="badge" style="background:#e8f0fe;color:var(--c-navy,#0d1628);font-size:0.75rem;font-weight:500;padding:0.3rem 0.6rem;border-radius:50px;">
                                                     {{ piece.nom }}{% if piece.surface %}<small style="opacity:0.6;"> · {{ piece.surface|floatformat:0 }} m²</small>{% endif %}
                                                 </span>
                                                 {% endfor %}
@@ -523,7 +523,7 @@ div[style*="overflow-x:auto"]::after {
             {% if user.is_staff %}
             <div id="upload-panel" class="card border-0 shadow-sm mb-3" style="border-radius:14px;display:none;">
                 <div class="card-body p-3">
-                    <h6 class="fw-bold mb-3" style="font-size:0.87rem;"><i class="fas fa-cloud-upload-alt me-2" style="color:var(--action-color,#a44200);"></i>Déposer un document</h6>
+                    <h6 class="fw-bold mb-3" style="font-size:0.87rem;"><i class="fas fa-cloud-upload-alt me-2" style="color:var(--c-blue,#1e6fca);"></i>Déposer un document</h6>
                     <div class="row g-2">
                         <div class="col-sm-4">
                             <label class="form-label fw-semibold" style="font-size:0.78rem;">Corps d'état</label>
@@ -581,14 +581,26 @@ div[style*="overflow-x:auto"]::after {
                     <span>{{ corps_key }} — {{ corps_data.label }}</span>
                     <i class="fas fa-chevron-down ms-auto" id="chevron-corps-{{ corps_key }}" style="transition:transform 0.2s;"></i>
                 </div>
-                <div id="corps-{{ corps_key }}" style="border:1px solid var(--border-color,#e0c9a6);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;">
+                <div id="corps-{{ corps_key }}" style="border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;overflow:hidden;">
                     {% for dossier_key, dossier_data in corps_data.dossiers.items %}
                     <div>
                         <div class="ged-dossier-header" onclick="toggleDossier('dos-{{ corps_key }}-{{ dossier_key }}','chevron-dos-{{ corps_key }}-{{ dossier_key }}')">
-                            <i class="fas fa-folder" style="color:var(--action-color,#a44200);font-size:0.85rem;"></i>
+                            <i class="fas fa-folder" style="color:var(--c-blue,#1e6fca);font-size:0.85rem;"></i>
                             <span>{{ dossier_data.label }}</span>
                             {% if dossier_data.count > 0 %}
-                            <span class="badge ms-auto rounded-pill" style="background:var(--action-color,#a44200);font-size:0.63rem;">{{ dossier_data.count }}</span>
+                            <span class="badge ms-auto rounded-pill" style="background:var(--c-blue,#1e6fca);font-size:0.63rem;">{{ dossier_data.count }}</span>
+                            <!-- Bouton télécharger tout le dossier (visible pour tous) -->
+                            <a href="{% url 'smartdocs:ged_download_dossier' patrimoine.pk %}?corps={{ corps_key }}&dossier={{ dossier_key }}"
+                               class="ged-dl-btn"
+                               title="Télécharger tout le dossier ({{ dossier_data.count }} fichier{{ dossier_data.count|pluralize }})"
+                               onclick="event.stopPropagation();"
+                               style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.18rem 0.55rem;
+                                      background:#eff6ff;color:var(--c-blue,#1e6fca);border-radius:6px;
+                                      font-size:0.7rem;font-weight:600;text-decoration:none;border:1px solid #bfdbfe;
+                                      transition:background 0.15s;margin-left:0.4rem;white-space:nowrap;">
+                                <i class="fas fa-download" style="font-size:0.65rem;"></i>
+                                <span class="d-none d-sm-inline">Tout</span>
+                            </a>
                             {% else %}
                             <span class="ms-auto text-muted" style="font-size:0.72rem;">vide</span>
                             {% endif %}
@@ -641,7 +653,7 @@ div[style*="overflow-x:auto"]::after {
             {% endfor %}
             {% else %}
             <div class="text-center py-5">
-                <i class="fas fa-folder-open fa-3x mb-3" style="color:var(--border-color,#e0c9a6);"></i>
+                <i class="fas fa-folder-open fa-3x mb-3" style="color:#e2e8f0;"></i>
                 <p class="text-muted">Aucun document dans la GED.{% if user.is_staff %} Cliquez sur « Ajouter » pour commencer.{% endif %}</p>
             </div>
             {% endif %}
@@ -699,7 +711,7 @@ div[style*="overflow-x:auto"]::after {
 
             {% else %}
             <div class="text-center py-5">
-                <i class="fas fa-map fa-3x mb-3" style="color:var(--border-color,#e0c9a6);"></i>
+                <i class="fas fa-map fa-3x mb-3" style="color:#e2e8f0;"></i>
                 <p class="text-muted">Aucun modèle 3D disponible. Uploadez un fichier IFC.</p>
                 {% if user.is_staff %}
                 <a href="{% url 'smartdocs:patrimoine_edit' patrimoine.pk %}" class="btn btn-primary btn-sm">
@@ -719,7 +731,7 @@ div[style*="overflow-x:auto"]::after {
                     <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
                         <div class="card-header bg-transparent border-0 pt-3 pb-1 px-3">
                             <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
-                                <i class="fas fa-map me-2" style="color:var(--action-color,#a44200);"></i>Plan de masse
+                                <i class="fas fa-map me-2" style="color:var(--c-blue,#1e6fca);"></i>Plan de masse
                             </h6>
                         </div>
                         <div class="card-body p-2">
@@ -736,11 +748,11 @@ div[style*="overflow-x:auto"]::after {
                                         <i class="fas fa-cube me-1"></i>3D
                                     </button>
                                     <button id="masse-btn-top" onclick="masseSetCamera('top')"
-                                            style="background:rgba(164,66,0,0.5);border:none;color:#fff;border-radius:6px;padding:0.25rem 0.55rem;font-size:0.72rem;cursor:pointer;" title="Vue plan">
+                                            style="background:rgba(30,111,202,0.5);border:none;color:#fff;border-radius:6px;padding:0.25rem 0.55rem;font-size:0.72rem;cursor:pointer;" title="Vue plan">
                                         <i class="fas fa-th me-1"></i>Plan
                                     </button>
                                     <button id="masse-btn-orbit" onclick="masseSetNav('orbit')"
-                                            style="background:rgba(164,66,0,0.5);border:none;color:#fff;border-radius:6px;padding:0.25rem 0.55rem;font-size:0.72rem;cursor:pointer;" title="Orbiter">
+                                            style="background:rgba(30,111,202,0.5);border:none;color:#fff;border-radius:6px;padding:0.25rem 0.55rem;font-size:0.72rem;cursor:pointer;" title="Orbiter">
                                         <i class="fas fa-sync-alt me-1"></i>Orbit
                                     </button>
                                     <button id="masse-btn-pan" onclick="masseSetNav('pan')"
@@ -758,7 +770,7 @@ div[style*="overflow-x:auto"]::after {
                             </div>
                             {% else %}
                             <div class="text-center py-4">
-                                <i class="fas fa-map fa-2x mb-2" style="color:var(--border-color,#e0c9a6);"></i>
+                                <i class="fas fa-map fa-2x mb-2" style="color:#e2e8f0;"></i>
                                 <p class="text-muted small mb-0">Plan de masse non disponible.<br>Requiert un modèle IFC.</p>
                             </div>
                             {% endif %}
@@ -771,7 +783,7 @@ div[style*="overflow-x:auto"]::after {
                     <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
                         <div class="card-header bg-transparent border-0 pt-3 pb-1 px-3 d-flex justify-content-between align-items-center">
                             <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
-                                <i class="fas fa-building me-2" style="color:var(--action-color,#a44200);"></i>
+                                <i class="fas fa-building me-2" style="color:var(--c-blue,#1e6fca);"></i>
                                 {% if site %}{{ site.nom }}{% else %}Composition du site{% endif %}
                             </h6>
                             {% if user.is_staff %}
@@ -782,7 +794,7 @@ div[style*="overflow-x:auto"]::after {
                         </div>
 
                         {% if user.is_staff %}
-                        <div id="compo-panel" class="px-3 pb-3" style="display:none;background:var(--bg-fallback,#fdf6f0);border-bottom:1px solid var(--border-color,#e0c9a6);">
+                        <div id="compo-panel" class="px-3 pb-3" style="display:none;background:#f8fafc;border-bottom:1px solid #e2e8f0;">
                             {% if not site %}
                             <div class="pt-2">
                                 <p class="text-muted small mb-2">Ce bâtiment n'appartient à aucun site.</p>
@@ -807,8 +819,8 @@ div[style*="overflow-x:auto"]::after {
 
                         <div class="card-body p-3 pt-2" style="max-height:320px;overflow-y:auto;">
                             {% if site %}
-                            <div class="bat-card" style="border:2px solid var(--action-color,#a44200);">
-                                <div class="bat-avatar" style="background:linear-gradient(135deg,#5c1a1a,#a44200);">
+                            <div class="bat-card" style="border:2px solid var(--c-blue,#1e6fca);">
+                                <div class="bat-avatar" style="background:linear-gradient(135deg,#0d1628,#1e6fca);">
                                     <i class="fas fa-building text-white" style="font-size:0.9rem;"></i>
                                 </div>
                                 <div class="flex-grow-1 min-w-0">
@@ -818,8 +830,8 @@ div[style*="overflow-x:auto"]::after {
                             </div>
                             {% for b in site_batiments %}{% if b.pk != patrimoine.pk %}
                             <div class="bat-card" id="bat-card-{{ b.pk }}">
-                                <div class="bat-avatar" style="background:var(--neutral-light,#f0e8d8);">
-                                    <i class="fas fa-building" style="color:var(--action-color,#a44200);font-size:0.9rem;"></i>
+                                <div class="bat-avatar" style="background:#e8f0fe;">
+                                    <i class="fas fa-building" style="color:var(--c-blue,#1e6fca);font-size:0.9rem;"></i>
                                 </div>
                                 <div class="flex-grow-1 min-w-0">
                                     <a href="{% url 'smartdocs:patrimoine_detail' b.pk %}" class="fw-semibold text-decoration-none text-truncate d-block" style="font-size:0.85rem;">{{ b.nom }}</a>
@@ -837,7 +849,7 @@ div[style*="overflow-x:auto"]::after {
                             {% endif %}{% endfor %}
                             {% else %}
                             <div class="text-center py-4">
-                                <i class="fas fa-sitemap fa-2x mb-2" style="color:var(--border-color,#e0c9a6);"></i>
+                                <i class="fas fa-sitemap fa-2x mb-2" style="color:#e2e8f0;"></i>
                                 <p class="text-muted small mb-0">Aucun site associé.{% if user.is_staff %} Cliquez sur « Gérer ».{% endif %}</p>
                             </div>
                             {% endif %}
@@ -875,9 +887,9 @@ function showTab(id, el) {
 function filterEqTab(type, btn) {
     document.querySelectorAll('.eq-tab-btn').forEach(b => {
         b.style.background = '#fff'; b.style.color = '#888';
-        b.style.borderColor = 'var(--border-color,#e0c9a6)';
+        b.style.borderColor = '#e2e8f0';
     });
-    btn.style.background = 'var(--action-color,#a44200)';
+    btn.style.background = 'var(--c-blue,#1e6fca)';
     btn.style.color = '#fff';
     document.querySelectorAll('.eq-groupe').forEach(g => {
         g.classList.toggle('hidden', type !== 'all' && g.dataset.type !== type);
@@ -1017,7 +1029,7 @@ function initPlanViewer() {
                 '<span style="text-align:center;">Impossible de charger le modèle<br>' +
                 '<small style="opacity:0.6;">' + msg + '</small></span>' +
                 '<a href="{% url "viewer:viewer" patrimoine.pk %}" target="_blank" ' +
-                '   style="margin-top:0.75rem;padding:0.4rem 1rem;background:rgba(164,66,0,0.7);color:#fff;border-radius:8px;font-size:0.8rem;text-decoration:none;">' +
+                '   style="margin-top:0.75rem;padding:0.4rem 1rem;background:rgba(30,111,202,0.7);color:#fff;border-radius:8px;font-size:0.8rem;text-decoration:none;">' +
                 '   <i class="fas fa-external-link-alt me-1"></i>Ouvrir le viewer</a>';
         });
 
@@ -1075,8 +1087,8 @@ function planReset() {
     _planFitCamera();
 }
 function planSetCamera(mode) {
-    document.getElementById('plan-btn-persp').style.background = mode==='perspective'?'rgba(164,66,0,0.5)':'rgba(255,255,255,0.12)';
-    document.getElementById('plan-btn-top').style.background   = mode==='top'?'rgba(164,66,0,0.5)':'rgba(255,255,255,0.12)';
+    document.getElementById('plan-btn-persp').style.background = mode==='perspective'?'rgba(30,111,202,0.5)':'rgba(255,255,255,0.12)';
+    document.getElementById('plan-btn-top').style.background   = mode==='top'?'rgba(30,111,202,0.5)':'rgba(255,255,255,0.12)';
     const t = planOrbit.target;
     if (mode==='top') { planCamera.position.set(t.x, t.y+80, t.z+0.01); }
     else              { planCamera.position.set(t.x+15, t.y+12, t.z+20); }
@@ -1295,8 +1307,8 @@ function _setupMasseOrbit(canvas) {
 function masseSetCamera(mode) {
     const t = _masseS.target;
     const dist = _masseS._dist || 30;
-    document.getElementById('masse-btn-persp').style.background = mode === 'perspective' ? 'rgba(164,66,0,0.5)' : 'rgba(255,255,255,0.12)';
-    document.getElementById('masse-btn-top').style.background   = mode === 'top'         ? 'rgba(164,66,0,0.5)' : 'rgba(255,255,255,0.12)';
+    document.getElementById('masse-btn-persp').style.background = mode === 'perspective' ? 'rgba(30,111,202,0.5)' : 'rgba(255,255,255,0.12)';
+    document.getElementById('masse-btn-top').style.background   = mode === 'top'         ? 'rgba(30,111,202,0.5)' : 'rgba(255,255,255,0.12)';
     if (mode === 'top') {
         masseCamera.position.set(t.x, t.y + dist * 1.2, t.z + 0.01);
     } else {
@@ -1307,8 +1319,8 @@ function masseSetCamera(mode) {
 
 function masseSetNav(mode) {
     masseNavMode = mode;
-    document.getElementById('masse-btn-orbit').style.background = mode === 'orbit' ? 'rgba(164,66,0,0.5)' : 'rgba(255,255,255,0.12)';
-    document.getElementById('masse-btn-pan').style.background   = mode === 'pan'   ? 'rgba(164,66,0,0.5)' : 'rgba(255,255,255,0.12)';
+    document.getElementById('masse-btn-orbit').style.background = mode === 'orbit' ? 'rgba(30,111,202,0.5)' : 'rgba(255,255,255,0.12)';
+    document.getElementById('masse-btn-pan').style.background   = mode === 'pan'   ? 'rgba(30,111,202,0.5)' : 'rgba(255,255,255,0.12)';
     // Curseur
     document.getElementById('masse-canvas').style.cursor = mode === 'pan' ? 'grab' : 'default';
 }

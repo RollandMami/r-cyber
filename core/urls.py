@@ -28,6 +28,7 @@ urlpatterns = [
     path('',             include('apps.home.urls')),
     path('compte/',      include('apps.users.urls')),
 	path('construction/', include('apps.construction.urls')),
+	path('dashboard/', include('apps.dashboard.urls')),
 
     # App version management
     path('api/version/',  api_version,      name='api_version'),

@@ -46,26 +46,7 @@ def vitrine_detail(request, pk):
 @login_required
 def dashboard(request):
     """Tableau de bord global de l'activité construction."""
-    projets = Projet.objects.prefetch_related('taches', 'factures', 'photos')
-    stats = {
-        'total':      projets.count(),
-        'en_cours':   projets.filter(statut='en_cours').count(),
-        'termine':    projets.filter(statut='termine').count(),
-        'ca_total':   Facture.objects.filter(statut__in=['envoyee','payee']).aggregate(t=Sum('montant_ttc'))['t'] or 0,
-        'ca_paye':    Facture.objects.filter(statut='payee').aggregate(t=Sum('montant_ttc'))['t'] or 0,
-        'factures_retard': Facture.objects.filter(statut='retard').count(),
-        'taches_retard':   TacheGantt.objects.filter(
-            date_fin__lt=timezone.now().date(),
-            statut__in=['a_faire','en_cours']
-        ).count(),
-    }
-    projets_recents = projets.order_by('-cree_le')[:6]
-    factures_recentes = Facture.objects.select_related('projet').order_by('-date_emission')[:5]
-    return render(request, 'construction/dashboard.html', {
-        'stats': stats,
-        'projets_recents': projets_recents,
-        'factures_recentes': factures_recentes,
-    })
+    return redirect('dashboard:index')
 
 
 # ─────────────────────────────────────────────────────────────────────────────
