@@ -177,4 +177,13 @@ def contact(request):
 
 
 def projects(request):
-    return render(request, 'home/projects.html')
+    projets_btp = (
+        Projet.objects
+              .filter(visible_vitrine=True)
+              .prefetch_related('photos')
+              .order_by('-date_fin_reelle', '-cree_le')
+    )
+    return render(request, 'home/projects.html', {
+        'projets_btp': projets_btp,
+    })
+

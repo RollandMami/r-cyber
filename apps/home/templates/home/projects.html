@@ -140,6 +140,157 @@ body { font-family: 'DM Sans', system-ui, sans-serif; }
     font-size: 5rem; text-align: center; min-width: 180px;
 }
 
+/* ── Section BTP Construction ────────────────────────────── */
+.btp-section {
+    background: #f8f5ef;
+    border-top: 1px solid #e8e3d8;
+    padding: 5rem 0;
+}
+.btp-section-head {
+    display: flex; align-items: flex-end;
+    justify-content: space-between; flex-wrap: wrap;
+    gap: 1.25rem; margin-bottom: 3rem;
+}
+.btp-label {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #c9a84c; margin-bottom: 0.5rem;
+}
+.btp-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    color: #0d1117; line-height: 1.15; margin: 0;
+}
+.btp-desc {
+    color: #64748b; font-size: 0.9rem;
+    margin: 0.4rem 0 0; max-width: 480px; line-height: 1.65;
+}
+.btp-link-all {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border: 1.5px solid #0d1628;
+    border-radius: 10px; color: #0d1628;
+    font-size: 0.85rem; font-weight: 600;
+    text-decoration: none; transition: all 0.2s ease;
+    white-space: nowrap; flex-shrink: 0;
+}
+.btp-link-all:hover { background: #0d1628; color: #fff; }
+
+/* Grille BTP */
+.btp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Carte BTP */
+.btp-card {
+    background: #fff;
+    border: 1px solid #e2e0d8;
+    border-radius: 18px;
+    overflow: hidden;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column;
+    transition: all 0.3s ease;
+}
+.btp-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+    color: inherit;
+}
+/* Image */
+.btp-card-img {
+    height: 210px; overflow: hidden; position: relative;
+    background: linear-gradient(135deg, #e8e3d8, #d8d0c0);
+    display: flex; align-items: center; justify-content: center;
+}
+.btp-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.4s ease;
+}
+.btp-card:hover .btp-card-img img { transform: scale(1.05); }
+.btp-card-no-img {
+    font-size: 3.5rem; color: rgba(0,0,0,0.12);
+}
+/* Miniatures */
+.btp-thumb-strip {
+    position: absolute; bottom: 8px; left: 8px;
+    display: flex; gap: 4px;
+}
+.btp-thumb {
+    width: 38px; height: 30px; border-radius: 5px;
+    overflow: hidden; cursor: pointer; flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.65);
+    transition: border-color 0.2s;
+}
+.btp-thumb img { width:100%; height:100%; object-fit:cover; }
+.btp-thumb.active { border-color: #fff; }
+/* Badge statut */
+.btp-badge {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 0.63rem; font-weight: 700;
+    padding: 0.2rem 0.6rem; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.btp-badge-livre   { background: rgba(34,197,94,0.92);  color: #fff; }
+.btp-badge-cours   { background: rgba(245,158,11,0.92); color: #fff; }
+.btp-badge-recep   { background: rgba(99,102,241,0.92); color: #fff; }
+/* Corps */
+.btp-card-body { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+.btp-card-type {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #c9a84c; margin-bottom: 0.4rem;
+}
+.btp-card-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.25rem; color: #0d1117;
+    margin-bottom: 0.45rem; line-height: 1.25;
+}
+.btp-card-desc {
+    font-size: 0.84rem; color: #475569;
+    line-height: 1.65; flex: 1;
+}
+.btp-card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 1rem; padding-top: 0.75rem;
+    border-top: 1px solid #f1ece2;
+    font-size: 0.75rem; color: #94a3b8;
+}
+.btp-cta { color: #1e6fca; font-weight: 700; display: flex; align-items: center; gap: 0.3rem; }
+
+/* Carte "projet suivant" BTP */
+.btp-card-next {
+    border: 2px dashed #e2e0d8;
+    background: #fafaf8;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 340px; text-decoration: none; color: inherit;
+    border-radius: 18px; transition: all 0.3s;
+}
+.btp-card-next:hover { border-color: #c9a84c; background: #fffdf7; color: inherit; }
+
+/* État vide */
+.btp-empty {
+    text-align: center; padding: 3.5rem 2rem;
+    color: #94a3b8; grid-column: 1/-1;
+}
+.btp-empty i { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; opacity: 0.2; }
+
+@media (max-width: 767.98px) {
+    .btp-section-head { flex-direction: column; align-items: flex-start; }
+}
+
+/* Filtre tabs */
+.btp-filters {
+    display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 2rem;
+}
+.btp-filter-btn {
+    padding: 0.35rem 0.9rem; border-radius: 50px;
+    font-size: 0.78rem; font-weight: 600;
+    border: 1.5px solid #e2e0d8; background: #fff;
+    color: #475569; cursor: pointer; transition: all 0.2s;
+}
+.btp-filter-btn:hover,
+.btp-filter-btn.active { background: #0d1628; color: #fff; border-color: #0d1628; }
+
 @media (max-width: 767.98px) {
     .project-featured { grid-template-columns: 1fr; }
     .pf-visual { display: none; }
@@ -351,5 +502,189 @@ body { font-family: 'DM Sans', system-ui, sans-serif; }
         </div>
     </div>
 </section>
+
+{# ══════════════════════════════════════════════════════════════
+   SECTION BTP — Chantiers de construction (dynamique Django)
+   ══════════════════════════════════════════════════════════════ #}
+<section class="btp-section" id="btp">
+    <div class="container">
+
+        {# En-tête section #}
+        <div class="btp-section-head">
+            <div>
+                <div class="btp-label">BTP · Construction & Rénovation</div>
+                <h2 class="btp-title">Chantiers réalisés</h2>
+                <p class="btp-desc">
+                    Nos projets de construction, rénovation et aménagement —
+                    de la conception à la livraison.
+                </p>
+            </div>
+            {% if user.is_authenticated and user.is_staff %}
+            <a href="{% url 'construction:projet_create' %}" class="btp-link-all">
+                <i class="fas fa-plus"></i> Ajouter un projet
+            </a>
+            {% endif %}
+        </div>
+
+        {# Filtres par type (visibles seulement si assez de projets) #}
+        {% if projets_btp|length > 3 %}
+        <div class="btp-filters" id="btpFilters">
+            <button class="btp-filter-btn active" data-filter="all">Tous</button>
+            <button class="btp-filter-btn" data-filter="batiment">Bâtiment neuf</button>
+            <button class="btp-filter-btn" data-filter="renovation">Rénovation</button>
+            <button class="btp-filter-btn" data-filter="amenagement">Aménagement</button>
+            <button class="btp-filter-btn" data-filter="vrd">VRD / Génie civil</button>
+        </div>
+        {% endif %}
+
+        {# Grille projets BTP #}
+        <div class="btp-grid" id="btpGrid">
+
+            {% for projet in projets_btp %}
+            <a href="{% url 'construction:vitrine_detail' pk=projet.pk %}"
+               class="btp-card"
+               data-type="{{ projet.type_projet }}">
+
+                {# Image + miniatures #}
+                <div class="btp-card-img">
+                    {% with ph=projet.photo_principale %}
+                    {% if ph %}
+                        <img src="{{ ph.image.url }}"
+                             alt="{{ ph.legende }}"
+                             id="btpImg_{{ projet.pk }}">
+                    {% else %}
+                        <div class="btp-card-no-img"><i class="fas fa-hard-hat"></i></div>
+                    {% endif %}
+                    {% endwith %}
+
+                    {% with photos=projet.photos.all %}
+                    {% if photos|length > 1 %}
+                    <div class="btp-thumb-strip">
+                        {% for photo in photos|slice:":4" %}
+                        <div class="btp-thumb {% if forloop.first %}active{% endif %}"
+                             onclick="event.preventDefault();
+                                      btpSwap({{ projet.pk }},'{{ photo.image.url }}',this)">
+                            <img src="{{ photo.image.url }}" alt="">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    {# Badge statut #}
+                    {% if projet.statut == 'termine' %}
+                        <span class="btp-badge btp-badge-livre">Livré</span>
+                    {% elif projet.statut == 'en_cours' %}
+                        <span class="btp-badge btp-badge-cours">En cours</span>
+                    {% elif projet.statut == 'reception' %}
+                        <span class="btp-badge btp-badge-recep">Réception</span>
+                    {% endif %}
+                </div>
+
+                {# Corps #}
+                <div class="btp-card-body">
+                    <div class="btp-card-type">{{ projet.get_type_projet_display }}</div>
+                    <h3 class="btp-card-title">{{ projet.titre }}</h3>
+                    <p class="btp-card-desc">
+                        {{ projet.description_courte|default:projet.cahier_des_charges|truncatechars:115 }}
+                    </p>
+                    <div class="btp-card-footer">
+                        <span>
+                            {% if projet.date_fin_reelle %}
+                                <i class="fas fa-calendar-check me-1"></i>{{ projet.date_fin_reelle|date:"Y" }}
+                            {% elif projet.date_debut %}
+                                <i class="fas fa-calendar me-1"></i>{{ projet.date_debut|date:"Y" }}
+                            {% endif %}
+                            {% if projet.adresse_chantier %}
+                                &nbsp;·&nbsp;
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ projet.adresse_chantier|truncatechars:30 }}
+                            {% endif %}
+                        </span>
+                        <span class="btp-cta">
+                            Voir <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            {# Etat vide — visible uniquement quand aucun projet publié #}
+            <div class="btp-empty">
+                <i class="fas fa-hard-hat"></i>
+                Nos chantiers arrivent bientôt.
+                {% if user.is_authenticated %}
+                <br>
+                <a href="{% url 'construction:projet_create' %}"
+                   style="display:inline-flex;align-items:center;gap:0.4rem;
+                          margin-top:1rem;padding:0.55rem 1.1rem;
+                          background:#0d1628;color:#fff;
+                          border-radius:10px;font-size:0.83rem;
+                          font-weight:600;text-decoration:none;">
+                    <i class="fas fa-plus"></i> Ajouter le premier chantier
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            {# Carte CTA "Votre projet" — toujours présente #}
+            {% if projets_btp %}
+            <a href="{% url 'home:contact' %}" class="btp-card-next">
+                <div style="text-align:center;padding:2rem;">
+                    <div style="font-size:2.5rem;margin-bottom:1rem;">🏗️</div>
+                    <div style="font-family:'DM Serif Display',Georgia,serif;
+                                font-size:1.15rem;color:#0d1117;margin-bottom:0.5rem;">
+                        Votre projet
+                    </div>
+                    <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:1.25rem;">
+                        Un chantier en tête ?<br>Discutons-en.
+                    </p>
+                    <span style="display:inline-flex;align-items:center;gap:0.4rem;
+                                 background:#0d1628;color:#fff;border-radius:10px;
+                                 padding:0.6rem 1.3rem;font-size:0.85rem;font-weight:700;">
+                        <i class="fas fa-envelope"></i> Nous contacter
+                    </span>
+                </div>
+            </a>
+            {% endif %}
+
+        </div>{# /btp-grid #}
+    </div>
+</section>
+
+<script>
+/* ── Swap photo miniature BTP ──────────────────────────────── */
+function btpSwap(projetId, url, thumbEl) {
+    const img = document.getElementById('btpImg_' + projetId);
+    if (img) img.src = url;
+    thumbEl.closest('.btp-thumb-strip')
+            .querySelectorAll('.btp-thumb')
+            .forEach(t => t.classList.remove('active'));
+    thumbEl.classList.add('active');
+}
+
+/* ── Filtre par type ────────────────────────────────────────── */
+document.querySelectorAll('.btp-filter-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.btp-filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        const filter = this.dataset.filter;
+        document.querySelectorAll('.btp-card[data-type]').forEach(card => {
+            if (filter === 'all' || card.dataset.type === filter) {
+                card.style.display = '';
+                // Petite animation d'apparition
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(12px)';
+                requestAnimationFrame(() => {
+                    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    card.style.opacity   = '1';
+                    card.style.transform = '';
+                });
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
 
 {% endblock %}

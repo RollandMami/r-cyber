@@ -9,7 +9,7 @@
 {% block extra_head %}
 <style>
 .service-hero {
-    padding: var(--navbar-h) 0 4rem;
+    padding: calc(var(--navbar-h) + 3rem) 0 4rem;
     background: linear-gradient(135deg, var(--c-navy) 0%, var(--c-navy-light) 100%);
     position: relative; overflow: hidden;
 }
@@ -238,7 +238,9 @@
     </div>
 </div>
 
-{# ══════ VITRINE CONSTRUCTION — visible uniquement sur ce service ═════ #}
+{# ══════════════════════════════════════════════════════════
+   VITRINE CONSTRUCTION — visible uniquement sur ce service
+   ══════════════════════════════════════════════════════════ #}
 {% if service.slug == 'construction' %}
 <div class="const-section">
     <div class="container">
@@ -250,7 +252,7 @@
                     Sélection de projets de construction, rénovation et aménagement livrés.
                 </p>
             </div>
-            <a href="{% url 'construction:vitrine' %}"
+            <a href="{% url 'home:projects' %}#btp"
                style="display:inline-flex;align-items:center;gap:0.5rem;
                       padding:0.6rem 1.25rem;border-radius:var(--radius-sm);
                       border:1.5px solid var(--c-gray-200);color:var(--t-primary);
