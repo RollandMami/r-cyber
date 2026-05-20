@@ -105,9 +105,15 @@
                             <i class="fas fa-folder-open me-1"></i> Ouvrir
                         </a>
                         {% if p.has_viewer %}
-                        <a href="{% url 'viewer:viewer' p.pk %}" class="btn btn-sm btn-primary">
+                        <a href="{% url 'viewer:viewer' p.pk %}" class="btn btn-sm btn-primary" title="Viewer 3D">
                             <i class="fas fa-cube"></i>
                         </a>
+                        {% endif %}
+                        {% if user.is_superuser %}
+                        <button class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                onclick="confirmDelete({{ p.pk }}, '{{ p.nom|escapejs }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                         {% endif %}
                     </div>
                 </div>
@@ -172,6 +178,12 @@
                                     <i class="fas fa-cube"></i>
                                 </a>
                                 {% endif %}
+                                {% if user.is_superuser %}
+                                <button class="btn btn-sm btn-outline-danger" title="Supprimer"
+                                        onclick="confirmDelete({{ p.pk }}, '{{ p.nom|escapejs }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -196,6 +208,34 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Modal confirmation suppression -->
+{% if user.is_superuser %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius:14px;">
+            <div class="modal-body text-center p-4">
+                <div style="width:52px;height:52px;border-radius:50%;background:#fff0f0;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                    <i class="fas fa-trash" style="color:#e53935;font-size:1.2rem;"></i>
+                </div>
+                <h6 class="fw-bold mb-1">Supprimer ce bâtiment ?</h6>
+                <p class="text-muted small mb-3" id="delete-modal-name">—</p>
+                <p class="text-muted" style="font-size:0.78rem;">Cette action est irréversible.<br>Tous les documents associés seront supprimés.</p>
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-danger" id="delete-confirm-btn" onclick="submitDelete()">
+                        <i class="fas fa-trash me-1"></i> Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Form hidden pour POST delete -->
+<form id="delete-form" method="post" action="" style="display:none;">
+    {% csrf_token %}
+</form>
+{% endif %}
 
 <script>
 function setView(mode) {
@@ -222,5 +262,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const saved = localStorage.getItem('patrimoine_view');
     if (saved === 'list') setView('list');
 });
+
+// ── Suppression ────────────────────────────────────────────────
+{% if user.is_superuser %}
+let _deletePk = null;
+function confirmDelete(pk, nom) {
+    _deletePk = pk;
+    document.getElementById('delete-modal-name').textContent = nom;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+function submitDelete() {
+    if (!_deletePk) return;
+    const form = document.getElementById('delete-form');
+    form.action = '/patrimoines/' + _deletePk + '/supprimer/';
+    form.submit();
+}
+{% endif %}
 </script>
 {% endblock %}

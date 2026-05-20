@@ -770,7 +770,7 @@ async function deleteGedDoc(id){if(!confirm('Supprimer ce document ?'))return;co
    VIEWER PLAN — Three.js direct dans la page
 ══════════════════════════════════════════════════════════ */
 {% if patrimoine.has_viewer %}
-const JSON_URL = "{{ patrimoine.fichier_json.url }}";
+const JSON_URL = "{% url 'viewer:api_geometrie' patrimoine.pk %}";
 
 // Données pièces par étage pour le select
 const ETAGE_PIECES_DATA = {
@@ -816,15 +816,34 @@ function initPlanViewer() {
     canvas.addEventListener('mousemove', _planHover);
     window.addEventListener('resize', _planResize);
 
-    fetch(JSON_URL)
-        .then(r => r.json())
+    const _planAbort = new AbortController();
+    const _planTimeout = setTimeout(() => _planAbort.abort(), 30000); // 30s max
+    fetch(JSON_URL, { signal: _planAbort.signal, credentials: 'same-origin' })
+        .then(r => {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
         .then(data => {
+            clearTimeout(_planTimeout);
+            if (!data.etages || data.etages.length === 0) {
+                document.getElementById('plan-loading').innerHTML =
+                    '<i class="fas fa-info-circle" style="color:#90caf9;font-size:1.5rem;"></i>' +
+                    '<span>Aucun étage dans le modèle.<br><small style="opacity:0.6;">Reconvertissez le fichier IFC.</small></span>';
+                return;
+            }
             _buildPlanScene(data, root);
             document.getElementById('plan-loading').style.display = 'none';
         })
-        .catch(() => {
+        .catch(err => {
+            clearTimeout(_planTimeout);
+            const msg = err.name === 'AbortError' ? 'Délai dépassé (30s)' : (err.message || 'Erreur réseau');
             document.getElementById('plan-loading').innerHTML =
-                '<i class="fas fa-exclamation-triangle" style="color:#e57c2a;"></i><span>Erreur de chargement</span>';
+                '<i class="fas fa-exclamation-triangle" style="color:#e57c2a;font-size:1.5rem;"></i>' +
+                '<span style="text-align:center;">Impossible de charger le modèle<br>' +
+                '<small style="opacity:0.6;">' + msg + '</small></span>' +
+                '<a href="{% url "viewer:viewer" patrimoine.pk %}" target="_blank" ' +
+                '   style="margin-top:0.75rem;padding:0.4rem 1rem;background:rgba(164,66,0,0.7);color:#fff;border-radius:8px;font-size:0.8rem;text-decoration:none;">' +
+                '   <i class="fas fa-external-link-alt me-1"></i>Ouvrir le viewer</a>';
         });
 
     (function loop() { requestAnimationFrame(loop); planRenderer.render(planScene, planCamera); })();
@@ -973,7 +992,7 @@ function initMasseViewer() {
     masseScene.add(new THREE.GridHelper(500,50,0x333355,0x222233));
     _setupMasseOrbit(canvas);
 
-    fetch(JSON_URL).then(r=>r.json()).then(data=>{
+    fetch(JSON_URL, {credentials:'same-origin'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(data=>{
         masseMeshes=[];
         data.etages.forEach(etage=>{
             const g=new THREE.Group();g.rotation.x=0;
@@ -1000,7 +1019,7 @@ function initMasseViewer() {
             masseCamera.lookAt(center);masseOrbit._sync();
         }
         document.getElementById('masse-loading').style.display='none';
-    }).catch(()=>{document.getElementById('masse-loading').innerHTML='<i class="fas fa-exclamation-triangle" style="color:#e57c2a;"></i><span style="font-size:0.78rem;">Erreur</span>';});
+    }).catch((e)=>{document.getElementById('masse-loading').innerHTML='<i class="fas fa-exclamation-triangle" style="color:#e57c2a;"></i><span style="font-size:0.78rem;">'+(e.message||'Erreur')+'</span>';});
 
     (function loop(){requestAnimationFrame(loop);masseRenderer.render(masseScene,masseCamera);})();
 }
