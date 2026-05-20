@@ -103,6 +103,29 @@ def site_delete(request, pk):
     messages.success(request, f'Site « {nom} » supprimé.')
     return redirect('smartdocs:site_list')
 
+@login_required
+@require_POST
+def site_gerer(request, pk):
+    """Gère l'ajout ou le retrait de bâtiments au sein d'un site."""
+    site = get_object_or_404(Site, pk=pk)
+    action = request.POST.get('action')
+
+    if action == 'add_batiment':
+        if not request.user.is_staff:
+            messages.error(request, 'Permission refusée.')
+            return redirect('smartdocs:site_detail', pk=site.pk)
+            
+        batiment_pk = request.POST.get('batiment_pk')
+        if batiment_pk:
+            batiment = get_object_or_404(Patrimoine, pk=batiment_pk)
+            batiment.site = site
+            batiment.save()
+            messages.success(request, f'Le bâtiment « {batiment.nom} » a été ajouté au site « {site.nom} ».')
+        else:
+            messages.error(request, 'Aucun bâtiment sélectionné.')
+
+    # Redirection vers le détail du site une fois l'action effectuée
+    return redirect('smartdocs:site_detail', pk=site.pk)
 
 # ═══════════════════════════════════════════════════════════
 #  PATRIMOINES (BÂTIMENTS)
