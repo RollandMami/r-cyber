@@ -103,6 +103,32 @@ def site_delete(request, pk):
     messages.success(request, f'Site « {nom} » supprimé.')
     return redirect('smartdocs:site_list')
 
+@login_required
+@require_POST
+def site_gerer(request, pk):
+    """Gère l'ajout ou la suppression de bâtiments liés à un site."""
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Permission refusée'}, status=403)
+        
+    # Ici, le 'pk' passé est celui du patrimoine (bâtiment) actuel 
+    # depuis lequel on gère l'action, ou du site selon ta logique de template.
+    action = request.POST.get('action')
+    batiment_pk = request.POST.get('batiment_pk')
+    
+    if action == 'add_batiment' and batiment_pk:
+        # On récupère le bâtiment qu'on veut ajouter
+        batiment_a_ajouter = get_object_or_404(Patrimoine, pk=batiment_pk)
+        # On récupère le bâtiment pivot pour connaître le site cible
+        batiment_actuel = get_object_or_404(Patrimoine, pk=pk)
+        
+        if batiment_actuel.site:
+            batiment_a_ajouter.site = batiment_actuel.site
+            batiment_a_ajouter.save()
+            messages.success(request, f'Le bâtiment « {batiment_a_ajouter.nom} » a été ajouté au site.')
+        else:
+            messages.error(request, "Le bâtiment actuel n'est associé à aucun site.")
+            
+    return redirect('smartdocs:patrimoine_detail', pk=pk)
 
 # ═══════════════════════════════════════════════════════════
 #  PATRIMOINES (BÂTIMENTS)

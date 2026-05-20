@@ -10,6 +10,7 @@ urlpatterns = [
     path('sites/<int:pk>/',               views.site_detail, name='site_detail'),
     path('sites/<int:pk>/modifier/',      views.site_edit,   name='site_edit'),
     path('sites/<int:pk>/supprimer/',     views.site_delete, name='site_delete'),
+	path('sites/gerer/<int:pk>/',         views.site_gerer,  name='site_gerer'),
 
     # ── Patrimoines (bâtiments) ────────────────────────────────────
     path('nouveau/',                          views.patrimoine_create,          name='patrimoine_create'),
