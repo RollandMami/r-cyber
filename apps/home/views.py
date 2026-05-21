@@ -140,13 +140,31 @@ def service_detail(request, slug):
         from django.http import Http404
         raise Http404(f'Service « {slug} » introuvable')
     context = {'service': service, 'services': SERVICES}
-    if slug == 'construction':
-        context['projets_vitrine'] = (
+
+    # Projets vitrine — filtrés par service_tag pour tous les services
+    # Le modèle Projet doit avoir un champ service_tag (CharField)
+    # correspondant aux slugs : 'btp', 'construction', 'info-dev', etc.
+    try:
+        projets = (
             Projet.objects
-                .filter(visible_vitrine=True)
+                .filter(visible_vitrine=True, service_tag=slug)
                 .prefetch_related('photos')
                 .order_by('-date_fin_reelle', '-cree_le')[:6]
         )
+        context['projets_vitrine'] = projets
+    except Exception:
+        # Si le champ service_tag n'existe pas encore en base,
+        # on garde le comportement historique pour construction
+        if slug == 'construction':
+            context['projets_vitrine'] = (
+                Projet.objects
+                    .filter(visible_vitrine=True)
+                    .prefetch_related('photos')
+                    .order_by('-date_fin_reelle', '-cree_le')[:6]
+            )
+        else:
+            context['projets_vitrine'] = Projet.objects.none()
+
     return render(request, 'home/service_detail.html', context)
 
 

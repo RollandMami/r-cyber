@@ -239,18 +239,18 @@
 </div>
 
 {# VITRINE CONSTRUCTION — visible uniquement sur ce service #}
-{% if service.slug == 'construction' %}
+{% if projets_vitrine is not None %}
 <div class="const-section">
     <div class="container">
         <div class="const-section-header">
             <div>
                 <div class="section-label">Réalisations · Our projects</div>
-                <h2 class="section-title" style="margin-bottom:0.25rem;">Nos chantiers réalisés</h2>
+                <h2 class="section-title" style="margin-bottom:0.25rem;">Nos réalisations</h2>
                 <p style="color:var(--t-secondary);font-size:0.9rem;margin:0;">
-                    Sélection de projets de construction, rénovation et aménagement livrés.
+                    Sélection de projets livrés dans ce domaine.
                 </p>
             </div>
-            <a href="{% url 'home:projects' %}#btp"
+            <a href="{% url 'home:projects' %}"
                style="display:inline-flex;align-items:center;gap:0.5rem;
                       padding:0.6rem 1.25rem;border-radius:var(--radius-sm);
                       border:1.5px solid var(--c-gray-200);color:var(--t-primary);
@@ -265,7 +265,11 @@
         {% if projets_vitrine %}
         <div class="const-grid">
             {% for projet in projets_vitrine %}
+            {% if service.slug == 'construction' %}
             <a href="{% url 'construction:vitrine_detail' pk=projet.pk %}" class="const-card">
+            {% else %}
+            <div class="const-card" style="cursor:default;">
+            {% endif %}
 
                 {# Visuel photo #}
                 <div class="const-card-img">
@@ -326,7 +330,11 @@
                         </span>
                     </div>
                 </div>
+            {% if service.slug == 'construction' %}
             </a>
+            {% else %}
+            </div>
+            {% endif %}
             {% endfor %}
         </div>
 
@@ -338,7 +346,8 @@
                 Nos réalisations arrivent bientôt.
                 {% if user.is_authenticated %}
                 <br>
-                <a href="{% url 'construction:projet_create' %}"
+                {% if service.slug == 'construction' %}
+                <a href="{% url 'construction:projet_create' %}
                    style="display:inline-flex;align-items:center;gap:0.4rem;
                           margin-top:0.75rem;padding:0.5rem 1rem;
                           background:var(--c-blue);color:#fff;
@@ -346,6 +355,7 @@
                           font-size:0.82rem;font-weight:600;text-decoration:none;">
                     <i class="fas fa-plus"></i> Ajouter un projet
                 </a>
+                {% endif %}
                 {% endif %}
             </div>
         </div>
