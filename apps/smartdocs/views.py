@@ -103,32 +103,6 @@ def site_delete(request, pk):
     messages.success(request, f'Site « {nom} » supprimé.')
     return redirect('smartdocs:site_list')
 
-@login_required
-@require_POST
-def site_gerer(request, pk):
-    """Gère l'ajout ou la suppression de bâtiments liés à un site."""
-    if not request.user.is_staff:
-        return JsonResponse({'error': 'Permission refusée'}, status=403)
-        
-    # Ici, le 'pk' passé est celui du patrimoine (bâtiment) actuel 
-    # depuis lequel on gère l'action, ou du site selon ta logique de template.
-    action = request.POST.get('action')
-    batiment_pk = request.POST.get('batiment_pk')
-    
-    if action == 'add_batiment' and batiment_pk:
-        # On récupère le bâtiment qu'on veut ajouter
-        batiment_a_ajouter = get_object_or_404(Patrimoine, pk=batiment_pk)
-        # On récupère le bâtiment pivot pour connaître le site cible
-        batiment_actuel = get_object_or_404(Patrimoine, pk=pk)
-        
-        if batiment_actuel.site:
-            batiment_a_ajouter.site = batiment_actuel.site
-            batiment_a_ajouter.save()
-            messages.success(request, f'Le bâtiment « {batiment_a_ajouter.nom} » a été ajouté au site.')
-        else:
-            messages.error(request, "Le bâtiment actuel n'est associé à aucun site.")
-            
-    return redirect('smartdocs:patrimoine_detail', pk=pk)
 
 # ═══════════════════════════════════════════════════════════
 #  PATRIMOINES (BÂTIMENTS)
@@ -143,23 +117,25 @@ def patrimoine_list(request):
 @login_required
 def patrimoine_detail(request, pk):
     patrimoine = get_object_or_404(Patrimoine, pk=pk)
-    etages     = patrimoine.etages.prefetch_related('pieces', 'documents', 'revetements', 'equipements').all()
+    etages     = patrimoine.etages.prefetch_related('pieces', 'revetements', 'equipements').all()
     types_docs = TypeDocument.objects.all()
 
     surface_ifc = patrimoine.surface_ifc()
     nb_etages   = patrimoine.nombre_etages()
-    revetements = RevetementMur.objects.filter(patrimoine=patrimoine).select_related('etage')
-    equipements = EquipementOuverture.objects.filter(patrimoine=patrimoine).select_related('etage')
 
-    # Groupes simples (pour les KPI cards)
+    revetements = (RevetementMur.objects
+                   .filter(patrimoine=patrimoine)
+                   .select_related('etage', 'piece')
+                   .order_by('etage__niveau', 'type_revetement', 'nature', 'nom'))
+    groupes_revetements = _build_revetement_groups(revetements, patrimoine)
+
+    equipements = EquipementOuverture.objects.filter(patrimoine=patrimoine).select_related('etage')
     sanitaires  = equipements.filter(type_element='sanitaire')
     ouvertures  = equipements.filter(type_element='ouverture')
     mep         = equipements.filter(type_element__in=['mep', 'equipement'])
     electrique  = equipements.filter(type_element='electrique')
     protection  = equipements.filter(type_element='protection')
     mobilier    = equipements.filter(type_element='mobilier')
-
-    # Groupes enrichis avec regroupement nomenclature → lignes agrégées
     groupes_tableau = _build_equipment_groups(equipements)
 
     docs_ged = DocumentGED.objects.filter(patrimoine=patrimoine).select_related('uploade_par')
@@ -169,26 +145,54 @@ def patrimoine_detail(request, pk):
     site_batiments = site.batiments.all() if site else []
 
     return render(request, 'smartdocs/patrimoine_detail.html', {
-        'patrimoine':         patrimoine,
-        'etages':             etages,
-        'types_docs':         types_docs,
-        'surface_ifc':        surface_ifc,
-        'nb_etages':          nb_etages,
-        'revetements':        revetements,
-        'sanitaires':         sanitaires,
-        'ouvertures':         ouvertures,
-        'mep':                mep,
-        'electrique':         electrique,
-        'protection':         protection,
-        'mobilier':           mobilier,
-        'groupes_tableau':    groupes_tableau,
-        'ged_arbo':           ged_arbo,
-        'ged_arborescence':   GED_ARBORESCENCE,
-        'etages_plan':        list(etages),
-        'site':               site,
-        'site_batiments':     site_batiments,
-        'total_docs':         patrimoine.total_documents(),
+        'patrimoine':            patrimoine,
+        'etages':                etages,
+        'types_docs':            types_docs,
+        'surface_ifc':           surface_ifc,
+        'nb_etages':             nb_etages,
+        'revetements':           revetements,
+        'groupes_revetements':   groupes_revetements,
+        'sanitaires':            sanitaires,
+        'ouvertures':            ouvertures,
+        'mep':                   mep,
+        'electrique':            electrique,
+        'protection':            protection,
+        'mobilier':              mobilier,
+        'groupes_tableau':       groupes_tableau,
+        'ged_arbo':              ged_arbo,
+        'ged_arborescence':      GED_ARBORESCENCE,
+        'etages_plan':           list(etages),
+        'site':                  site,
+        'site_batiments':        site_batiments,
+        'total_docs':            patrimoine.total_documents(),
     })
+
+
+def _build_revetement_groups(revetements, patrimoine):
+    """Regroupe les revêtements par type (mur/sol/plafond)."""
+    TYPE_LABELS = {
+        'mur':     ('Murs',     'fa-border-all'),
+        'sol':     ('Sols',     'fa-layer-group'),
+        'plafond': ('Plafonds', 'fa-cloud'),
+        'autre':   ('Autres',   'fa-cube'),
+    }
+    from collections import defaultdict
+    buckets = defaultdict(list)
+    for r in revetements:
+        buckets[r.type_revetement].append(r)
+    groupes = []
+    for type_key in ('mur', 'sol', 'plafond', 'autre'):
+        items = buckets.get(type_key, [])
+        if not items:
+            continue
+        label, icone = TYPE_LABELS[type_key]
+        total_surf = sum(float(r.surface) for r in items if r.surface)
+        groupes.append({
+            'type': type_key, 'label': label, 'icone': icone,
+            'items': items,
+            'total_surf': round(total_surf, 2) if total_surf else None,
+        })
+    return groupes
 
 
 def _build_equipment_groups(equipements):
@@ -490,8 +494,9 @@ def ged_download_dossier(request, patrimoine_pk):
     return response
 
 
-@login_required  # N'oublie pas de sécuriser l'accès au téléchargement
+@login_required
 def ged_download(request, pk):
+    """Télécharge un document unique de la GED."""
     doc = get_object_or_404(DocumentGED, pk=pk)
     if not doc.fichier:
         raise Http404

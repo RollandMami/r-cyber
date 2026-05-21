@@ -112,6 +112,7 @@
 .eq-tab-btn:hover { opacity: 0.85; }
 .eq-groupe { transition: opacity 0.15s; }
 .eq-groupe.hidden { display: none; }
+.rev-groupe.hidden { display: none; }
 
 /* Scroll horizontal subtle indicator */
 div[style*="overflow-x:auto"]::after {
@@ -167,7 +168,7 @@ div[style*="overflow-x:auto"]::after {
         <div class="flex-grow-1 min-w-0">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1" style="font-size:0.78rem;">
-                    <li class="breadcrumb-item"><a href="{% url 'smartdocs:site_list' %}">Patrimoines</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'smartdocs:patrimoine_list' %}">Patrimoines</a></li>
                     {% if site %}<li class="breadcrumb-item text-truncate">{{ site.nom }}</li>{% endif %}
                     <li class="breadcrumb-item active text-truncate">{{ patrimoine.nom }}</li>
                 </ol>
@@ -266,38 +267,272 @@ div[style*="overflow-x:auto"]::after {
             </div>
 
             <div class="row g-3">
-                <!-- Revêtements -->
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
-                        <div class="card-header bg-transparent border-0 pt-3 pb-1 px-3">
+                <!-- Revêtements — tableau enrichi mur/sol/plafond -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                        <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex align-items-center gap-3 flex-wrap">
                             <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
-                                <i class="fas fa-paint-roller me-2" style="color:var(--c-blue,#1e6fca);"></i>Revêtements de murs
+                                <i class="fas fa-paint-roller me-2" style="color:var(--c-blue,#1e6fca);"></i>Revêtements
                             </h6>
-                        </div>
-                        <div class="card-body p-2" style="max-height:300px;overflow-y:auto;">
-                            {% if revetements %}
-                            <table class="table table-sm mb-0" style="font-size:0.8rem;">
-                                <thead style="position:sticky;top:0;background:#fff;z-index:1;">
-                                    <tr><th>Élément</th><th>Matériau</th><th class="text-end">Surface</th></tr>
-                                </thead>
-                                <tbody>
-                                {% for r in revetements %}
-                                <tr>
-                                    <td>{{ r.nom }}<small class="text-muted d-block" style="font-size:0.72rem;">{{ r.etage.nom|default:"" }}</small></td>
-                                    <td class="text-muted">{{ r.materiau|default:"—" }}</td>
-                                    <td class="text-end text-nowrap">{% if r.surface %}{{ r.surface|floatformat:1 }} m²{% else %}—{% endif %}</td>
-                                </tr>
+                            <!-- Filtres type -->
+                            <div class="d-flex flex-wrap gap-1 ms-auto">
+                                <button class="rev-tab-btn active" onclick="filterRevTab('all',this)"
+                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid #bfdbfe;background:var(--c-blue,#1e6fca);color:#fff;cursor:pointer;">
+                                    Tout
+                                </button>
+                                {% for g in groupes_revetements %}
+                                <button class="rev-tab-btn" onclick="filterRevTab('{{ g.type }}',this)"
+                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid #e2e8f0;background:#fff;color:#888;cursor:pointer;">
+                                    <i class="fas {{ g.icone }} me-1"></i>{{ g.label }}
+                                    {% if g.total_surf %}<span class="text-muted" style="font-size:0.68rem;"> · {{ g.total_surf }} m²</span>{% endif %}
+                                </button>
                                 {% endfor %}
-                                </tbody>
-                            </table>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if groupes_revetements %}
+                            {% for g in groupes_revetements %}
+                            <div class="rev-groupe" data-type="{{ g.type }}">
+                                <div class="px-3 py-2 d-flex align-items-center gap-2"
+                                     style="background:#f0f7ff;border-top:1px solid #e8f2ff;">
+                                    <i class="fas {{ g.icone }}" style="color:var(--c-blue,#1e6fca);font-size:0.82rem;"></i>
+                                    <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:0.07em;color:var(--c-blue,#1e6fca);">{{ g.label }}</span>
+                                    {% if g.total_surf %}
+                                    <span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.65rem;">{{ g.total_surf }} m² total</span>
+                                    {% endif %}
+                                </div>
+                                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+                                    <table class="table table-sm table-hover mb-0" style="font-size:0.8rem;min-width:650px;">
+                                        <thead style="background:#fff;">
+                                            <tr style="border-bottom:2px solid #e2e8f0;">
+                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:100px;">Bâtiment</th>
+                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:80px;">Étage</th>
+                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:100px;">Zone / Pièce</th>
+                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:70px;">Revêtement</th>
+                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:130px;">Nature</th>
+                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:130px;">Matériau</th>
+                                                <th class="text-end" style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:80px;">Surface</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for r in g.items %}
+                                            <tr style="border-bottom:1px solid #f0f7ff;">
+                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;color:#64748b;">{{ patrimoine.nom }}</td>
+                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;">
+                                                    <span class="badge" style="background:#e8f2ff;color:#1e40af;font-size:0.68rem;font-weight:500;">
+                                                        {{ r.etage.nom|default:"—" }}
+                                                    </span>
+                                                </td>
+                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;color:#475569;">
+                                                    {{ r.piece.nom|default:"—" }}
+                                                </td>
+                                                <td style="padding:0.4rem 0.75rem;">
+                                                    <span class="badge" style="font-size:0.68rem;font-weight:600;padding:0.25rem 0.5rem;border-radius:6px;
+                                                        {% if r.type_revetement == 'sol' %}background:#fef3c7;color:#92400e;
+                                                        {% elif r.type_revetement == 'plafond' %}background:#f0fdf4;color:#166534;
+                                                        {% else %}background:#eff6ff;color:#1d4ed8;{% endif %}">
+                                                        {{ r.get_type_revetement_display }}
+                                                    </span>
+                                                </td>
+                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:500;">
+                                                    {{ r.nature|default:"—" }}
+                                                </td>
+                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;color:#64748b;">
+                                                    {{ r.materiau|default:"—" }}
+                                                </td>
+                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:600;">
+                                                    {% if r.surface %}{{ r.surface|floatformat:2 }} m²{% else %}<span style="opacity:0.3;">—</span>{% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        {% if g.total_surf %}
+                                        <tfoot>
+                                            <tr style="background:#f0f7ff;border-top:2px solid #bfdbfe;">
+                                                <td colspan="6" style="padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:700;color:var(--c-blue,#1e6fca);">Total {{ g.label }}</td>
+                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-size:0.82rem;font-weight:700;color:var(--c-blue,#1e6fca);">{{ g.total_surf }} m²</td>
+                                            </tr>
+                                        </tfoot>
+                                        {% endif %}
+                                    </table>
+                                </div>
+                            </div>
+                            {% endfor %}
                             {% else %}
-                            <p class="text-muted small text-center py-3 mb-0">Aucun revêtement extrait.{% if not patrimoine.fichier_ifc %} Uploadez un IFC.{% endif %}</p>
+                            <p class="text-muted small text-center py-4 mb-0">
+                                Aucun revêtement extrait.{% if not patrimoine.fichier_ifc %} Uploadez un IFC.{% endif %}
+                            </p>
                             {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Équipements & Ouvertures — tableau enrichi -->
+                <!-- Pièces par étage -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                        <div class="card-header bg-transparent border-0 pt-3 pb-1 px-3">
+                            <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
+                                <i class="fas fa-layer-group me-2" style="color:var(--c-blue,#1e6fca);"></i>Pièces par étage
+                            </h6>
+                        </div>
+                        <div class="card-body p-2">
+                            {% if etages %}
+                            <div class="accordion accordion-flush" id="accEtages">
+                                {% for etage in etages %}
+                                <div class="accordion-item border-0">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} py-2"
+                                                type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#etage-{{ etage.pk }}"
+                                                style="background:#f8fafc;font-size:0.84rem;font-weight:600;">
+                                            <i class="fas fa-layer-group me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>
+                                            {{ etage.nom }}
+                                            <span class="badge bg-secondary ms-2" style="font-size:0.65rem;">{{ etage.pieces.count }} pièce{{ etage.pieces.count|pluralize }}</span>
+                                        </button>
+                                    </h2>
+                                    <div id="etage-{{ etage.pk }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}">
+                                        <div class="accordion-body py-2 px-2">
+                                            {% if etage.pieces.all %}
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% for piece in etage.pieces.all %}
+                                                <span class="badge" style="background:#e8f0fe;color:var(--c-navy,#0d1628);font-size:0.75rem;font-weight:500;padding:0.3rem 0.6rem;border-radius:50px;">
+                                                    {{ piece.nom }}{% if piece.surface %}<small style="opacity:0.6;"> · {{ piece.surface|floatformat:0 }} m²</small>{% endif %}
+                                                </span>
+                                                {% endfor %}
+                                            </div>
+                                            {% else %}
+                                            <p class="text-muted small mb-0">Aucune pièce.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted small text-center py-3 mb-0">Uploadez un IFC pour extraire l'arborescence.</p>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted small text-center py-3 mb-0">Aucun étage détecté.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableaux récapitulatifs -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+                        <div class="card-header" style="background:linear-gradient(135deg,#0d1628,#1e6fca);color:#fff;padding:0.9rem 1.1rem;">
+                            <h6 class="fw-bold mb-0" style="font-size:0.9rem;">
+                                <i class="fas fa-table me-2" style="opacity:0.8;"></i>Tableaux récapitulatifs
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Nav onglets récap -->
+                            <ul class="nav nav-tabs px-3 pt-2" style="border-bottom:2px solid #e2e8f0;gap:0.25rem;">
+                                <li class="nav-item">
+                                    <button class="nav-link active px-3 py-2" style="font-size:0.82rem;"
+                                            onclick="showRecap('recap-rev',this)">
+                                        <i class="fas fa-paint-roller me-1"></i>Récap Revêtements
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link px-3 py-2" style="font-size:0.82rem;"
+                                            onclick="showRecap('recap-eq',this)">
+                                        <i class="fas fa-cogs me-1"></i>Récap Équipements
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Récap revêtements -->
+                            <div id="recap-rev" class="recap-pane p-3">
+                                {% if groupes_revetements %}
+                                <div style="overflow-x:auto;">
+                                    <table class="table table-sm mb-0" style="font-size:0.8rem;min-width:500px;">
+                                        <thead style="background:#f0f7ff;">
+                                            <tr>
+                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Type</th>
+                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Nature principale</th>
+                                                <th class="text-center" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Nb éléments</th>
+                                                <th class="text-end" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Surface totale</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for g in groupes_revetements %}
+                                            <tr>
+                                                <td style="padding:0.4rem 0.75rem;font-weight:600;">
+                                                    <i class="fas {{ g.icone }} me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>{{ g.label }}
+                                                </td>
+                                                <td style="padding:0.4rem 0.75rem;color:#64748b;">
+                                                    {% with natures=g.items|dictsort:"nature" %}
+                                                    {% for r in natures %}{% if r.nature and forloop.first %}{{ r.nature }}{% endif %}{% endfor %}
+                                                    {% endwith %}
+                                                    <span class="text-muted" style="font-size:0.72rem;">et {{ g.items|length|add:"-1" }} autres</span>
+                                                </td>
+                                                <td class="text-center" style="padding:0.4rem 0.75rem;">
+                                                    <span class="badge" style="background:#dbeafe;color:#1e40af;font-size:0.72rem;">{{ g.items|length }}</span>
+                                                </td>
+                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-weight:700;color:var(--c-blue,#1e6fca);">
+                                                    {% if g.total_surf %}{{ g.total_surf }} m²{% else %}—{% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot style="background:#f0f7ff;border-top:2px solid #bfdbfe;">
+                                            <tr>
+                                                <td colspan="3" style="padding:0.5rem 0.75rem;font-weight:700;font-size:0.82rem;">TOTAL</td>
+                                                <td class="text-end" style="padding:0.5rem 0.75rem;font-weight:700;font-size:0.85rem;color:var(--c-blue,#1e6fca);">
+                                                    {{ revetements|length }} élément{{ revetements|length|pluralize }}
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted small text-center py-3 mb-0">Aucune donnée.</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Récap équipements -->
+                            <div id="recap-eq" class="recap-pane p-3" style="display:none;">
+                                <div style="overflow-x:auto;">
+                                    <table class="table table-sm mb-0" style="font-size:0.8rem;min-width:400px;">
+                                        <thead style="background:#f0f7ff;">
+                                            <tr>
+                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Catégorie</th>
+                                                <th class="text-center" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Types distincts</th>
+                                                <th class="text-end" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Quantité totale</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for g in groupes_tableau %}
+                                            <tr>
+                                                <td style="padding:0.4rem 0.75rem;font-weight:600;">
+                                                    <i class="fas {{ g.icone }} me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>{{ g.label }}
+                                                </td>
+                                                <td class="text-center" style="padding:0.4rem 0.75rem;">
+                                                    <span class="badge" style="background:#dbeafe;color:#1e40af;font-size:0.72rem;">{{ g.lignes|length }}</span>
+                                                </td>
+                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-weight:700;color:var(--c-blue,#1e6fca);">
+                                                    {% with total=0 %}
+                                                    {% for l in g.lignes %}{% endfor %}
+                                                    {% endwith %}
+                                                    {{ g.lignes|length }} type{{ g.lignes|length|pluralize }}
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="3" class="text-muted text-center py-3">Aucun équipement.</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div><!-- /pane-info -->
+
+
                 <div class="col-12">
                     <div class="card border-0 shadow-sm" style="border-radius:14px;">
                         <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex align-items-center gap-3 flex-wrap">
@@ -884,6 +1119,23 @@ function showTab(id, el) {
 }
 
 /* ── Filtrage tableau équipements ──────────────────────────────── */
+function filterRevTab(type, btn) {
+    document.querySelectorAll('.rev-tab-btn').forEach(b => {
+        b.style.background = '#fff'; b.style.color = '#888';
+        b.style.borderColor = '#e2e8f0';
+    });
+    btn.style.background = 'var(--c-blue,#1e6fca)';
+    btn.style.color = '#fff';
+    document.querySelectorAll('.rev-groupe').forEach(g => {
+        g.classList.toggle('hidden', type !== 'all' && g.dataset.type !== type);
+    });
+}
+function showRecap(id, btn) {
+    document.querySelectorAll('.recap-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).style.display = 'block';
+    btn.classList.add('active');
+}
 function filterEqTab(type, btn) {
     document.querySelectorAll('.eq-tab-btn').forEach(b => {
         b.style.background = '#fff'; b.style.color = '#888';

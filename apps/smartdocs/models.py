@@ -188,19 +188,33 @@ class Piece(models.Model):
 # ─── Éléments IFC enrichis ────────────────────────────────────────────────────
 
 class RevetementMur(models.Model):
-    """Revêtement de mur / surface extrait de l'IFC."""
-    patrimoine  = models.ForeignKey(Patrimoine, on_delete=models.CASCADE, related_name='revetements')
-    etage       = models.ForeignKey(Etage, on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name='revetements')
-    nom         = models.CharField(max_length=200)
-    materiau    = models.CharField(max_length=200, blank=True)
-    surface     = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    ifc_guid    = models.CharField(max_length=100, blank=True)
-    type_ifc    = models.CharField(max_length=100, blank=True)
+    """Revêtement (mur / sol / plafond) extrait de l'IFC (IfcCovering, IfcSlab, IfcWall…)."""
+
+    TYPE_REV = [
+        ('mur',     'Mur'),
+        ('sol',     'Sol'),
+        ('plafond', 'Plafond'),
+        ('autre',   'Autre'),
+    ]
+
+    patrimoine      = models.ForeignKey(Patrimoine, on_delete=models.CASCADE, related_name='revetements')
+    etage           = models.ForeignKey(Etage, on_delete=models.SET_NULL, null=True, blank=True,
+                                         related_name='revetements')
+    piece           = models.ForeignKey('Piece', on_delete=models.SET_NULL, null=True, blank=True,
+                                         related_name='revetements')
+    nom             = models.CharField(max_length=200)
+    type_revetement = models.CharField(max_length=20, choices=TYPE_REV, default='mur')
+    nature          = models.CharField(max_length=150, blank=True,
+                                        help_text='Carrelage, Parquet, Enduit, Peinture, Faux-plafond…')
+    materiau        = models.CharField(max_length=200, blank=True)
+    surface         = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    ifc_guid        = models.CharField(max_length=100, blank=True)
+    type_ifc        = models.CharField(max_length=100, blank=True)
 
     class Meta:
-        verbose_name = 'Revêtement mur'
-        ordering = ['etage__niveau', 'nom']
+        verbose_name        = 'Revêtement'
+        verbose_name_plural = 'Revêtements'
+        ordering = ['etage__niveau', 'type_revetement', 'nom']
 
 
 class EquipementOuverture(models.Model):
