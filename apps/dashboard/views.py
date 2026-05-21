@@ -8,6 +8,21 @@ def dashboard(request):
     """Hub central — agrège les stats de toutes les apps."""
     context = {}
 
+    # ── Stats Bureau d'Étude ──────────────────────────────────────────────
+    try:
+        from apps.bureau_etude.models import Mission, Devis
+        context['be'] = {
+            'missions_total':   Mission.objects.count(),
+            'missions_en_cours':Mission.objects.filter(statut='en_cours').count(),
+            'missions_rendues': Mission.objects.filter(statut__in=['rendu','valide']).count(),
+            'ca_devis':         Devis.objects.filter(statut='accepte').aggregate(t=Sum('montant_ttc'))['t'] or 0,
+            'en_retard':        sum(1 for m in Mission.objects.filter(statut__in=['en_cours','prospection']) if m.est_en_retard),
+            'missions_recentes':Mission.objects.select_related('responsable').order_by('-cree_le')[:5],
+            'devis_recents':    Devis.objects.select_related('mission').order_by('-date_devis')[:4],
+        }
+    except Exception:
+        context['be'] = None
+
     # ── Stats Construction (si app installée) ──────────────────────────────
     try:
         from apps.construction.models import Projet, Facture, TacheGantt

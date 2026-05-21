@@ -1,0 +1,101 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}{{ devis.numero }} — Devis BE{% endblock %}
+{% block sb_be_devis %}active{% endblock %}
+
+{% block be_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_list' %}">Missions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_detail' pk=devis.mission.pk %}">{{ devis.mission.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:devis_list' mission_pk=devis.mission.pk %}">Devis</a></li>
+            <li class="breadcrumb-item active">{{ devis.numero }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-file-invoice me-2" style="color:#d97706;"></i>{{ devis.numero }}</h1>
+        <div style="font-size:.78rem;color:#64748b;">Émis le {{ devis.date_devis|date:"d/m/Y" }}{% if devis.date_validite %} · Valide jusqu'au {{ devis.date_validite|date:"d/m/Y" }}{% endif %}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'bureau_etude:devis_print' pk=devis.pk %}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-print me-1"></i>Imprimer / PDF</a>
+    </div>
+</div>
+
+<div class="row g-3">
+<div class="col-lg-8">
+    <div class="card mb-3" style="overflow:hidden;">
+        <div style="height:4px;background:linear-gradient(90deg,#7c3aed,#d97706);"></div>
+        <div class="p-4">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <div style="font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7c3aed;border:1px solid rgba(124,58,237,.2);border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:.4rem;">Offre d'honoraires</div>
+                    <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;">{{ devis.numero }}</div>
+                </div>
+                <span class="badge {% if devis.statut == 'accepte' %}bg-success{% elif devis.statut == 'refuse' %}bg-danger{% elif devis.statut == 'envoye' %}bg-primary{% elif devis.statut == 'expire' %}bg-warning text-dark{% else %}bg-secondary{% endif %}" style="font-size:.85rem;padding:.45rem .9rem;">{{ devis.get_statut_display }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+                <div style="background:#f8fafc;border-radius:10px;padding:1rem;">
+                    <div style="font-size:.63rem;font-weight:700;text-transform:uppercase;color:#7c3aed;letter-spacing:.08em;margin-bottom:.5rem;">Émetteur</div>
+                    <div style="font-weight:700;">{{ devis.emetteur_nom }}</div>
+                    {% if devis.emetteur_adresse %}<div style="font-size:.8rem;color:#64748b;">{{ devis.emetteur_adresse|linebreaksbr }}</div>{% endif %}
+                    {% if devis.emetteur_tel %}<div style="font-size:.78rem;color:#64748b;"><i class="fas fa-phone me-1"></i>{{ devis.emetteur_tel }}</div>{% endif %}
+                    {% if devis.emetteur_nif %}<div style="font-size:.75rem;color:#94a3b8;">NIF/STAT : {{ devis.emetteur_nif }}</div>{% endif %}
+                </div>
+                <div style="background:#f8fafc;border-radius:10px;padding:1rem;">
+                    <div style="font-size:.63rem;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.08em;margin-bottom:.5rem;">Client</div>
+                    <div style="font-weight:700;">{{ devis.client_nom }}</div>
+                    {% if devis.client_adresse %}<div style="font-size:.8rem;color:#64748b;">{{ devis.client_adresse|linebreaksbr }}</div>{% endif %}
+                </div>
+            </div>
+            {% if devis.objet %}<div style="margin-bottom:1.25rem;padding:.75rem 1rem;border-left:3px solid #d97706;background:#fffbeb;border-radius:0 8px 8px 0;"><div style="font-size:.7rem;color:#94a3b8;margin-bottom:.2rem;">Objet</div><div style="font-size:.9rem;font-weight:600;">{{ devis.objet }}</div></div>{% endif %}
+            <table style="width:100%;border-collapse:collapse;margin-bottom:1rem;">
+                <thead><tr style="background:#0a1628;color:#fff;">
+                    <th style="padding:.6rem .75rem;font-size:.72rem;border-radius:6px 0 0 6px;">Désignation</th>
+                    <th style="padding:.6rem .5rem;font-size:.72rem;text-align:center;">Unité</th>
+                    <th style="padding:.6rem .5rem;font-size:.72rem;text-align:center;">Qté</th>
+                    <th style="padding:.6rem .5rem;font-size:.72rem;text-align:right;">P.U. HT</th>
+                    <th style="padding:.6rem .75rem;font-size:.72rem;text-align:right;border-radius:0 6px 6px 0;">Montant HT</th>
+                </tr></thead>
+                <tbody>
+                    {% for l in devis.lignes.all %}
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:.55rem .75rem;font-size:.84rem;font-weight:500;">{{ l.designation }}</td>
+                        <td style="padding:.55rem .5rem;font-size:.82rem;text-align:center;color:#94a3b8;">{{ l.unite|default:"—" }}</td>
+                        <td style="padding:.55rem .5rem;font-size:.82rem;text-align:center;">{{ l.quantite|floatformat:2 }}</td>
+                        <td style="padding:.55rem .5rem;font-size:.82rem;text-align:right;">{{ l.prix_unitaire|floatformat:0 }} Ar</td>
+                        <td style="padding:.55rem .75rem;font-size:.84rem;text-align:right;font-weight:700;">{{ l.montant_ht|floatformat:0 }} Ar</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="5" style="padding:1.5rem;text-align:center;color:#94a3b8;">Aucune ligne.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+            <div style="display:flex;justify-content:flex-end;">
+                <div style="min-width:240px;border:1px solid #eef3f9;border-radius:10px;overflow:hidden;">
+                    <div style="display:flex;justify-content:space-between;padding:.5rem .9rem;font-size:.82rem;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Total HT</span><strong>{{ devis.montant_ht|floatformat:0 }} Ar</strong></div>
+                    <div style="display:flex;justify-content:space-between;padding:.5rem .9rem;font-size:.82rem;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">TVA ({{ devis.tva_pct }}%)</span><span>{{ devis.montant_tva|floatformat:0 }} Ar</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:.7rem .9rem;background:#0a1628;color:#fff;font-weight:800;"><span>Total TTC</span><span style="font-size:1rem;">{{ devis.montant_ttc|floatformat:0 }} Ar</span></div>
+                </div>
+            </div>
+            {% if devis.conditions %}<div style="margin-top:1.25rem;font-size:.78rem;color:#64748b;border-top:1px solid #f1f5f9;padding-top:.75rem;"><strong>Conditions :</strong><br>{{ devis.conditions|linebreaksbr }}</div>{% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-4">
+    <div class="card p-3 mb-3">
+        <h6 class="fw-bold mb-3">Statut</h6>
+        <form method="post" action="{% url 'bureau_etude:devis_statut' pk=devis.pk %}">
+            {% csrf_token %}
+            <select name="statut" class="form-select form-select-sm mb-2">
+                {% for val,lbl in devis.STATUT %}<option value="{{ val }}" {% if devis.statut == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-sync me-1"></i>Mettre à jour</button>
+        </form>
+    </div>
+    <div class="card p-3">
+        <h6 class="fw-bold mb-3">Mission associée</h6>
+        <a href="{% url 'bureau_etude:mission_detail' pk=devis.mission.pk %}" style="display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;">
+            <div style="width:36px;height:36px;border-radius:9px;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-drafting-compass"></i></div>
+            <div><div style="font-size:.85rem;font-weight:600;">{{ devis.mission.titre }}</div><div style="font-size:.72rem;color:#94a3b8;">{{ devis.mission.reference }}</div></div>
+        </a>
+    </div>
+</div>
+</div>
+{% endblock %}

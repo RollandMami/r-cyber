@@ -1,0 +1,42 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}{{ action }} réunion — BE{% endblock %}
+{% block be_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_list' %}">Missions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_detail' pk=mission.pk %}">{{ mission.reference }}</a></li>
+            <li class="breadcrumb-item active">{{ action }} réunion</li>
+        </ol></nav>
+        <h1><i class="fas fa-users me-2" style="color:#15803d;"></i>{{ action }} réunion</h1>
+    </div>
+</div>
+<form method="post" enctype="multipart/form-data" style="max-width:800px;">
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-12"><div class="card p-4">
+            <h6 class="fw-bold mb-3" style="color:#15803d;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-calendar me-2"></i>Identification</h6>
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Type</label>{{ form.type_reunion }}</div>
+                <div class="col-md-6"><label class="form-label">Titre *</label>{{ form.titre }}</div>
+                <div class="col-md-4"><label class="form-label">Date *</label>{{ form.date_reunion }}</div>
+                <div class="col-md-8"><label class="form-label">Lieu</label>{{ form.lieu }}</div>
+                <div class="col-12"><label class="form-label">Participants (un par ligne)</label>{{ form.participants }}</div>
+            </div>
+        </div></div>
+        <div class="col-12"><div class="card p-4">
+            <h6 class="fw-bold mb-3" style="color:#0369a1;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-file-alt me-2"></i>Compte-rendu</h6>
+            <div class="row g-3">
+                <div class="col-12"><label class="form-label">Ordre du jour</label>{{ form.ordre_du_jour }}</div>
+                <div class="col-12"><label class="form-label">Compte-rendu</label>{{ form.compte_rendu }}</div>
+                <div class="col-12"><label class="form-label">Actions à mener (responsable · délai)</label>{{ form.actions }}</div>
+                <div class="col-md-6"><label class="form-label">Fichier annexe</label>{{ form.fichier }}</div>
+            </div>
+        </div></div>
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+            <a href="{% url 'bureau_etude:mission_detail' pk=mission.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

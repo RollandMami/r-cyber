@@ -1,0 +1,46 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}{{ reunion.titre }} — CR{% endblock %}
+{% block be_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_list' %}">Missions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_detail' pk=reunion.mission.pk %}">{{ reunion.mission.reference }}</a></li>
+            <li class="breadcrumb-item active">Réunion</li>
+        </ol></nav>
+        <h1><i class="fas fa-users me-2" style="color:#15803d;"></i>{{ reunion.titre }}</h1>
+        <div style="font-size:.78rem;color:#64748b;">{{ reunion.get_type_reunion_display }} · {{ reunion.date_reunion|date:"d/m/Y" }}{% if reunion.lieu %} · {{ reunion.lieu }}{% endif %}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'bureau_etude:reunion_edit' pk=reunion.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-edit me-1"></i>Modifier</a>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="fas fa-print me-1"></i>Imprimer</button>
+    </div>
+</div>
+{% if reunion.participants %}
+<div class="card p-3 mb-3">
+    <h6 class="fw-bold mb-2" style="font-size:.8rem;"><i class="fas fa-user-friends me-2"></i>Participants</h6>
+    <div style="font-size:.87rem;color:#475569;white-space:pre-line;">{{ reunion.participants }}</div>
+</div>
+{% endif %}
+{% if reunion.ordre_du_jour %}
+<div class="card p-4 mb-3">
+    <div style="font-size:.7rem;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-list me-2"></i>Ordre du jour</div>
+    <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#ede9fe;border-radius:8px;padding:1rem;">{{ reunion.ordre_du_jour }}</div>
+</div>
+{% endif %}
+{% if reunion.compte_rendu %}
+<div class="card p-4 mb-3">
+    <div style="font-size:.7rem;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-file-alt me-2"></i>Compte-rendu</div>
+    <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#f0fdf4;border-radius:8px;padding:1rem;">{{ reunion.compte_rendu }}</div>
+</div>
+{% endif %}
+{% if reunion.actions %}
+<div class="card p-4 mb-3">
+    <div style="font-size:.7rem;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-tasks me-2"></i>Actions à mener</div>
+    <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#fffbeb;border-radius:8px;padding:1rem;">{{ reunion.actions }}</div>
+</div>
+{% endif %}
+{% if reunion.fichier %}
+<div class="card p-3"><h6 class="fw-bold mb-2">Fichier annexe</h6><a href="{{ reunion.fichier.url }}" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="fas fa-download me-1"></i>Télécharger</a></div>
+{% endif %}
+{% endblock %}

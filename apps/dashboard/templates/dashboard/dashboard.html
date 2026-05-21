@@ -17,6 +17,51 @@
     </div>
 </div>
 
+{# ── Bureau d'Étude ───────────────────────────────────────── #}
+{% if be %}
+<div style="margin-bottom:2rem;">
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
+        <div style="width:32px;height:32px;border-radius:9px;background:rgba(99,102,241,.12);
+                    display:flex;align-items:center;justify-content:center;color:#6366f1;">
+            <i class="fas fa-drafting-compass"></i>
+        </div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin:0;">Bureau d'Étude</h2>
+        <a href="{% url 'bureau_etude:mission_list' %}" style="font-size:.78rem;color:#00b4d8;margin-left:auto;text-decoration:none;">Gérer les missions →</a>
+    </div>
+    <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-folder-open"></i></div><div class="stat-card-val">{{ be.missions_total }}</div><div class="stat-card-lbl">Missions totales</div></div>
+        <div class="stat-card"><div class="stat-card-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-spinner"></i></div><div class="stat-card-val">{{ be.missions_en_cours }}</div><div class="stat-card-lbl">En cours</div></div>
+        <div class="stat-card"><div class="stat-card-icon" style="background:#f0fdf4;color:#15803d;"><i class="fas fa-check-double"></i></div><div class="stat-card-val">{{ be.missions_rendues }}</div><div class="stat-card-lbl">Rendues / Validées</div></div>
+        <div class="stat-card"><div class="stat-card-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-file-invoice"></i></div><div class="stat-card-val" style="font-size:1.1rem;">{{ be.ca_devis|floatformat:0 }}</div><div class="stat-card-lbl">Honoraires acceptés (Ar)</div></div>
+        {% if be.en_retard > 0 %}<div class="stat-card" style="border-color:#fecaca;"><div class="stat-card-icon" style="background:#fef2f2;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-card-val" style="color:#ef4444;">{{ be.en_retard }}</div><div class="stat-card-lbl">En retard</div></div>{% endif %}
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-7"><div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between mb-3"><h6 class="fw-bold mb-0" style="font-size:.88rem;">Missions récentes</h6><a href="{% url 'bureau_etude:mission_list' %}" class="btn btn-outline-secondary btn-sm">Toutes</a></div>
+            {% for m in be.missions_recentes %}
+            <a href="{% url 'bureau_etude:mission_detail' pk=m.pk %}" class="d-flex align-items-center gap-3 p-2 rounded-3 mb-1 text-decoration-none" style="transition:background .15s;" onmouseover="this.style.background='#f4f7fb'" onmouseout="this.style.background=''">
+                <div style="width:36px;height:36px;border-radius:9px;background:rgba(99,102,241,.1);color:#6366f1;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;"><i class="fas fa-drafting-compass"></i></div>
+                <div style="flex:1;min-width:0;">
+                    <div class="fw-semibold text-dark" style="font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ m.titre }}</div>
+                    <div class="text-muted" style="font-size:.73rem;">{{ m.client_nom }} · {{ m.reference }}{% if m.date_rendu %} · Rendu {{ m.date_rendu|date:"d/m/Y" }}{% endif %}</div>
+                </div>
+                <span style="font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:12px;white-space:nowrap;{% if m.statut == 'en_cours' %}background:#ede9fe;color:#7c3aed;{% elif m.statut == 'rendu' %}background:#dcfce7;color:#15803d;{% elif m.statut == 'valide' %}background:#e0f2fe;color:#0369a1;{% else %}background:#fef3c7;color:#92400e;{% endif %}">{{ m.get_statut_display }}</span>
+            </a>
+            {% empty %}<div class="text-center py-4 text-muted" style="font-size:.85rem;">Aucune mission.<br><a href="{% url 'bureau_etude:mission_create' %}" class="btn btn-primary btn-sm mt-2"><i class="fas fa-plus me-1"></i>Créer la première</a></div>{% endfor %}
+        </div></div>
+        <div class="col-lg-5"><div class="card p-3">
+            <h6 class="fw-bold mb-3" style="font-size:.88rem;">Derniers devis</h6>
+            {% for d in be.devis_recents %}
+            <a href="{% url 'bureau_etude:devis_detail' pk=d.pk %}" class="d-flex align-items-center justify-content-between p-2 rounded-3 mb-1 text-decoration-none text-dark" style="transition:background .15s;" onmouseover="this.style.background='#f4f7fb'" onmouseout="this.style.background=''">
+                <div><div class="fw-semibold" style="font-size:.83rem;">{{ d.numero }}</div><div class="text-muted" style="font-size:.72rem;">{{ d.client_nom }}</div></div>
+                <div class="text-end"><div style="font-size:.83rem;font-weight:700;">{{ d.montant_ttc|floatformat:0 }} Ar</div><span class="badge {% if d.statut == 'accepte' %}bg-success{% elif d.statut == 'refuse' %}bg-danger{% elif d.statut == 'envoye' %}bg-primary{% else %}bg-secondary{% endif %}" style="font-size:.65rem;">{{ d.get_statut_display }}</span></div>
+            </a>
+            {% empty %}<div class="text-center py-4 text-muted" style="font-size:.83rem;">Aucun devis.</div>{% endfor %}
+        </div></div>
+    </div>
+</div>
+{% endif %}
+
 {# ── BTP Construction ────────────────────────────────────── #}
 {% if btp %}
 <div style="margin-bottom:2rem;">
@@ -150,7 +195,7 @@
             <i class="fas fa-building"></i>
         </div>
         <h2 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin:0;">Patrimoines</h2>
-        <a href="{% url 'smartdocs:site_list' %}" style="font-size:.78rem;color:#00b4d8;margin-left:auto;text-decoration:none;">
+        <a href="{% url 'smartdocs:patrimoine_list' %}" style="font-size:.78rem;color:#00b4d8;margin-left:auto;text-decoration:none;">
             Gérer →
         </a>
     </div>

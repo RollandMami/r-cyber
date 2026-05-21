@@ -1,0 +1,100 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}{{ action }} mission — BE{% endblock %}
+{% block sb_be_missions %}active{% endblock %}
+
+{% block be_content %}
+<div class="page-header">
+    <div>
+        {% if mission %}
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_list' %}">Missions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_detail' pk=mission.pk %}">{{ mission.reference }}</a></li>
+            <li class="breadcrumb-item active">Modifier</li>
+        </ol></nav>
+        {% endif %}
+        <h1>{{ action }} une mission</h1>
+    </div>
+</div>
+
+<form method="post" style="max-width:800px;">
+    {% csrf_token %}
+    <div class="row g-3">
+
+        <!-- Identité mission -->
+        <div class="col-12">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#6366f1;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-drafting-compass me-2"></i>Mission
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Intitulé *</label>{{ form.titre }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Type</label>{{ form.type_mission }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Statut</label>{{ form.statut }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Responsable</label>{{ form.responsable }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>{{ form.description }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Objectifs techniques</label>{{ form.objectifs }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Client -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#f59e0b;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-user me-2"></i>Client
+                </h6>
+                <div class="row g-2">
+                    <div class="col-12"><label class="form-label">Nom *</label>{{ form.client_nom }}</div>
+                    <div class="col-md-6"><label class="form-label">Téléphone</label>{{ form.client_tel }}</div>
+                    <div class="col-md-6"><label class="form-label">Email</label>{{ form.client_email }}</div>
+                    <div class="col-12"><label class="form-label">Adresse</label>{{ form.client_adresse }}</div>
+                    <div class="col-12"><label class="form-label">Adresse du site</label>{{ form.adresse_site }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendrier & Honoraires -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h6 class="fw-bold mb-3" style="color:#0369a1;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;">
+                    <i class="fas fa-calendar-alt me-2"></i>Calendrier & Honoraires
+                </h6>
+                <div class="row g-2">
+                    <div class="col-md-6"><label class="form-label">Date de commande</label>{{ form.date_commande }}</div>
+                    <div class="col-md-6"><label class="form-label">Date de rendu prévue</label>{{ form.date_rendu }}</div>
+                    <div class="col-md-6"><label class="form-label">Honoraires HT (Ar)</label>{{ form.honoraires_ht }}</div>
+                    <div class="col-md-6"><label class="form-label">TVA (%)</label>{{ form.tva_pct }}</div>
+                    {% if form.honoraires_ht.value and form.tva_pct.value %}
+                    <div class="col-12">
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem .9rem;font-size:.8rem;color:#15803d;">
+                            <i class="fas fa-calculator me-1"></i>Montant TTC calculé automatiquement
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+            {% if mission %}
+            <a href="{% url 'bureau_etude:mission_detail' pk=mission.pk %}" class="btn btn-outline-secondary">Annuler</a>
+            {% else %}
+            <a href="{% url 'bureau_etude:mission_list' %}" class="btn btn-outline-secondary">Annuler</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}

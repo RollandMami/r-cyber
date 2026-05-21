@@ -1,0 +1,20 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{# Accordéon Bureau d'Étude toujours ouvert #}
+{% block acc_be_open %}open{% endblock %}
+{% block acc_be_panel %}open{% endblock %}
+
+{# Activer le bon sous-lien #}
+{% block sb_be_missions %}{% if not mission and request.resolver_match.url_name == 'mission_list' %}active{% endif %}{% endblock %}
+{% block sb_be_new      %}{% if request.resolver_match.url_name == 'mission_create' %}active{% endif %}{% endblock %}
+{% block sb_be_detail   %}{% if mission and request.resolver_match.url_name == 'mission_detail' %}active{% endif %}{% endblock %}
+{% block sb_be_docs     %}{% if mission and 'doc' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_be_livrable %}{% if mission and 'livrable' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_be_devis    %}{% if mission and 'devis' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_be_notes    %}{% if mission and 'note' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_be_reunions %}{% if mission and 'reunion' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+    {% block be_content %}{% endblock %}
+{% endblock %}

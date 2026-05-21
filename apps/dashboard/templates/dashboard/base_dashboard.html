@@ -324,12 +324,63 @@
             </a>
             {% endif %}
 
-            <a href="{% url 'smartdocs:site_list' %}"
+            <a href="{% url 'smartdocs:patrimoine_list' %}"
                class="db-nav-link {% block sb_smartdocs %}{% endblock %}">
                 <i class="fas fa-building"></i> Patrimoines
             </a>
 
-            {# ── CONSTRUCTION — ACCORDÉON ──────────────────── #}
+            {# ── BUREAU D'ÉTUDE ─────────────────────────────── #}
+            <button class="db-accordion-btn {% block acc_be_open %}{% endblock %}"
+                    id="accBE"
+                    onclick="toggleAccordion('panelBE', this)">
+                <i class="fas fa-drafting-compass icon-main" style="color:#6366f1;"></i>
+                <span class="label">Bureau d'Étude</span>
+                <i class="fas fa-chevron-right icon-chevron"></i>
+            </button>
+
+            <div class="db-accordion-panel {% block acc_be_panel %}{% endblock %}"
+                 id="panelBE">
+
+                {# Niveau 1 — menu général BE #}
+                <a href="{% url 'bureau_etude:mission_list' %}"
+                   class="db-sub-link {% block sb_be_missions %}{% endblock %}">
+                    <i class="fas fa-folder-open"></i> Toutes les missions
+                </a>
+                <a href="{% url 'bureau_etude:mission_create' %}"
+                   class="db-sub-link {% block sb_be_new %}{% endblock %}">
+                    <i class="fas fa-plus-circle"></i> Nouvelle mission
+                </a>
+
+                {# Niveau 2 — mission courante #}
+                {% if mission %}
+                <div class="db-projet-label" style="color:rgba(99,102,241,.6);">
+                    <i class="fas fa-dot-circle" style="font-size:.5rem;"></i>
+                    {{ mission.reference }}
+                </div>
+                <a href="{% url 'bureau_etude:mission_detail' pk=mission.pk %}"
+                   class="db-sub-link {% block sb_be_detail %}{% endblock %}">
+                    <i class="fas fa-info-circle"></i> Vue d'ensemble
+                </a>
+                <a href="{% url 'bureau_etude:livrable_list' mission_pk=mission.pk %}"
+                   class="db-sub-link {% block sb_be_livrable %}{% endblock %}">
+                    <i class="fas fa-file-alt"></i> Livrables / Plans
+                </a>
+                <a href="{% url 'bureau_etude:note_list' mission_pk=mission.pk %}"
+                   class="db-sub-link {% block sb_be_notes %}{% endblock %}">
+                    <i class="fas fa-calculator"></i> Notes de calcul
+                </a>
+                <a href="{% url 'bureau_etude:devis_list' mission_pk=mission.pk %}"
+                   class="db-sub-link {% block sb_be_devis %}{% endblock %}">
+                    <i class="fas fa-file-invoice"></i> Devis
+                </a>
+                <a href="{% url 'bureau_etude:reunion_list' mission_pk=mission.pk %}"
+                   class="db-sub-link {% block sb_be_reunions %}{% endblock %}">
+                    <i class="fas fa-users"></i> Réunions / CR
+                </a>
+                {% endif %}
+            </div>
+
+            {# ── CONSTRUCTION BTP ──────────────────────────── #}
             <div class="db-nav-section">Métiers</div>
 
             <button class="db-accordion-btn {% block acc_construction_open %}{% endblock %}"
@@ -451,7 +502,7 @@
                 <i class="fas fa-user-circle"></i>
                 {{ request.user.get_full_name|default:request.user.username }}
             </a>
-            <a href="{% url 'home:index' %}">
+            <a href="{% url 'main:home' %}">
                 <i class="fas fa-globe"></i> Voir le site
             </a>
             <a href="{% url 'users:logout' %}" style="color:rgba(239,68,68,0.5);">

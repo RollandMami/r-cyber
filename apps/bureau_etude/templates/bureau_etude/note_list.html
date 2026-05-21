@@ -1,0 +1,47 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}Notes de calcul — {{ mission.titre }}{% endblock %}
+{% block sb_be_notes %}active{% endblock %}
+{% block be_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_list' %}">Missions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_detail' pk=mission.pk %}">{{ mission.reference }}</a></li>
+            <li class="breadcrumb-item active">Notes de calcul</li>
+        </ol></nav>
+        <h1><i class="fas fa-calculator me-2" style="color:#0369a1;"></i>Notes de calcul</h1>
+    </div>
+    <a href="{% url 'bureau_etude:note_create' mission_pk=mission.pk %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouvelle note
+    </a>
+</div>
+<div style="display:flex;flex-direction:column;gap:.75rem;">
+    {% for n in notes %}
+    <div class="card p-3" style="transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''">
+        <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+            <div style="flex:1;">
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span style="background:#e0f2fe;color:#0369a1;font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:6px;text-transform:uppercase;">{{ n.get_domaine_display }}</span>
+                    <span style="font-size:.72rem;color:#94a3b8;">{{ n.version }}</span>
+                    {% if n.valide %}<span style="background:#dcfce7;color:#15803d;font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:6px;">✓ Validé</span>{% endif %}
+                </div>
+                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.97rem;margin-bottom:.2rem;">{{ n.titre }}</div>
+                <div style="font-size:.78rem;color:#64748b;">
+                    {% if n.norme_ref %}<span><i class="fas fa-book me-1"></i>{{ n.norme_ref }}</span>&nbsp;·&nbsp;{% endif %}
+                    {% if n.logiciel %}<span><i class="fas fa-laptop-code me-1"></i>{{ n.logiciel }}</span>{% endif %}
+                </div>
+            </div>
+            <div class="d-flex gap-1">
+                <a href="{% url 'bureau_etude:note_detail' pk=n.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-eye me-1"></i>Voir</a>
+                <a href="{% url 'bureau_etude:note_edit' pk=n.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-edit"></i></a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card" style="padding:4rem;text-align:center;color:#64748b;">
+        <i class="fas fa-calculator fa-2x mb-2 d-block opacity-20"></i>Aucune note.
+        <br><a href="{% url 'bureau_etude:note_create' mission_pk=mission.pk %}" class="btn btn-primary btn-sm mt-2"><i class="fas fa-plus me-1"></i>Créer</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

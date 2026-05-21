@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 	'apps.core_api.apps.CoreApiConfig',
 	'apps.home.apps.HomeConfig',
 	'apps.construction.apps.ConstructionConfig',
+	'apps.bureau_etude.apps.BureauEtudeConfig',
 	
 	# rest framework
 	'rest_framework',

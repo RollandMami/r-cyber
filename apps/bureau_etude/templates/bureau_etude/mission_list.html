@@ -1,0 +1,164 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}Missions — Bureau d'Étude{% endblock %}
+{% block sb_be_missions %}active{% endblock %}
+
+{% block be_content %}
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-drafting-compass me-2" style="color:#6366f1;"></i>Missions</h1>
+        <p class="text-muted mb-0" style="font-size:.85rem;">{{ missions|length }} mission(s)</p>
+    </div>
+    <a href="{% url 'bureau_etude:mission_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouvelle mission
+    </a>
+</div>
+
+<!-- KPIs -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-folder-open"></i></div>
+        <div class="stat-card-val">{{ stats.total }}</div>
+        <div class="stat-card-lbl">Missions totales</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-spinner"></i></div>
+        <div class="stat-card-val">{{ stats.en_cours }}</div>
+        <div class="stat-card-lbl">En cours</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#f0fdf4;color:#15803d;"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-card-val">{{ stats.rendus }}</div>
+        <div class="stat-card-lbl">Rendus client</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-file-invoice"></i></div>
+        <div class="stat-card-val" style="font-size:1.2rem;">{{ stats.ca_total|floatformat:0 }}</div>
+        <div class="stat-card-lbl">CA devis acceptés (Ar)</div>
+    </div>
+    {% if stats.en_retard > 0 %}
+    <div class="stat-card" style="border-color:#fecaca;">
+        <div class="stat-card-icon" style="background:#fef2f2;color:#ef4444;"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="stat-card-val" style="color:#ef4444;">{{ stats.en_retard }}</div>
+        <div class="stat-card-lbl">En retard</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filtres -->
+<div class="card p-3 mb-3">
+    <form method="get" class="d-flex gap-2 flex-wrap align-items-end">
+        <div style="flex:1;min-width:200px;">
+            <label class="form-label mb-1" style="font-size:.75rem;">Recherche</label>
+            <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm"
+                   placeholder="Titre, client, référence…">
+        </div>
+        <div>
+            <label class="form-label mb-1" style="font-size:.75rem;">Statut</label>
+            <select name="statut" class="form-select form-select-sm" style="min-width:150px;">
+                <option value="">Tous</option>
+                {% for val,lbl in statuts %}
+                <option value="{{ val }}" {% if statut_filter == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="btn btn-primary btn-sm">Filtrer</button>
+        {% if q or statut_filter %}
+        <a href="{% url 'bureau_etude:mission_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-times me-1"></i>Réinitialiser
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Grille missions -->
+{% if missions %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem;">
+    {% for m in missions %}
+    <div class="card" style="overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;"
+         onclick="location.href='{% url 'bureau_etude:mission_detail' pk=m.pk %}'"
+         onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,.1)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
+
+        <!-- Bandeau couleur selon statut -->
+        <div style="height:4px;background:
+            {% if m.statut == 'en_cours' %}#6366f1
+            {% elif m.statut == 'rendu' %}#22c55e
+            {% elif m.statut == 'valide' %}#0ea5e9
+            {% elif m.statut == 'archive' %}#94a3b8
+            {% else %}#f59e0b{% endif %};"></div>
+
+        <div style="padding:1rem 1.1rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem;">
+                <span style="font-size:.65rem;font-weight:700;color:#6366f1;
+                             text-transform:uppercase;letter-spacing:.08em;">
+                    {{ m.get_type_mission_display }}
+                </span>
+                <span style="font-size:.7rem;font-weight:700;padding:.18rem .55rem;border-radius:12px;
+                    {% if m.statut == 'en_cours' %}background:#ede9fe;color:#7c3aed;
+                    {% elif m.statut == 'rendu' %}background:#dcfce7;color:#15803d;
+                    {% elif m.statut == 'valide' %}background:#e0f2fe;color:#0369a1;
+                    {% elif m.statut == 'archive' %}background:#f1f5f9;color:#64748b;
+                    {% else %}background:#fef3c7;color:#92400e;{% endif %}">
+                    {{ m.get_statut_display }}
+                </span>
+            </div>
+
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.97rem;
+                        margin-bottom:.25rem;line-height:1.2;">{{ m.titre }}</div>
+            <div style="font-size:.78rem;color:#64748b;margin-bottom:.6rem;">
+                <i class="fas fa-user me-1"></i>{{ m.client_nom }}
+                &nbsp;·&nbsp;<i class="fas fa-tag me-1"></i>{{ m.reference }}
+            </div>
+
+            <!-- Date rendu -->
+            {% if m.date_rendu %}
+            <div style="font-size:.75rem;margin-bottom:.75rem;
+                {% if m.est_en_retard %}color:#ef4444;font-weight:600;
+                {% elif m.nb_jours_restants is not None and m.nb_jours_restants < 7 %}color:#f59e0b;font-weight:600;
+                {% else %}color:#94a3b8;{% endif %}">
+                <i class="fas fa-flag-checkered me-1"></i>Rendu : {{ m.date_rendu|date:"d/m/Y" }}
+                {% if m.est_en_retard %}<span> — EN RETARD</span>
+                {% elif m.nb_jours_restants is not None and m.nb_jours_restants < 7 %}
+                    <span>(J-{{ m.nb_jours_restants }})</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Honoraires -->
+            {% if m.honoraires_ttc %}
+            <div style="font-size:.78rem;color:#15803d;font-weight:600;margin-bottom:.6rem;">
+                <i class="fas fa-coins me-1"></i>{{ m.honoraires_ttc|floatformat:0 }} Ar TTC
+            </div>
+            {% endif %}
+
+            <div style="display:flex;gap:.4rem;margin-top:.5rem;">
+                <a href="{% url 'bureau_etude:mission_detail' pk=m.pk %}"
+                   class="btn btn-primary btn-sm" style="flex:1;text-align:center;"
+                   onclick="event.stopPropagation()">
+                    <i class="fas fa-eye me-1"></i>Ouvrir
+                </a>
+                <a href="{% url 'bureau_etude:devis_list' mission_pk=m.pk %}"
+                   class="btn btn-outline-secondary btn-sm" title="Devis"
+                   onclick="event.stopPropagation()">
+                    <i class="fas fa-file-invoice"></i>
+                </a>
+                <a href="{% url 'bureau_etude:note_list' mission_pk=m.pk %}"
+                   class="btn btn-outline-secondary btn-sm" title="Notes de calcul"
+                   onclick="event.stopPropagation()">
+                    <i class="fas fa-calculator"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="padding:4rem;text-align:center;color:#64748b;">
+    <i class="fas fa-drafting-compass fa-3x mb-3 d-block opacity-20"></i>
+    Aucune mission.
+    <br><a href="{% url 'bureau_etude:mission_create' %}" class="btn btn-primary btn-sm mt-3">
+        <i class="fas fa-plus me-1"></i>Créer la première
+    </a>
+</div>
+{% endif %}
+{% endblock %}

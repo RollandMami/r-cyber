@@ -1,0 +1,55 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}{{ note.titre }} — BE{% endblock %}
+{% block be_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_list' %}">Missions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_detail' pk=note.mission.pk %}">{{ note.mission.reference }}</a></li>
+            <li class="breadcrumb-item active">Note</li>
+        </ol></nav>
+        <h1><i class="fas fa-calculator me-2" style="color:#0369a1;"></i>{{ note.titre }}</h1>
+        <div style="font-size:.78rem;color:#64748b;">{{ note.get_domaine_display }} · {{ note.version }}
+            {% if note.valide %} · <span style="color:#15803d;font-weight:600;">✓ Validé le {{ note.date_validation|date:"d/m/Y" }} par {{ note.valide_par.get_full_name|default:note.valide_par.username }}</span>{% endif %}
+        </div>
+    </div>
+    <a href="{% url 'bureau_etude:note_edit' pk=note.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-edit me-1"></i>Modifier</a>
+</div>
+{% for section, titre, couleur in note.hypotheses,note.methodologie,note.resultats,note.conclusion|zip %}{% endfor %}
+{% for label,contenu,couleur in forloop %}{% endfor %}
+<div class="row g-3">
+    {% for label,contenu,couleur in "Hypothèses,hypotheses,#eff6ff;Méthodologie,methodologie,#fef3c7;Résultats,resultats,#f0fdf4;Conclusion,conclusion,#ede9fe"|split:";" %}
+    {% endfor %}
+    <div class="col-12">
+        {% if note.hypotheses %}
+        <div class="card p-4 mb-3">
+            <div style="font-size:.7rem;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-list me-2"></i>Hypothèses</div>
+            <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#eff6ff;border-radius:8px;padding:1rem;">{{ note.hypotheses }}</div>
+        </div>
+        {% endif %}
+        {% if note.methodologie %}
+        <div class="card p-4 mb-3">
+            <div style="font-size:.7rem;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-book me-2"></i>Méthodologie{% if note.norme_ref %} — {{ note.norme_ref }}{% endif %}{% if note.logiciel %} | {{ note.logiciel }}{% endif %}</div>
+            <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#fffbeb;border-radius:8px;padding:1rem;">{{ note.methodologie }}</div>
+        </div>
+        {% endif %}
+        {% if note.resultats %}
+        <div class="card p-4 mb-3">
+            <div style="font-size:.7rem;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-chart-bar me-2"></i>Résultats & Dimensionnements</div>
+            <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#f0fdf4;border-radius:8px;padding:1rem;">{{ note.resultats }}</div>
+        </div>
+        {% endif %}
+        {% if note.conclusion %}
+        <div class="card p-4 mb-3">
+            <div style="font-size:.7rem;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-check me-2"></i>Conclusion</div>
+            <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#ede9fe;border-radius:8px;padding:1rem;">{{ note.conclusion }}</div>
+        </div>
+        {% endif %}
+        {% if note.fichier %}
+        <div class="card p-3"><h6 class="fw-bold mb-2">Fichier annexe</h6>
+            <a href="{{ note.fichier.url }}" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="fas fa-download me-1"></i>Télécharger</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

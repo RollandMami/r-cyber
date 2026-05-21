@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>{{ devis.numero }}</title>
+<style>
+@media print { .no-print { display:none!important; } body { margin:0; } }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a2e;background:#fff;}
+.no-print{position:fixed;top:1rem;right:1rem;z-index:999;display:flex;gap:.5rem;}
+.btn-p{padding:.5rem 1.25rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:.88rem;}
+.btn-p.primary{background:#6366f1;color:#fff;} .btn-p.secondary{background:#f1f5f9;color:#475569;}
+.page{max-width:794px;margin:0 auto;padding:40px 48px;min-height:100vh;}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;}
+.logo-box{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#d97706);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;}
+.logo-name{font-size:1.3rem;font-weight:900;color:#0a1628;} .logo-sub{font-size:.65rem;color:#64748b;letter-spacing:.08em;text-transform:uppercase;}
+.dv-badge{text-align:right;} .dv-type{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;border:1px solid #dde6f0;border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:4px;}
+.dv-num{font-size:1.5rem;font-weight:900;color:#0a1628;display:block;} .dv-date{font-size:.75rem;color:#64748b;}
+.stripe{height:3px;background:linear-gradient(90deg,#7c3aed,#d97706);margin-bottom:28px;border-radius:2px;}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;}
+.partie-title{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7c3aed;margin-bottom:6px;}
+.partie-name{font-weight:700;font-size:.95rem;margin-bottom:3px;} .partie-info{font-size:.78rem;color:#475569;line-height:1.6;}
+.infos-box{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:#f8fafc;border-radius:8px;padding:14px 16px;margin-bottom:24px;border:1px solid #eef3f9;}
+.fi-label{font-size:.63rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;} .fi-val{font-size:.82rem;font-weight:600;color:#1a2332;margin-top:2px;}
+.objet-box{margin-bottom:20px;} .objet-label{font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;} .objet-val{font-size:.88rem;font-weight:600;}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+thead tr{background:#0a1628;color:#fff;} thead th{padding:8px 10px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+tbody tr{border-bottom:1px solid #f1f5f9;} tbody td{padding:8px 10px;font-size:.82rem;}
+.tr{text-align:right;} .tc{text-align:center;}
+.totaux{display:flex;justify-content:flex-end;margin-bottom:24px;}
+.totaux-box{min-width:240px;border:1px solid #eef3f9;border-radius:8px;overflow:hidden;}
+.totaux-row{display:flex;justify-content:space-between;padding:6px 14px;font-size:.82rem;border-bottom:1px solid #f1f5f9;}
+.totaux-row:last-child{background:#0a1628;color:#fff;font-weight:800;font-size:.95rem;padding:10px 14px;border:none;}
+.conditions{font-size:.75rem;color:#64748b;margin-bottom:16px;line-height:1.6;}
+.footer{margin-top:36px;padding-top:16px;border-top:1px solid #eef3f9;text-align:center;font-size:.7rem;color:#94a3b8;}
+</style>
+</head>
+<body>
+<div class="no-print">
+    <button class="btn-p secondary" onclick="window.close()">← Retour</button>
+    <button class="btn-p primary" onclick="window.print()">🖨 Imprimer / PDF</button>
+</div>
+<div class="page">
+    <div class="header">
+        <div class="logo-box">
+            <div class="logo-icon">RC</div>
+            <div><div class="logo-name">{{ devis.emetteur_nom }}</div><div class="logo-sub">Bureau d'Étude</div></div>
+        </div>
+        <div class="dv-badge">
+            <span class="dv-type">Offre d'honoraires</span>
+            <span class="dv-num">{{ devis.numero }}</span>
+            <div class="dv-date">Émis le {{ devis.date_devis|date:"d/m/Y" }}{% if devis.date_validite %} · Valide jusqu'au {{ devis.date_validite|date:"d/m/Y" }}{% endif %}</div>
+        </div>
+    </div>
+    <div class="stripe"></div>
+    <div class="parties">
+        <div>
+            <div class="partie-title">Émetteur</div>
+            <div class="partie-name">{{ devis.emetteur_nom }}</div>
+            <div class="partie-info">{{ devis.emetteur_adresse|linebreaksbr }}<br>{% if devis.emetteur_tel %}Tél : {{ devis.emetteur_tel }}<br>{% endif %}{% if devis.emetteur_email %}{{ devis.emetteur_email }}<br>{% endif %}{% if devis.emetteur_nif %}NIF/STAT : {{ devis.emetteur_nif }}{% endif %}</div>
+        </div>
+        <div>
+            <div class="partie-title">Destinataire</div>
+            <div class="partie-name">{{ devis.client_nom }}</div>
+            <div class="partie-info">{{ devis.client_adresse|linebreaksbr }}</div>
+        </div>
+    </div>
+    <div class="infos-box">
+        <div><div class="fi-label">Numéro</div><div class="fi-val">{{ devis.numero }}</div></div>
+        <div><div class="fi-label">Mission</div><div class="fi-val">{{ devis.mission.reference }}</div></div>
+        <div><div class="fi-label">Statut</div><div class="fi-val">{{ devis.get_statut_display }}</div></div>
+    </div>
+    {% if devis.objet %}<div class="objet-box"><div class="objet-label">Objet</div><div class="objet-val">{{ devis.objet }}</div></div>{% endif %}
+    <table>
+        <thead><tr>
+            <th style="width:45%;">Désignation</th>
+            <th class="tc" style="width:10%;">Unité</th>
+            <th class="tc" style="width:10%;">Qté</th>
+            <th class="tr" style="width:15%;">P.U. HT</th>
+            <th class="tr" style="width:20%;">Montant HT</th>
+        </tr></thead>
+        <tbody>
+            {% for l in devis.lignes.all %}
+            <tr><td>{{ l.designation }}</td><td class="tc">{{ l.unite|default:"—" }}</td><td class="tc">{{ l.quantite|floatformat:2 }}</td><td class="tr">{{ l.prix_unitaire|floatformat:0 }}</td><td class="tr" style="font-weight:600;">{{ l.montant_ht|floatformat:0 }}</td></tr>
+            {% empty %}<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:1rem;">Aucune ligne.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+    <div class="totaux">
+        <div class="totaux-box">
+            <div class="totaux-row"><span class="lbl">Total HT</span><strong>{{ devis.montant_ht|floatformat:0 }} Ar</strong></div>
+            <div class="totaux-row"><span class="lbl">TVA ({{ devis.tva_pct }}%)</span><strong>{{ devis.montant_tva|floatformat:0 }} Ar</strong></div>
+            <div class="totaux-row"><span class="lbl">Total TTC</span><strong>{{ devis.montant_ttc|floatformat:0 }} Ar</strong></div>
+        </div>
+    </div>
+    {% if devis.conditions %}<div class="conditions"><strong style="color:#475569;">Conditions :</strong><br>{{ devis.conditions|linebreaksbr }}</div>{% endif %}
+    {% if devis.note %}<div class="conditions"><strong style="color:#475569;">Note :</strong><br>{{ devis.note|linebreaksbr }}</div>{% endif %}
+    <div class="footer">{{ devis.emetteur_nom }}{% if devis.emetteur_adresse %} — {{ devis.emetteur_adresse|truncatechars:80 }}{% endif %}{% if devis.emetteur_nif %} — NIF/STAT : {{ devis.emetteur_nif }}{% endif %}<br>Document généré par R-CYBER — {{ devis.date_devis|date:"d/m/Y" }}</div>
+</div>
+</body>
+</html>

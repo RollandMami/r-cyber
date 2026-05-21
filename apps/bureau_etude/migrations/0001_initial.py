@@ -1,0 +1,193 @@
+from django.db import migrations, models
+import django.db.models.deletion
+import django.utils.timezone
+import apps.bureau_etude.models
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+        ('auth', '0012_alter_user_first_name_max_length'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Mission',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('reference', models.CharField(blank=True, max_length=30, unique=True)),
+                ('titre', models.CharField(max_length=255)),
+                ('type_mission', models.CharField(choices=[
+                    ('etude_sol','Étude de sol'),('structure','Calcul de structure'),
+                    ('thermique','Étude thermique'),('hydraulique','Étude hydraulique'),
+                    ('topographie','Topographie / Levé'),('voirie','Voirie & Réseaux'),
+                    ('architecture','Conception architecturale'),('permis','Dossier de permis'),
+                    ('diagnostic','Diagnostic technique'),('autre','Autre étude'),
+                ], default='structure', max_length=30)),
+                ('statut', models.CharField(choices=[
+                    ('prospection','Prospection'),('en_cours','En cours'),
+                    ('rendu','Rendu client'),('valide','Validé'),('archive','Archivé'),
+                ], default='prospection', max_length=20)),
+                ('client_nom', models.CharField(max_length=200)),
+                ('client_tel', models.CharField(blank=True, max_length=30)),
+                ('client_email', models.EmailField(blank=True)),
+                ('client_adresse', models.TextField(blank=True)),
+                ('adresse_site', models.TextField(blank=True)),
+                ('description', models.TextField(blank=True)),
+                ('objectifs', models.TextField(blank=True)),
+                ('date_commande', models.DateField(default=django.utils.timezone.now)),
+                ('date_rendu', models.DateField(blank=True, null=True)),
+                ('date_rendu_reel', models.DateField(blank=True, null=True)),
+                ('honoraires_ht', models.DecimalField(blank=True, decimal_places=2, max_digits=14, null=True)),
+                ('tva_pct', models.DecimalField(decimal_places=2, default=20, max_digits=5)),
+                ('honoraires_ttc', models.DecimalField(blank=True, decimal_places=2, editable=False, max_digits=14, null=True)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('modifie_le', models.DateTimeField(auto_now=True)),
+                ('cree_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='missions_creees', to='auth.user')),
+                ('responsable', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='missions_responsable', to='auth.user')),
+            ],
+            options={'verbose_name':'Mission','verbose_name_plural':'Missions','ordering':['-cree_le']},
+        ),
+        migrations.CreateModel(
+            name='DocumentEntree',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('type_doc', models.CharField(choices=[
+                    ('plan_existant','Plan existant'),('releve','Relevé de terrain'),
+                    ('photo','Photos'),('rapport_prec','Rapport précédent'),
+                    ('contrat','Contrat / Commande'),('autre','Autre'),
+                ], default='autre', max_length=25)),
+                ('titre', models.CharField(max_length=255)),
+                ('fichier', models.FileField(upload_to=apps.bureau_etude.models.mission_doc_path)),
+                ('description', models.TextField(blank=True)),
+                ('date_reception', models.DateField(default=django.utils.timezone.now)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('mission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='docs_entree', to='bureau_etude.mission')),
+                ('recu_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+            ],
+            options={'ordering':['-date_reception']},
+        ),
+        migrations.CreateModel(
+            name='PlanLivrable',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('type_doc', models.CharField(choices=[
+                    ('plan_arch',"Plan d'architecture"),('plan_struct','Plan de structure'),
+                    ('note_calc','Note de calcul'),('rapport',"Rapport d'étude"),
+                    ('metrage','Métré / Quantitatif'),('dossier_pc','Dossier permis de construire'),
+                    ('plan_exe',"Plan d'exécution"),('autre','Autre livrable'),
+                ], default='rapport', max_length=25)),
+                ('phase', models.CharField(choices=[
+                    ('esquisse','Esquisse'),('avp','Avant-Projet (AVP)'),
+                    ('pro','Projet (PRO)'),('exe','Exécution (EXE)'),('doe','DOE / Dossier final'),
+                ], default='pro', max_length=15)),
+                ('titre', models.CharField(max_length=255)),
+                ('fichier', models.FileField(upload_to=apps.bureau_etude.models.mission_plan_path)),
+                ('description', models.TextField(blank=True)),
+                ('version', models.CharField(default='v1.0', max_length=20)),
+                ('indice', models.CharField(blank=True, max_length=10)),
+                ('date_doc', models.DateField(default=django.utils.timezone.now)),
+                ('valide', models.BooleanField(default=False)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('mission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='livrables', to='bureau_etude.mission')),
+                ('produit_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+            ],
+            options={'ordering':['-date_doc','type_doc']},
+        ),
+        migrations.CreateModel(
+            name='Devis',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('numero', models.CharField(blank=True, max_length=30, unique=True)),
+                ('statut', models.CharField(choices=[
+                    ('brouillon','Brouillon'),('envoye','Envoyé'),
+                    ('accepte','Accepté'),('refuse','Refusé'),('expire','Expiré'),
+                ], default='brouillon', max_length=15)),
+                ('emetteur_nom', models.CharField(default="R-CYBER Bureau d'Étude", max_length=200)),
+                ('emetteur_adresse', models.TextField(blank=True)),
+                ('emetteur_tel', models.CharField(blank=True, max_length=30)),
+                ('emetteur_email', models.EmailField(blank=True)),
+                ('emetteur_nif', models.CharField(blank=True, max_length=50)),
+                ('client_nom', models.CharField(max_length=200)),
+                ('client_adresse', models.TextField(blank=True)),
+                ('date_devis', models.DateField(default=django.utils.timezone.now)),
+                ('date_validite', models.DateField(blank=True, null=True)),
+                ('tva_pct', models.DecimalField(decimal_places=2, default=20, max_digits=5)),
+                ('montant_ht', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('montant_tva', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('montant_ttc', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('objet', models.CharField(blank=True, max_length=300)),
+                ('conditions', models.TextField(blank=True)),
+                ('note', models.TextField(blank=True)),
+                ('fichier_pdf', models.FileField(blank=True, null=True, upload_to=apps.bureau_etude.models.devis_path)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('mission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='devis', to='bureau_etude.mission')),
+                ('cree_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+            ],
+            options={'ordering':['-date_devis']},
+        ),
+        migrations.CreateModel(
+            name='LigneDevis',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('designation', models.CharField(max_length=255)),
+                ('unite', models.CharField(blank=True, max_length=30)),
+                ('quantite', models.DecimalField(decimal_places=3, default=1, max_digits=10)),
+                ('prix_unitaire', models.DecimalField(decimal_places=2, max_digits=12)),
+                ('montant_ht', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('devis', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lignes', to='bureau_etude.devis')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='NoteCalcul',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('domaine', models.CharField(choices=[
+                    ('beton_arme','Béton armé'),('charpente','Charpente bois / métal'),
+                    ('fondation','Fondations'),('thermique','Thermique'),
+                    ('hydraulique','Hydraulique'),('geotechnique','Géotechnique'),('autre','Autre'),
+                ], default='beton_arme', max_length=20)),
+                ('titre', models.CharField(max_length=255)),
+                ('version', models.CharField(default='v1.0', max_length=20)),
+                ('hypotheses', models.TextField(blank=True)),
+                ('methodologie', models.TextField(blank=True)),
+                ('resultats', models.TextField(blank=True)),
+                ('conclusion', models.TextField(blank=True)),
+                ('norme_ref', models.CharField(blank=True, max_length=200)),
+                ('logiciel', models.CharField(blank=True, max_length=100)),
+                ('valide', models.BooleanField(default=False)),
+                ('date_validation', models.DateField(blank=True, null=True)),
+                ('fichier', models.FileField(blank=True, null=True, upload_to=apps.bureau_etude.models.rapport_etude_path)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('modifie_le', models.DateTimeField(auto_now=True)),
+                ('mission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notes_calcul', to='bureau_etude.mission')),
+                ('redige_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notes_redigees', to='auth.user')),
+                ('valide_par', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notes_validees', to='auth.user')),
+            ],
+            options={'ordering':['-cree_le']},
+        ),
+        migrations.CreateModel(
+            name='Reunion',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('type_reunion', models.CharField(choices=[
+                    ('lancement','Réunion de lancement'),('avancement',"Point d'avancement"),
+                    ('validation','Réunion de validation'),('coordination','Coordination'),('autre','Autre'),
+                ], default='avancement', max_length=20)),
+                ('titre', models.CharField(max_length=255)),
+                ('date_reunion', models.DateField()),
+                ('lieu', models.CharField(blank=True, max_length=200)),
+                ('participants', models.TextField(blank=True)),
+                ('ordre_du_jour', models.TextField(blank=True)),
+                ('compte_rendu', models.TextField(blank=True)),
+                ('actions', models.TextField(blank=True)),
+                ('fichier', models.FileField(blank=True, null=True, upload_to=apps.bureau_etude.models.rapport_etude_path)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('mission', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='reunions', to='bureau_etude.mission')),
+                ('redige_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+            ],
+            options={'ordering':['-date_reunion']},
+        ),
+    ]

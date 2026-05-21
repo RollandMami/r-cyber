@@ -1,0 +1,63 @@
+{% extends "bureau_etude/base_bureau_etude.html" %}
+{% block title %}Livrables — {{ mission.titre }}{% endblock %}
+{% block sb_be_livrable %}active{% endblock %}
+{% block be_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_list' %}">Missions</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bureau_etude:mission_detail' pk=mission.pk %}">{{ mission.reference }}</a></li>
+            <li class="breadcrumb-item active">Livrables</li>
+        </ol></nav>
+        <h1><i class="fas fa-ruler-combined me-2" style="color:#6366f1;"></i>Livrables</h1>
+    </div>
+    <a href="{% url 'bureau_etude:livrable_add' mission_pk=mission.pk %}" class="btn btn-primary">
+        <i class="fas fa-upload me-2"></i>Ajouter
+    </a>
+</div>
+<div class="card mb-3 p-2">
+    <form method="get" class="d-flex gap-2 align-items-center flex-wrap">
+        <label class="form-label mb-0" style="font-size:.8rem;">Phase :</label>
+        <select name="phase" class="form-select form-select-sm" style="width:auto;">
+            <option value="">Toutes</option>
+            {% for val,lbl in phases %}<option value="{{ val }}" {% if phase == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-primary btn-sm">Filtrer</button>
+    </form>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.85rem;">
+            <thead style="background:#f8fafc;">
+                <tr>
+                    <th class="px-3 py-2">Titre</th>
+                    <th>Type</th>
+                    <th>Phase</th>
+                    <th>Version</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in livrables %}
+                <tr>
+                    <td class="px-3" style="font-weight:500;">{{ l.titre }}</td>
+                    <td style="font-size:.78rem;color:#64748b;">{{ l.get_type_doc_display }}</td>
+                    <td><span style="background:#ede9fe;color:#7c3aed;font-size:.7rem;font-weight:700;padding:.2rem .5rem;border-radius:6px;">{{ l.get_phase_display }}</span></td>
+                    <td style="color:#64748b;">{{ l.version }}{% if l.indice %}/{{ l.indice }}{% endif %}</td>
+                    <td style="color:#64748b;">{{ l.date_doc|date:"d/m/Y" }}</td>
+                    <td>{% if l.valide %}<span style="color:#15803d;font-weight:600;font-size:.8rem;">✓ Validé</span>{% else %}<span style="color:#94a3b8;font-size:.8rem;">En cours</span>{% endif %}</td>
+                    <td class="text-end pe-3">
+                        <a href="{{ l.fichier.url }}" class="btn btn-outline-secondary btn-sm me-1" target="_blank"><i class="fas fa-download"></i></a>
+                        <a href="{% url 'bureau_etude:livrable_delete' pk=l.pk %}" onclick="return confirm('Supprimer ?')" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-5 text-muted">Aucun livrable.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
