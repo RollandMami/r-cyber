@@ -104,6 +104,31 @@ def site_delete(request, pk):
     return redirect('smartdocs:site_list')
 
 
+@login_required
+@require_POST
+def site_gerer(request, pk):
+    """Gère les actions spécifiques sur un site (ex: ajouter un bâtiment)."""
+    if not request.user.is_staff:
+        messages.error(request, 'Permission refusée.')
+        return redirect('smartdocs:site_list')
+        
+    # Ici, le template passe 'patrimoine.pk', donc pk est l'ID du bâtiment actuel
+    batiment_actuel = get_object_or_404(Patrimoine, pk=pk)
+    site = batiment_actuel.site
+    
+    action = request.POST.get('action')
+    if action == 'add_batiment' and site:
+        batiment_id = request.POST.get('batiment_pk')
+        if batiment_id:
+            try:
+                batiment_a_ajouter = Patrimoine.objects.get(pk=batiment_id)
+                batiment_a_ajouter.site = site
+                batiment_a_ajouter.save()
+                messages.success(request, f'Le bâtiment « {batiment_a_ajouter.nom} » a été ajouté au site.')
+            except Patrimoine.DoesNotExist:
+                messages.error(request, 'Bâtiment introuvable.')
+                
+    return redirect('smartdocs:patrimoine_detail', pk=pk)
 # ═══════════════════════════════════════════════════════════
 #  PATRIMOINES (BÂTIMENTS)
 # ═══════════════════════════════════════════════════════════
