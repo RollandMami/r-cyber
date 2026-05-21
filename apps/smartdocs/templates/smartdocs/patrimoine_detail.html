@@ -168,7 +168,7 @@ div[style*="overflow-x:auto"]::after {
         <div class="flex-grow-1 min-w-0">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1" style="font-size:0.78rem;">
-                    <li class="breadcrumb-item"><a href="{% url 'smartdocs:patrimoine_list' %}">Patrimoines</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'smartdocs:site_list' %}">Patrimoines</a></li>
                     {% if site %}<li class="breadcrumb-item text-truncate">{{ site.nom }}</li>{% endif %}
                     <li class="breadcrumb-item active text-truncate">{{ patrimoine.nom }}</li>
                 </ol>
