@@ -366,117 +366,7 @@ div[style*="overflow-x:auto"]::after {
                         </div>
                     </div>
                 </div>
-                <!-- Tableaux récapitulatifs -->
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
-                        <div class="card-header" style="background:linear-gradient(135deg,#0d1628,#1e6fca);color:#fff;padding:0.9rem 1.1rem;">
-                            <h6 class="fw-bold mb-0" style="font-size:0.9rem;">
-                                <i class="fas fa-table me-2" style="opacity:0.8;"></i>Tableaux récapitulatifs
-                            </h6>
-                        </div>
-                        <div class="card-body p-0">
-                            <!-- Nav onglets récap -->
-                            <ul class="nav nav-tabs px-3 pt-2" style="border-bottom:2px solid #e2e8f0;gap:0.25rem;">
-                                <li class="nav-item">
-                                    <button class="nav-link active px-3 py-2" style="font-size:0.82rem;"
-                                            onclick="showRecap('recap-rev',this)">
-                                        <i class="fas fa-paint-roller me-1"></i>Récap Revêtements
-                                    </button>
-                                </li>
-                                <li class="nav-item">
-                                    <button class="nav-link px-3 py-2" style="font-size:0.82rem;"
-                                            onclick="showRecap('recap-eq',this)">
-                                        <i class="fas fa-cogs me-1"></i>Récap Équipements
-                                    </button>
-                                </li>
-                            </ul>
-
-                            <!-- Récap revêtements -->
-                            <div id="recap-rev" class="recap-pane p-3">
-                                {% if groupes_revetements %}
-                                <div style="overflow-x:auto;">
-                                    <table class="table table-sm mb-0" style="font-size:0.8rem;min-width:500px;">
-                                        <thead style="background:#f0f7ff;">
-                                            <tr>
-                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Type</th>
-                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Nature principale</th>
-                                                <th class="text-center" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Nb éléments</th>
-                                                <th class="text-end" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Surface totale</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for g in groupes_revetements %}
-                                            <tr>
-                                                <td style="padding:0.4rem 0.75rem;font-weight:600;">
-                                                    <i class="fas {{ g.icone }} me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>{{ g.label }}
-                                                </td>
-                                                <td style="padding:0.4rem 0.75rem;color:#64748b;">
-                                                    {% with natures=g.items|dictsort:"nature" %}
-                                                    {% for r in natures %}{% if r.nature and forloop.first %}{{ r.nature }}{% endif %}{% endfor %}
-                                                    {% endwith %}
-                                                    <span class="text-muted" style="font-size:0.72rem;">et {{ g.items|length|add:"-1" }} autres</span>
-                                                </td>
-                                                <td class="text-center" style="padding:0.4rem 0.75rem;">
-                                                    <span class="badge" style="background:#dbeafe;color:#1e40af;font-size:0.72rem;">{{ g.items|length }}</span>
-                                                </td>
-                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-weight:700;color:var(--c-blue,#1e6fca);">
-                                                    {% if g.total_surf %}{{ g.total_surf }} m²{% else %}—{% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                        <tfoot style="background:#f0f7ff;border-top:2px solid #bfdbfe;">
-                                            <tr>
-                                                <td colspan="3" style="padding:0.5rem 0.75rem;font-weight:700;font-size:0.82rem;">TOTAL</td>
-                                                <td class="text-end" style="padding:0.5rem 0.75rem;font-weight:700;font-size:0.85rem;color:var(--c-blue,#1e6fca);">
-                                                    {{ revetements|length }} élément{{ revetements|length|pluralize }}
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                                {% else %}
-                                <p class="text-muted small text-center py-3 mb-0">Aucune donnée.</p>
-                                {% endif %}
-                            </div>
-
-                            <!-- Récap équipements -->
-                            <div id="recap-eq" class="recap-pane p-3" style="display:none;">
-                                <div style="overflow-x:auto;">
-                                    <table class="table table-sm mb-0" style="font-size:0.8rem;min-width:400px;">
-                                        <thead style="background:#f0f7ff;">
-                                            <tr>
-                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Catégorie</th>
-                                                <th class="text-center" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Types distincts</th>
-                                                <th class="text-end" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Quantité totale</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for g in groupes_tableau %}
-                                            <tr>
-                                                <td style="padding:0.4rem 0.75rem;font-weight:600;">
-                                                    <i class="fas {{ g.icone }} me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>{{ g.label }}
-                                                </td>
-                                                <td class="text-center" style="padding:0.4rem 0.75rem;">
-                                                    <span class="badge" style="background:#dbeafe;color:#1e40af;font-size:0.72rem;">{{ g.lignes|length }}</span>
-                                                </td>
-                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-weight:700;color:var(--c-blue,#1e6fca);">
-                                                    {% with total=0 %}
-                                                    {% for l in g.lignes %}{% endfor %}
-                                                    {% endwith %}
-                                                    {{ g.lignes|length }} type{{ g.lignes|length|pluralize }}
-                                                </td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr><td colspan="3" class="text-muted text-center py-3">Aucun équipement.</td></tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
 
             </div>
             <!-- /pane-info -->
@@ -639,7 +529,117 @@ div[style*="overflow-x:auto"]::after {
                         </div>
                     </div>
                 </div>
+                <!-- Tableaux récapitulatifs -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+                        <div class="card-header" style="background:linear-gradient(135deg,#0d1628,#1e6fca);color:#fff;padding:0.9rem 1.1rem;">
+                            <h6 class="fw-bold mb-0" style="font-size:0.9rem;">
+                                <i class="fas fa-table me-2" style="opacity:0.8;"></i>Tableaux récapitulatifs
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- Nav onglets récap -->
+                            <ul class="nav nav-tabs px-3 pt-2" style="border-bottom:2px solid #e2e8f0;gap:0.25rem;">
+                                <li class="nav-item">
+                                    <button class="nav-link active px-3 py-2" style="font-size:0.82rem;"
+                                            onclick="showRecap('recap-rev',this)">
+                                        <i class="fas fa-paint-roller me-1"></i>Récap Revêtements
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link px-3 py-2" style="font-size:0.82rem;"
+                                            onclick="showRecap('recap-eq',this)">
+                                        <i class="fas fa-cogs me-1"></i>Récap Équipements
+                                    </button>
+                                </li>
+                            </ul>
 
+                            <!-- Récap revêtements -->
+                            <div id="recap-rev" class="recap-pane p-3">
+                                {% if groupes_revetements %}
+                                <div style="overflow-x:auto;">
+                                    <table class="table table-sm mb-0" style="font-size:0.8rem;min-width:500px;">
+                                        <thead style="background:#f0f7ff;">
+                                            <tr>
+                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Type</th>
+                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Nature principale</th>
+                                                <th class="text-center" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Nb éléments</th>
+                                                <th class="text-end" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Surface totale</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for g in groupes_revetements %}
+                                            <tr>
+                                                <td style="padding:0.4rem 0.75rem;font-weight:600;">
+                                                    <i class="fas {{ g.icone }} me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>{{ g.label }}
+                                                </td>
+                                                <td style="padding:0.4rem 0.75rem;color:#64748b;">
+                                                    {% with natures=g.items|dictsort:"nature" %}
+                                                    {% for r in natures %}{% if r.nature and forloop.first %}{{ r.nature }}{% endif %}{% endfor %}
+                                                    {% endwith %}
+                                                    <span class="text-muted" style="font-size:0.72rem;">et {{ g.items|length|add:"-1" }} autres</span>
+                                                </td>
+                                                <td class="text-center" style="padding:0.4rem 0.75rem;">
+                                                    <span class="badge" style="background:#dbeafe;color:#1e40af;font-size:0.72rem;">{{ g.items|length }}</span>
+                                                </td>
+                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-weight:700;color:var(--c-blue,#1e6fca);">
+                                                    {% if g.total_surf %}{{ g.total_surf }} m²{% else %}—{% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot style="background:#f0f7ff;border-top:2px solid #bfdbfe;">
+                                            <tr>
+                                                <td colspan="3" style="padding:0.5rem 0.75rem;font-weight:700;font-size:0.82rem;">TOTAL</td>
+                                                <td class="text-end" style="padding:0.5rem 0.75rem;font-weight:700;font-size:0.85rem;color:var(--c-blue,#1e6fca);">
+                                                    {{ revetements|length }} élément{{ revetements|length|pluralize }}
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted small text-center py-3 mb-0">Aucune donnée.</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Récap équipements -->
+                            <div id="recap-eq" class="recap-pane p-3" style="display:none;">
+                                <div style="overflow-x:auto;">
+                                    <table class="table table-sm mb-0" style="font-size:0.8rem;min-width:400px;">
+                                        <thead style="background:#f0f7ff;">
+                                            <tr>
+                                                <th style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Catégorie</th>
+                                                <th class="text-center" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Types distincts</th>
+                                                <th class="text-end" style="padding:0.5rem 0.75rem;font-size:0.7rem;text-transform:uppercase;color:#888;">Quantité totale</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for g in groupes_tableau %}
+                                            <tr>
+                                                <td style="padding:0.4rem 0.75rem;font-weight:600;">
+                                                    <i class="fas {{ g.icone }} me-2" style="color:var(--c-blue,#1e6fca);font-size:0.8rem;"></i>{{ g.label }}
+                                                </td>
+                                                <td class="text-center" style="padding:0.4rem 0.75rem;">
+                                                    <span class="badge" style="background:#dbeafe;color:#1e40af;font-size:0.72rem;">{{ g.lignes|length }}</span>
+                                                </td>
+                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-weight:700;color:var(--c-blue,#1e6fca);">
+                                                    {% with total=0 %}
+                                                    {% for l in g.lignes %}{% endfor %}
+                                                    {% endwith %}
+                                                    {{ g.lignes|length }} type{{ g.lignes|length|pluralize }}
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr><td colspan="3" class="text-muted text-center py-3">Aucun équipement.</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Pièces par étage -->
                 <div class="col-12">
                     <div class="card border-0 shadow-sm" style="border-radius:14px;">
