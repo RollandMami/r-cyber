@@ -43,10 +43,10 @@ def dashboard(request):
                 date_fin__lt=timezone.now().date(),
                 statut__in=['a_faire','en_cours']
             ).count(),
-            'projets_recents': Projet.objects.prefetch_related('photos','taches')
-                                             .order_by('-cree_le')[:5],
-            'factures_recentes': Facture.objects.select_related('projet')
-                                               .order_by('-date_emission')[:5],
+            'projets_recents': list(Projet.objects.prefetch_related('photos','taches')
+                                             .order_by('-cree_le')[:5]),
+            'factures_recentes': list(Facture.objects.select_related('projet')
+                                               .order_by('-date_emission')[:5]),
         }
     except Exception:
         context['btp'] = None

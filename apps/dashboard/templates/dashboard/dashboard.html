@@ -122,6 +122,7 @@
                     <h6 class="fw-bold mb-0" style="font-size:.88rem;">Projets récents</h6>
                     <a href="{% url 'construction:projet_list' %}" class="btn btn-outline-secondary btn-sm">Tous</a>
                 </div>
+                {% if btp.projets_recents %}
                 {% for p in btp.projets_recents %}
                 <a href="{% url 'construction:projet_detail' pk=p.pk %}"
                    class="d-flex align-items-center gap-3 p-2 rounded-3 mb-1 text-decoration-none"
@@ -152,6 +153,9 @@
                     </a>
                 </div>
                 {% endfor %}
+                {% else %}
+                    <p class="text-muted small mb-0 p-2">Aucun projet récent ou service indisponible.</p>
+                {% endif %}
             </div>
         </div>
         <div class="col-lg-5">

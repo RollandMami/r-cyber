@@ -92,7 +92,7 @@ class Projet(models.Model):
                                     related_name='projets_geres')
     cree_le     = models.DateTimeField(auto_now_add=True)
     modifie_le  = models.DateTimeField(auto_now=True)
-
+    service_tag = models.CharField( blank=True, null=True)
     class Meta:
         verbose_name        = 'Projet'
         verbose_name_plural = 'Projets'
@@ -490,7 +490,6 @@ class RapportActivite(models.Model):
 
     redige_par  = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     cree_le     = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         verbose_name        = 'Rapport d\'activité'
         verbose_name_plural = 'Rapports d\'activité'

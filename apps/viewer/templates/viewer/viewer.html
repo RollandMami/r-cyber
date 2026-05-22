@@ -21,7 +21,6 @@
     --navbar-h:  56px;
 }
 body { overflow: hidden; margin: 0; }
-
 .viewer-wrapper {
     display: flex;
     height: calc(100vh - var(--navbar-h));
@@ -46,7 +45,7 @@ body { overflow: hidden; margin: 0; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Toolbar ─────────────────────────────────────────────── */
+/* ── Toolbar principal ───────────────────────────────────── */
 .viewer-toolbar {
     position: absolute; top: 1rem; left: 1rem;
     display: flex; gap: 0.4rem; z-index: 20;
@@ -63,40 +62,56 @@ body { overflow: hidden; margin: 0; }
 .viewer-btn:hover  { background: rgba(255,255,255,0.1); color: #fff; }
 .viewer-btn.active { background: var(--vaccdim); border-color: var(--vaccentv); color: #fff; }
 .viewer-btn i { font-size: 0.75rem; }
-
-/* Bouton drawer — caché desktop, visible mobile */
 .btn-drawer-mobile { display: none !important; }
+
+/* ── Panneau environnement ───────────────────────────────── */
+#env-panel {
+    position: absolute; bottom: 3.5rem; left: 1rem;
+    z-index: 25; display: none; flex-direction: column; gap: 0.6rem;
+    background: var(--vglass); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px; padding: 1rem; backdrop-filter: blur(16px);
+    min-width: 260px; max-width: 320px;
+}
+#env-panel.open { display: flex; }
+.env-section-label {
+    font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--vtmuted); margin-bottom: 0.25rem;
+}
+.env-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.env-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--vtmuted); border-radius: 8px; padding: 0.35rem 0.65rem;
+    font-size: 0.73rem; font-weight: 600; cursor: pointer;
+    transition: all 0.18s; display: flex; align-items: center; gap: 0.3rem;
+    white-space: nowrap;
+}
+.env-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.env-btn.active { background: var(--vaccdim); border-color: var(--vaccentv); color: #fff; }
+
+/* Bouton toggle environnement */
+#btn-env {
+    position: absolute; bottom: 1rem; left: 1rem; z-index: 26;
+}
 
 /* ── Hover info ──────────────────────────────────────────── */
 #hover-info {
-    position: absolute; bottom: 1.5rem; left: 1rem;
+    position: absolute; bottom: 1.5rem; right: 1rem;
     background: var(--vglass); border: 1px solid rgba(255,255,255,0.1);
     color: var(--vtmuted); border-radius: 10px; padding: 0.5rem 0.9rem;
     font-size: 0.78rem; backdrop-filter: blur(12px);
     display: none; pointer-events: none;
-    max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* ============================================================
-   SIDEBAR DESKTOP
-   ============================================================ */
+/* ── Sidebar ─────────────────────────────────────────────── */
 .viewer-sidebar {
     width: var(--drawer-w); flex-shrink: 0;
     background: var(--vpanel); border-left: 1px solid var(--vborder);
     display: flex; flex-direction: column; overflow: hidden;
 }
-.sidebar-header {
-    padding: 1rem 1rem 0.75rem; border-bottom: 1px solid var(--vborder);
-}
-.sidebar-header h6 {
-    margin: 0; font-size: 0.65rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.12em; color: var(--vtmuted);
-    margin-bottom: 0.25rem;
-}
-.sidebar-header .patrimoine-nom {
-    font-size: 0.92rem; font-weight: 700; color: var(--vtxt);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
+.sidebar-header { padding: 1rem 1rem 0.75rem; border-bottom: 1px solid var(--vborder); }
+.sidebar-header h6 { margin: 0; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--vtmuted); margin-bottom: 0.25rem; }
+.sidebar-header .patrimoine-nom { font-size: 0.92rem; font-weight: 700; color: var(--vtxt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .btn-tout-afficher {
     display: flex; align-items: center; gap: 0.5rem;
@@ -106,20 +121,13 @@ body { overflow: hidden; margin: 0; }
     color: var(--vtmuted); font-size: 0.82rem; font-weight: 600;
     cursor: pointer; transition: all 0.2s ease; text-align: left;
 }
-.btn-tout-afficher:hover,
-.btn-tout-afficher.active {
-    background: var(--vaccdim); border-color: var(--vaccentv); color: #fff;
-}
+.btn-tout-afficher:hover, .btn-tout-afficher.active { background: var(--vaccdim); border-color: var(--vaccentv); color: #fff; }
 
-.sidebar-tree {
-    flex: 1; overflow-y: auto; padding: 0.5rem 0.75rem 2rem;
-    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent;
-}
+.sidebar-tree { flex: 1; overflow-y: auto; padding: 0.5rem 0.75rem 2rem; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
 .sidebar-tree::-webkit-scrollbar { width: 3px; }
 .sidebar-tree::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
 
 .etage-item { margin-bottom: 0.2rem; }
-
 .etage-btn {
     display: flex; align-items: center; gap: 0.55rem; width: 100%;
     padding: 0.55rem 0.75rem; background: transparent;
@@ -129,19 +137,13 @@ body { overflow: hidden; margin: 0; }
 }
 .etage-btn:hover  { background: rgba(255,255,255,0.05); color: #fff; }
 .etage-btn.active { background: var(--vaccdim); border-color: rgba(33,150,243,0.35); color: #fff; }
-
 .etage-btn .etage-icon { font-size: 0.7rem; opacity: 0.5; transition: transform 0.2s ease; flex-shrink: 0; }
 .etage-btn.open .etage-icon { transform: rotate(90deg); opacity: 1; }
 .etage-btn .etage-layer { color: var(--vaccentv); font-size: 0.75rem; flex-shrink: 0; }
-.etage-level-badge {
-    margin-left: auto; font-size: 0.62rem;
-    background: rgba(255,255,255,0.07); border-radius: 4px;
-    padding: 0.1rem 0.4rem; color: var(--vtmuted); flex-shrink: 0;
-}
+.etage-level-badge { margin-left: auto; font-size: 0.62rem; background: rgba(255,255,255,0.07); border-radius: 4px; padding: 0.1rem 0.4rem; color: var(--vtmuted); flex-shrink: 0; }
 
 .pieces-list { list-style: none; padding: 0; margin: 0 0 0.2rem; display: none; }
 .pieces-list.open { display: block; }
-
 .piece-btn {
     display: flex; align-items: center; gap: 0.45rem; width: 100%;
     padding: 0.38rem 0.75rem 0.38rem 2.1rem; background: transparent;
@@ -152,98 +154,49 @@ body { overflow: hidden; margin: 0; }
 .piece-btn.active { background: rgba(33,150,243,0.12); color: #fff; }
 .piece-surface { margin-left: auto; font-size: 0.68rem; color: rgba(255,255,255,0.22); flex-shrink: 0; }
 
-/* ============================================================
-   DRAWER MOBILE
-   ============================================================ */
-.drawer-backdrop {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6); z-index: 100;
-    backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease;
-}
+/* Légende matériaux dans sidebar */
+.mat-legend { padding: 0.75rem; border-top: 1px solid var(--vborder); }
+.mat-legend-title { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--vtmuted); margin-bottom: 0.5rem; }
+.mat-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; font-size: 0.73rem; color: var(--vtmuted); }
+.mat-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── Drawer mobile ───────────────────────────────────────── */
+.drawer-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease; }
 .drawer-backdrop.open { opacity: 1; }
-
-.drawer {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 101;
-    background: var(--vpanel); border-radius: 20px 20px 0 0;
-    border-top: 1px solid var(--vborder);
-    transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
-    max-height: 80vh; display: flex; flex-direction: column;
-}
+.drawer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 101; background: var(--vpanel); border-radius: 20px 20px 0 0; border-top: 1px solid var(--vborder); transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); max-height: 80vh; display: flex; flex-direction: column; }
 .drawer.open { transform: translateY(0); }
-
-.drawer-handle {
-    width: 36px; height: 4px; background: rgba(255,255,255,0.15);
-    border-radius: 2px; margin: 0.75rem auto 0; flex-shrink: 0; cursor: grab;
-}
-.drawer-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.75rem 1.25rem 0.5rem; border-bottom: 1px solid var(--vborder); flex-shrink: 0;
-}
-.drawer-header-title {
-    font-size: 0.9rem; font-weight: 700; color: var(--vtxt);
-    display: flex; align-items: center; gap: 0.5rem;
-}
+.drawer-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0.75rem auto 0; flex-shrink: 0; cursor: grab; }
+.drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem 0.5rem; border-bottom: 1px solid var(--vborder); flex-shrink: 0; }
+.drawer-header-title { font-size: 0.9rem; font-weight: 700; color: var(--vtxt); display: flex; align-items: center; gap: 0.5rem; }
 .drawer-header-title i { color: var(--vaccentv); font-size: 0.8rem; }
-.btn-close-drawer {
-    background: rgba(255,255,255,0.08); border: none; border-radius: 50%;
-    width: 30px; height: 30px; color: var(--vtmuted); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; transition: all 0.2s ease;
-}
+.btn-close-drawer { background: rgba(255,255,255,0.08); border: none; border-radius: 50%; width: 30px; height: 30px; color: var(--vtmuted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: all 0.2s ease; }
 .btn-close-drawer:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
 .drawer-body { overflow-y: auto; padding: 0.75rem 1rem 2rem; flex: 1; scrollbar-width: none; }
 .drawer-body::-webkit-scrollbar { display: none; }
-
-.drawer-tout-btn {
-    display: flex; align-items: center; gap: 0.6rem; width: 100%;
-    padding: 0.7rem 1rem; background: transparent;
-    border: 1px solid var(--vborder); border-radius: 12px;
-    color: var(--vtmuted); font-size: 0.88rem; font-weight: 600;
-    cursor: pointer; margin-bottom: 0.75rem; transition: all 0.18s ease; text-align: left;
-}
-.drawer-tout-btn.active,
-.drawer-tout-btn:hover { background: var(--vaccdim); border-color: rgba(33,150,243,0.4); color: #fff; }
-
-.drawer-etage-chip {
-    display: flex; align-items: center; gap: 0.6rem; width: 100%;
-    padding: 0.7rem 1rem; background: rgba(255,255,255,0.04);
-    border: 1px solid var(--vborder); border-radius: 12px;
-    color: rgba(255,255,255,0.7); font-size: 0.88rem; font-weight: 600;
-    cursor: pointer; margin-bottom: 0.5rem; transition: all 0.18s ease; text-align: left;
-}
+.drawer-tout-btn { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.7rem 1rem; background: transparent; border: 1px solid var(--vborder); border-radius: 12px; color: var(--vtmuted); font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-bottom: 0.75rem; transition: all 0.18s ease; text-align: left; }
+.drawer-tout-btn.active, .drawer-tout-btn:hover { background: var(--vaccdim); border-color: rgba(33,150,243,0.4); color: #fff; }
+.drawer-etage-chip { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--vborder); border-radius: 12px; color: rgba(255,255,255,0.7); font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-bottom: 0.5rem; transition: all 0.18s ease; text-align: left; }
 .drawer-etage-chip:hover  { background: rgba(255,255,255,0.08); color: #fff; }
 .drawer-etage-chip.active { background: var(--vaccdim); border-color: rgba(33,150,243,0.4); color: #fff; }
 .chip-icon  { color: var(--vaccentv); font-size: 0.8rem; }
 .chip-badge { margin-left: auto; font-size: 0.68rem; color: var(--vtmuted); }
 .chip-arrow { font-size: 0.65rem; opacity: 0.4; transition: transform 0.2s; }
 .drawer-etage-chip.open .chip-arrow { transform: rotate(90deg); opacity: 0.8; }
-
-.drawer-pieces {
-    list-style: none; padding: 0 0 0 0.75rem; margin: 0 0 0.5rem 0.5rem;
-    display: none; border-left: 2px solid rgba(33,150,243,0.2);
-}
+.drawer-pieces { list-style: none; padding: 0 0 0 0.75rem; margin: 0 0 0.5rem 0.5rem; display: none; border-left: 2px solid rgba(33,150,243,0.2); }
 .drawer-pieces.open { display: block; }
-.drawer-piece-btn {
-    display: flex; align-items: center; gap: 0.5rem; width: 100%;
-    padding: 0.5rem 0.5rem; background: transparent; border: none;
-    border-radius: 8px; color: var(--vtmuted); font-size: 0.82rem;
-    cursor: pointer; transition: all 0.15s ease; text-align: left; margin-bottom: 0.15rem;
-}
+.drawer-piece-btn { display: flex; align-items: center; gap: 0.5rem; width: 100%; padding: 0.5rem 0.5rem; background: transparent; border: none; border-radius: 8px; color: var(--vtmuted); font-size: 0.82rem; cursor: pointer; transition: all 0.15s ease; text-align: left; margin-bottom: 0.15rem; }
 .drawer-piece-btn:hover  { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.8); }
 .drawer-piece-btn.active { background: rgba(33,150,243,0.12); color: #fff; }
 .drawer-piece-surface { margin-left: auto; font-size: 0.7rem; color: rgba(255,255,255,0.22); }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 767.98px) {
-    .viewer-sidebar      { display: none; }
-    .btn-drawer-mobile   { display: flex !important; }
-    .viewer-btn span     { display: none; }
-    .viewer-btn          { padding: 0.42rem 0.65rem; }
-    #hover-info          { bottom: 1.5rem; }
+    .viewer-sidebar   { display: none; }
+    .btn-drawer-mobile { display: flex !important; }
+    .viewer-btn span  { display: none; }
+    .viewer-btn       { padding: 0.42rem 0.65rem; }
+    .env-btn span     { display: none; }
+    #env-panel        { bottom: 4rem; left: 0.5rem; right: 0.5rem; max-width: none; }
 }
 @media (max-width: 380px) {
     .viewer-btn { padding: 0.38rem 0.55rem; }
@@ -262,7 +215,7 @@ body { overflow: hidden; margin: 0; }
             <p style="font-size:0.85rem;color:var(--vtmuted,rgba(255,255,255,0.4));">Chargement du modèle…</p>
         </div>
 
-        {# Toolbar — tous les boutons ici #}
+        {# ── Toolbar principal ──────────────────────────────── #}
         <div class="viewer-toolbar">
             <button class="viewer-btn active" id="btn-perspective" onclick="setCameraMode('perspective')">
                 <i class="fas fa-cube"></i><span> 3D</span>
@@ -273,30 +226,86 @@ body { overflow: hidden; margin: 0; }
             <button class="viewer-btn" onclick="resetCamera()">
                 <i class="fas fa-home"></i><span> Reset</span>
             </button>
-            <button class="viewer-btn active" id="btn-orbit" onclick="setNavMode('orbit')" title="Mode orbite">
+            <button class="viewer-btn active" id="btn-orbit" onclick="setNavMode('orbit')">
                 <i class="fas fa-sync-alt"></i><span> Orbite</span>
             </button>
-            <button class="viewer-btn" id="btn-pan" onclick="setNavMode('pan')" title="Mode déplacement">
+            <button class="viewer-btn" id="btn-pan" onclick="setNavMode('pan')">
                 <i class="fas fa-hand-paper"></i><span> Pan</span>
             </button>
             <a href="{% url 'smartdocs:patrimoine_detail' patrimoine.pk %}" class="viewer-btn">
                 <i class="fas fa-file-alt"></i><span> Docs</span>
             </a>
-            {# Bouton drawer — mobile seulement #}
-            <button class="viewer-btn btn-drawer-mobile" id="btn-niveaux" onclick="openDrawer()">
+            <button class="viewer-btn btn-drawer-mobile" onclick="openDrawer()">
                 <i class="fas fa-layer-group"></i><span> Niveaux</span>
             </button>
+        </div>
+
+        {# ── Bouton environnement flottant (bas gauche) ──────── #}
+        <button class="viewer-btn" id="btn-env" onclick="toggleEnvPanel()" style="position:absolute;bottom:1rem;left:1rem;z-index:26;">
+            <i class="fas fa-cloud-sun"></i><span> Environnement</span>
+        </button>
+
+        {# ── Panneau environnement ────────────────────────────── #}
+        <div id="env-panel">
+
+            {# Soleil / Heure #}
+            <div>
+                <div class="env-section-label"><i class="fas fa-sun me-1"></i>Heure du jour</div>
+                <div class="env-row">
+                    <button class="env-btn env-sky-btn" data-mode="nuit"       onclick="setSkyMode('nuit')">
+                        <i class="fas fa-moon"></i><span> Nuit</span>
+                    </button>
+                    <button class="env-btn env-sky-btn" data-mode="crepuscule" onclick="setSkyMode('crepuscule')">
+                        <i class="fas fa-star"></i><span> Crépuscule</span>
+                    </button>
+                    <button class="env-btn env-sky-btn" data-mode="matin"      onclick="setSkyMode('matin')">
+                        <i class="fas fa-cloud-sun me-1" style="color:#ffd090;"></i><span> Matin</span>
+                    </button>
+                    <button class="env-btn env-sky-btn active" data-mode="jour" onclick="setSkyMode('jour')">
+                        <i class="fas fa-sun" style="color:#ffe066;"></i><span> Jour</span>
+                    </button>
+                    <button class="env-btn env-sky-btn" data-mode="midi"       onclick="setSkyMode('midi')">
+                        <i class="fas fa-sun" style="color:#fff;"></i><span> Midi</span>
+                    </button>
+                    <button class="env-btn env-sky-btn" data-mode="soir"       onclick="setSkyMode('soir')">
+                        <i class="fas fa-cloud-sun" style="color:#ff7733;"></i><span> Soir</span>
+                    </button>
+                    <button class="env-btn env-sky-btn" data-mode="coucher"    onclick="setSkyMode('coucher')">
+                        <i class="fas fa-fire" style="color:#ff3300;"></i><span> Coucher</span>
+                    </button>
+                </div>
+            </div>
+
+            {# Météo #}
+            <div>
+                <div class="env-section-label"><i class="fas fa-cloud me-1"></i>Météo</div>
+                <div class="env-row">
+                    <button class="env-btn env-weather-btn active" data-mode="clear"  onclick="setWeather('clear')">
+                        <i class="fas fa-sun" style="color:#ffe066;"></i><span> Ciel bleu</span>
+                    </button>
+                    <button class="env-btn env-weather-btn" data-mode="nuages" onclick="setWeather('nuages')">
+                        <i class="fas fa-cloud" style="color:#ccc;"></i><span> Nuageux</span>
+                    </button>
+                    <button class="env-btn env-weather-btn" data-mode="pluie"  onclick="setWeather('pluie')">
+                        <i class="fas fa-cloud-rain" style="color:#6af;"></i><span> Pluie</span>
+                    </button>
+                    <button class="env-btn env-weather-btn" data-mode="orage"  onclick="setWeather('orage')">
+                        <i class="fas fa-bolt" style="color:#ffd700;"></i><span> Orage</span>
+                    </button>
+                </div>
+            </div>
+
         </div>
 
         <canvas id="viewer-canvas"></canvas>
 
         <div id="hover-info">
-            <i class="fas fa-info-circle me-1"></i>
+            <i class="fas fa-info-circle me-1" style="color:var(--vaccentv);"></i>
             <span id="hover-info-text"></span>
         </div>
     </div>
 
-    {# ── Sidebar desktop ─────────────────────────────────────── #}
+    {# ── Sidebar desktop ──────────────────────────────────────── #}
     <nav class="viewer-sidebar">
         <div class="sidebar-header">
             <h6>Navigation</h6>
@@ -310,8 +319,7 @@ body { overflow: hidden; margin: 0; }
         <div class="sidebar-tree">
             {% for etage in etages %}
             <div class="etage-item">
-                <button class="etage-btn"
-                        data-etage-pk="{{ etage.pk }}"
+                <button class="etage-btn" data-etage-pk="{{ etage.pk }}"
                         onclick="toggleEtage(this, {{ etage.pk }})">
                     <i class="fas fa-chevron-right etage-icon"></i>
                     <i class="fas fa-layer-group etage-layer"></i>
@@ -339,6 +347,19 @@ body { overflow: hidden; margin: 0; }
                 <i class="fas fa-info-circle mb-2 d-block"></i>Aucun étage détecté.
             </div>
             {% endfor %}
+        </div>
+
+        {# Légende matériaux #}
+        <div class="mat-legend">
+            <div class="mat-legend-title">Légende matériaux</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#d4c5b0;"></div> Béton / Mur</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#c19a6b;"></div> Bois</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#8d9db0;"></div> Métal</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#90caf9;opacity:0.5;"></div> Verre</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#b5603a;"></div> Brique</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#ddd8d0;"></div> Carrelage</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#7d4e3e;"></div> Toiture</div>
+            <div class="mat-item"><div class="mat-swatch" style="background:#f5f5f0;"></div> Sanitaire</div>
         </div>
     </nav>
 </div>
@@ -370,8 +391,7 @@ body { overflow: hidden; margin: 0; }
         <ul class="drawer-pieces" id="drawer-pieces-{{ etage.pk }}">
             {% for piece in etage.pieces.all %}
             <li>
-                <button class="drawer-piece-btn"
-                        onclick="filtrerPieceDrawer(this, '{{ piece.ifc_guid }}')">
+                <button class="drawer-piece-btn" onclick="filtrerPieceDrawer(this, '{{ piece.ifc_guid }}')">
                     <i class="fas fa-door-open" style="font-size:0.7rem;opacity:0.4;"></i>
                     {{ piece.nom }}
                     {% if piece.surface %}
@@ -394,9 +414,27 @@ body { overflow: hidden; margin: 0; }
 document.addEventListener('DOMContentLoaded', function () {
     initViewer(
         'viewer-canvas',
-        "{{ json_url }}",
+        "{% url 'viewer:api_geometrie' patrimoine.pk %}",
         "{% url 'viewer:api_geometrie' patrimoine.pk %}"
     );
+});
+
+/* ── Panneau environnement ───────────────────────────────── */
+function toggleEnvPanel() {
+    const p = document.getElementById('env-panel');
+    const btn = document.getElementById('btn-env');
+    const open = p.classList.toggle('open');
+    btn.classList.toggle('active', open);
+}
+// Fermer si clic dehors
+document.addEventListener('click', function(e) {
+    const panel = document.getElementById('env-panel');
+    const btn   = document.getElementById('btn-env');
+    if (panel && panel.classList.contains('open') &&
+        !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.remove('open');
+        btn.classList.remove('active');
+    }
 });
 
 /* ── Drawer ──────────────────────────────────────────────── */
@@ -410,21 +448,15 @@ function closeDrawer() {
     document.getElementById('drawer-backdrop').classList.remove('open');
     setTimeout(() => document.getElementById('drawer-backdrop').style.display = 'none', 300);
 }
-
-/* Swipe down pour fermer */
 (function() {
     const drawer = document.getElementById('drawer-mobile');
     const handle = document.getElementById('drawer-handle');
     let startY = 0, dragging = false;
     handle.addEventListener('touchstart', e => { startY = e.touches[0].clientY; dragging = true; }, { passive: true });
     handle.addEventListener('touchmove',  e => { if (dragging) drawer.style.transform = `translateY(${Math.max(0, e.touches[0].clientY - startY)}px)`; }, { passive: true });
-    handle.addEventListener('touchend',   e => {
-        dragging = false; drawer.style.transform = '';
-        if (e.changedTouches[0].clientY - startY > 80) closeDrawer();
-    });
+    handle.addEventListener('touchend',   e => { dragging = false; drawer.style.transform = ''; if (e.changedTouches[0].clientY - startY > 80) closeDrawer(); });
 })();
 
-/* ── Filtres drawer ──────────────────────────────────────── */
 function filtrerEtageDrawer(etagePk, btn) {
     document.querySelectorAll('.drawer-etage-chip,.drawer-piece-btn').forEach(b => b.classList.remove('active', 'open'));
     document.getElementById('drawer-btn-tout').classList.remove('active');
