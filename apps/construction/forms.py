@@ -23,7 +23,7 @@ class ProjetForm(forms.ModelForm):
             'adresse_chantier',
             'description_courte', 'cahier_des_charges', 'visible_vitrine',
             'date_debut', 'date_fin_prevue',
-            'budget_estime', 'budget_contractuel',
+            'budget_estime', 'budget_contractuel','service_tag',
         ]
         widgets = {
             'titre':              forms.TextInput(attrs={**W, 'placeholder': 'Nom du projet'}),
@@ -43,6 +43,7 @@ class ProjetForm(forms.ModelForm):
             'date_fin_prevue':    forms.DateInput(attrs=WD),
             'budget_estime':      forms.NumberInput(attrs=WN),
             'budget_contractuel': forms.NumberInput(attrs=WN),
+            'service_tag': forms.Textarea(attrs=WTA),
         }
 
 
