@@ -20,6 +20,15 @@ let _rainParticles, _rainGeometry, _rainActive = false;
 let _lightningTimeout = null;
 let _currentSkyMode = 'jour';
 let _currentWeather  = 'clear';
+
+// Étoiles, lune, luminaires IFC
+let _starsMesh   = null;   // Points() étoiles
+let _moonMesh    = null;   // Mesh lune
+let _moonLight   = null;   // PointLight lune
+let _starsGeo    = null;
+let _luminaireRegistry = []; // [{ mesh, pointLight, position }]
+let _starsVisible = false;
+let _animFrame   = 0;      // compteur pour scintillement
 let _animFrameId = null;
 
 // ── Matériaux ArchiCAD → PBR procédural ──────────────────────────────────────
@@ -331,6 +340,113 @@ function _animateRain() {
     _rainGeometry.attributes.position.needsUpdate = true;
 }
 
+// ── Étoiles ───────────────────────────────────────────────────────────────────
+
+function _buildStars() {
+    const COUNT = 4000;
+    _starsGeo = new THREE.BufferGeometry();
+    const positions  = new Float32Array(COUNT * 3);
+    const sizes      = new Float32Array(COUNT);
+    const colors     = new Float32Array(COUNT * 3);
+
+    // Palette de couleurs d'étoiles réalistes (blanc, bleuté, jaunâtre, rougeâtre)
+    const starPalette = [
+        [1.0, 1.0, 1.0],   // blanc pur
+        [0.9, 0.95, 1.0],  // blanc bleuté
+        [1.0, 0.97, 0.85], // blanc jaunâtre
+        [0.8, 0.88, 1.0],  // bleu-blanc
+        [1.0, 0.85, 0.75], // orangé (géante)
+    ];
+
+    for (let i = 0; i < COUNT; i++) {
+        // Distribution sphérique — rayon entre 1800 et 3800 pour rester derrière le dôme
+        const r     = 1800 + Math.random() * 2000;
+        const theta = Math.random() * Math.PI * 2;
+        const phi   = Math.acos(2 * Math.random() - 1);
+        positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = r * Math.abs(Math.cos(phi));  // hémisphère supérieure uniquement
+        positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+        sizes[i] = Math.random() < 0.05 ? 2.2 + Math.random() * 1.5   // 5% étoiles brillantes
+                 : Math.random() < 0.25 ? 1.2 + Math.random() * 0.8   // 20% moyennes
+                 : 0.4 + Math.random() * 0.6;                           // 75% petites
+
+        const col = starPalette[Math.floor(Math.random() * starPalette.length)];
+        colors[i * 3]     = col[0];
+        colors[i * 3 + 1] = col[1];
+        colors[i * 3 + 2] = col[2];
+    }
+    _starsGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    _starsGeo.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
+    _starsGeo.setAttribute('size',     new THREE.BufferAttribute(sizes,     1));
+
+    const starsMat = new THREE.ShaderMaterial({
+        uniforms: {
+            opacity:   { value: 0.0 },
+            time:      { value: 0.0 },
+        },
+        vertexShader: `
+            attribute float size;
+            attribute vec3 color;
+            varying vec3 vColor;
+            uniform float time;
+            // scintillement léger basé sur position
+            float flicker(vec3 p, float t) {
+                return 0.85 + 0.15 * sin(t * 2.0 + dot(p, vec3(0.017, 0.031, 0.023)));
+            }
+            void main() {
+                vColor = color;
+                vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+                gl_PointSize = size * flicker(position, time) * (300.0 / -mvPos.z);
+                gl_Position  = projectionMatrix * mvPos;
+            }`,
+        fragmentShader: `
+            uniform float opacity;
+            varying vec3 vColor;
+            void main() {
+                // Forme ronde douce
+                vec2 c = gl_PointCoord - vec2(0.5);
+                float d = dot(c, c);
+                if (d > 0.25) discard;
+                float alpha = opacity * (1.0 - smoothstep(0.1, 0.25, d));
+                gl_FragColor = vec4(vColor, alpha);
+            }`,
+        transparent: true,
+        depthWrite:  false,
+        blending:    THREE.AdditiveBlending,
+        vertexColors: true,
+    });
+
+    _starsMesh = new THREE.Points(_starsGeo, starsMat);
+    _starsMesh.visible = false;
+    // Ne pas appliquer la rotation du root IFC — les étoiles restent dans le repère monde
+    scene.add(_starsMesh);
+}
+
+// ── Lune ──────────────────────────────────────────────────────────────────────
+
+function _buildMoon() {
+    const moonGeo = new THREE.SphereGeometry(55, 32, 24);
+    const moonMat = new THREE.MeshStandardMaterial({
+        color:     0xdde8f0,
+        roughness: 0.9,
+        metalness: 0.0,
+        emissive:  new THREE.Color(0xb0c8e0),
+        emissiveIntensity: 0.0,
+    });
+    _moonMesh = new THREE.Mesh(moonGeo, moonMat);
+    _moonMesh.position.set(-900, 800, -1200);
+    _moonMesh.visible = false;
+    scene.add(_moonMesh);
+
+    // Lumière douce de la lune (bleu-blanc froid)
+    _moonLight = new THREE.PointLight(0xb0d0f8, 0.0, 0, 2);
+    _moonLight.position.copy(_moonMesh.position);
+    scene.add(_moonLight);
+}
+
+
+
 // ── Éclairs ───────────────────────────────────────────────────────────────────
 
 function _triggerLightning() {
@@ -350,19 +466,23 @@ function _triggerLightning() {
 
 // ── Appliquer un preset atmosphérique ────────────────────────────────────────
 
+// Intensité nuit = 1.0 (nuit complète), 0.0 (plein jour)
+const SKY_NIGHT_LEVEL = {
+    nuit: 1.0, crepuscule: 0.65, soir: 0.5, coucher: 0.4,
+    matin: 0.1, jour: 0.0, midi: 0.0,
+};
+
 function _applyAtmosphere(skyKey, weatherKey) {
-    const sky = SKY_PRESETS[skyKey]     || SKY_PRESETS.jour;
+    const sky = SKY_PRESETS[skyKey]         || SKY_PRESETS.jour;
     const wth = WEATHER_PRESETS[weatherKey] || WEATHER_PRESETS.clear;
     _currentSkyMode = skyKey;
     _currentWeather = weatherKey;
 
-    // Fond de scène
+    // Fond + brouillard
     scene.background = new THREE.Color(sky.bg);
-    // Brouillard (modulé par météo)
-    const density = sky.fogDensity * wth.fogMult;
-    scene.fog = new THREE.FogExp2(sky.fog, density);
+    scene.fog = new THREE.FogExp2(sky.fog, sky.fogDensity * wth.fogMult);
 
-    // Lumières
+    // Lumières solaires
     _ambientLight.color.setHex(sky.ambient);
     _ambientLight.intensity = sky.ambInt;
     _sunLight.color.setHex(sky.sunColor);
@@ -371,7 +491,7 @@ function _applyAtmosphere(skyKey, weatherKey) {
     _fillLight.color.setHex(sky.fillColor);
     _fillLight.intensity = sky.fillInt;
 
-    // Ciel
+    // Ciel dôme
     _updateSkyColors(sky);
 
     // Nuages
@@ -385,7 +505,33 @@ function _applyAtmosphere(skyKey, weatherKey) {
     if (_lightningTimeout) { clearTimeout(_lightningTimeout); _lightningTimeout = null; }
     if (wth.lightning) _triggerLightning();
 
-    // Mettre à jour les boutons UI
+    // ── Étoiles & Lune ───────────────────────────────────────────────
+    const nightLevel = SKY_NIGHT_LEVEL[skyKey] ?? 0;
+    const starsOpacity = Math.max(0, nightLevel - wth.fogMult * 0.1);
+
+    if (_starsMesh) {
+        const wasVisible = _starsVisible;
+        _starsVisible = starsOpacity > 0.05;
+        _starsMesh.visible = _starsVisible;
+        if (_starsVisible) _starsMesh.material.uniforms.opacity.value = starsOpacity;
+    }
+    if (_moonMesh) {
+        _moonMesh.visible = nightLevel > 0.3;
+        if (_moonMesh.material) {
+            _moonMesh.material.emissiveIntensity = nightLevel * 0.6;
+        }
+    }
+    if (_moonLight) {
+        _moonLight.intensity = nightLevel * 0.45;
+        // Lune moins visible si nuages/orage
+        if (wth.cloudOpacity > 0.5) _moonLight.intensity *= 0.3;
+    }
+
+    // ── Luminaires IFC ───────────────────────────────────────────────
+    // S'allument progressivement à partir de "soir" et sont à pleine
+    // puissance la nuit. Phasage aléatoire léger pour effet naturel.
+    _updateLuminaires(nightLevel);
+
     _updateEnvButtons();
 }
 
@@ -397,6 +543,81 @@ function setSkyMode(mode) {
 function setWeather(mode) {
     _applyAtmosphere(_currentSkyMode, mode);
 }
+
+// ── Système luminaires IFC ────────────────────────────────────────────────────
+
+/**
+ * Appelé après _buildScene : pour chaque mesh IfcLightFixture,
+ * on crée un PointLight associé positionné au centroïde du mesh.
+ * Le PointLight est éteint le jour et s'allume la nuit.
+ */
+function _registerLuminaires() {
+    // Nettoyer les anciens
+    _luminaireRegistry.forEach(({ pointLight }) => scene.remove(pointLight));
+    _luminaireRegistry = [];
+
+    allMeshes.forEach(({ mesh }) => {
+        if (mesh.userData.typeIfc !== 'IfcLightFixture') return;
+
+        // Centroïde du mesh en coordonnées monde
+        mesh.geometry.computeBoundingBox();
+        const center = new THREE.Vector3();
+        mesh.geometry.boundingBox.getCenter(center);
+        center.applyMatrix4(mesh.matrixWorld);
+
+        // La lumière est légèrement en dessous du fixture (spot vers le bas)
+        const lightPos = center.clone();
+        lightPos.y -= 0.3;
+
+        // PointLight chaude (ampoule)
+        const pl = new THREE.PointLight(0xffdd88, 0.0, 18, 2);
+        pl.position.copy(lightPos);
+        pl.castShadow = false; // perf : pas d'ombre par défaut
+        scene.add(pl);
+
+        // Décalage de phase pour que les lumières ne s'allument pas toutes en même temps
+        const phase = Math.random() * Math.PI * 2;
+
+        _luminaireRegistry.push({ mesh, pointLight: pl, phase });
+    });
+}
+
+/**
+ * Met à jour l'intensité de tous les luminaires en fonction du niveau de nuit.
+ * nightLevel : 0 = jour plein, 1 = nuit complète.
+ */
+function _updateLuminaires(nightLevel) {
+    _luminaireRegistry.forEach(({ mesh, pointLight }) => {
+        // Allumage à partir de 0.3 (soir), pleine puissance à 0.7 (nuit)
+        const t = Math.max(0, Math.min(1, (nightLevel - 0.3) / 0.4));
+        const intensity = t * 2.2;  // intensité max 2.2
+
+        pointLight.intensity = intensity;
+
+        // Émissive du mesh miroir
+        if (mesh.material && mesh.material.emissiveIntensity !== undefined) {
+            mesh.material.emissiveIntensity = 0.15 + t * 1.2;
+        }
+    });
+}
+
+/**
+ * Scintillement subtil des luminaires dans _animate().
+ * Simule les variations d'une ampoule ou d'un néon.
+ */
+function _flickerLuminaires(time) {
+    _luminaireRegistry.forEach(({ pointLight, mesh, phase }) => {
+        if (pointLight.intensity < 0.05) return;
+        // Oscillation très légère — max ±8%
+        const flicker = 1.0 + 0.08 * Math.sin(time * 11.3 + phase)
+                            + 0.04 * Math.sin(time * 37.1 + phase * 1.7);
+        pointLight.intensity *= flicker;
+        // Limiter pour éviter dérive
+        pointLight.intensity = Math.max(0, Math.min(3.5, pointLight.intensity));
+    });
+}
+
+
 
 function _updateEnvButtons() {
     document.querySelectorAll('.env-sky-btn').forEach(b => {
@@ -437,6 +658,8 @@ function initViewer(canvasId, jsonUrl, apiUrl) {
     _buildSkyDome();
     _buildClouds();
     _buildRain();
+    _buildStars();
+    _buildMoon();
     scene.add(new THREE.GridHelper(500, 50, 0x333355, 0x222233));
     _setupOrbitControls(canvas);
     _applyAtmosphere('jour', 'clear');
@@ -481,6 +704,11 @@ function _buildScene(data) {
         root.add(g);
     });
     _fitCameraToScene();
+    // Enregistre les luminaires IFC pour le système jour/nuit
+    _registerLuminaires();
+    // Applique l'état courant (ex: si on est déjà en mode nuit avant le chargement)
+    const nightLevel = SKY_NIGHT_LEVEL[_currentSkyMode] ?? 0;
+    _updateLuminaires(nightLevel);
 }
 
 function _buildMesh(md, etage) {
@@ -734,9 +962,32 @@ function _onResize() {
 
 function _animate() {
     requestAnimationFrame(_animate);
+    _animFrame++;
+    const time = _animFrame * 0.016; // ~temps en secondes à 60fps
+
+    // Pluie
     _animateRain();
-    // Animation nuages lente
-    if (_cloudsMesh) { _cloudsMesh.rotation.y += 0.00008; }
+
+    // Nuages — rotation lente
+    if (_cloudsMesh) _cloudsMesh.rotation.y += 0.00008;
+
+    // Étoiles — scintillement via uniform time
+    if (_starsMesh && _starsVisible) {
+        _starsMesh.material.uniforms.time.value = time;
+        // Rotation très lente du ciel étoilé (mouvement apparent)
+        _starsMesh.rotation.y += 0.000015;
+    }
+
+    // Lune — rotation sur elle-même (face synchronisée simulée)
+    if (_moonMesh && _moonMesh.visible) {
+        _moonMesh.rotation.y += 0.0001;
+    }
+
+    // Scintillement luminaires (toutes les 2 frames pour la perf)
+    if (_animFrame % 2 === 0) {
+        _flickerLuminaires(time);
+    }
+
     renderer.render(scene, camera);
 }
 
