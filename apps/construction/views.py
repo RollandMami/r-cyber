@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum, Avg, Count, Q
@@ -293,6 +294,20 @@ def tache_avancement_ajax(request, pk):
         return JsonResponse({'ok': True, 'avancement': tache.avancement, 'statut': tache.statut})
     return JsonResponse({'ok': False}, status=405)
 
+
+@require_POST
+def tache_modifier_dates(request, pk):
+    import json
+    tache = get_object_or_404(TacheGantt, pk=pk)
+    data  = json.loads(request.body)
+    try:
+        from datetime import date
+        tache.date_debut = date.fromisoformat(data['debut'])
+        tache.date_fin   = date.fromisoformat(data['fin'])
+        tache.save()
+        return JsonResponse({'ok': True})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)})
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  BUDGET

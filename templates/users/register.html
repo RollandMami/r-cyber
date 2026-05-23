@@ -17,6 +17,28 @@
 .btn-auth:hover { transform:translateY(-1px); box-shadow:0 6px 24px rgba(45,138,255,0.4); }
 .auth-link { font-size:0.85rem; color:var(--t-muted); text-align:center; margin-top:1.25rem; }
 .auth-link a { color:var(--c-blue); font-weight:600; text-decoration:none; }
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 45px;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--t-muted);
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+    color: var(--c-blue);
+}
 </style>
 {% endblock %}
 
@@ -52,11 +74,21 @@
                 </div>
                 <div class="col-6">
                     <label class="form-label">{{ form.password.label }}</label>
-                    {{ form.password }}
+                    <div class="password-wrapper">
+                        {{ form.password }}
+                        <span class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </span>
+                    </div>
                 </div>
                 <div class="col-6">
                     <label class="form-label">{{ form.password2.label }}</label>
-                    {{ form.password2 }}
+                    <div class="password-wrapper">
+                        {{ form.password2 }}
+                        <span class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </span>
+                    </div>
                     {% if form.password2.errors %}
                     <div style="color:#ef4444;font-size:0.78rem;margin-top:0.25rem;">{{ form.password2.errors.0 }}</div>
                     {% endif %}
@@ -74,4 +106,20 @@
         </p>
     </div>
 </div>
+<script>
+function togglePassword() {
+    const passwordInput = document.querySelector('input[type="password"], input[type="text"][name="{{ form.password.name }}"]');
+    const icon = document.getElementById('toggleIcon');
+
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        passwordInput.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+</script>
 {% endblock %}

@@ -36,6 +36,7 @@ urlpatterns = [
     path('taches/<int:pk>/modifier/',                    views.tache_edit,           name='tache_edit'),
     path('taches/<int:pk>/supprimer/',                   views.tache_delete,         name='tache_delete'),
     path('taches/<int:pk>/avancement/',                  views.tache_avancement_ajax,name='tache_avancement'),
+    path('taches/<int:pk>/modifier-dates/', views.tache_modifier_dates, name='tache_modifier_dates'),
 
     # ── Budget ────────────────────────────────────────────────────────────────
     path('projets/<int:projet_pk>/budget/',              views.budget_view,          name='budget'),

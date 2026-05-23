@@ -164,6 +164,50 @@
 .progress-input::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px;
     border-radius: 50%; background: #00b4d8; cursor: pointer; }
 
+/* ── Barres colorées selon statut ─────────────────────────── */
+.gantt-bar-overdue {
+    background: #ef4444 !important;  /* rouge — hors deadline */
+}
+.gantt-bar-done-early {
+    background: #22c55e !important;  /* vert — terminé à temps */
+}
+.gantt-bar-remaining {
+    /* portion restante après la fin réelle sur barre verte */
+    opacity: 0.3;
+}
+
+/* Avancement éditable inline */
+.pct-inline {
+    font-size: 0.72rem; font-weight: 700;
+    padding: 0.1rem 0.4rem; border-radius: 4px;
+    background: #f1f5f9; color: #475569;
+    border: 1px solid transparent;
+    cursor: pointer; min-width: 36px; text-align: center;
+    outline: none;
+    transition: border-color .15s, background .15s;
+}
+.pct-inline:hover { border-color: #94a3b8; background: #fff; }
+.pct-inline:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 2px rgba(37,99,235,.15); }
+.pct-inline.done   { background: #dcfce7; color: #15803d; }
+.pct-inline.retard { background: #fef2f2; color: #b91c1c; }
+
+/* Poignées de drag / resize sur la barre */
+.gantt-bar-wrap {
+    cursor: grab !important;
+    user-select: none;
+}
+.gantt-bar-wrap:active { cursor: grabbing !important; }
+
+.gantt-resize-handle {
+    position: absolute; top: 0; width: 8px; height: 100%;
+    cursor: ew-resize; z-index: 5;
+    opacity: 0;
+    transition: opacity .15s;
+}
+.gantt-resize-handle.left  { left: 0;  background: linear-gradient(to right, rgba(0,0,0,.25), transparent); border-radius: 6px 0 0 6px; }
+.gantt-resize-handle.right { right: 0; background: linear-gradient(to left,  rgba(0,0,0,.25), transparent); border-radius: 0 6px 6px 0; }
+.gantt-bar-wrap:hover .gantt-resize-handle { opacity: 1; }
+
 /* Responsive */
 @media (max-width: 768px) {
     .gantt-left { width: 180px; }
@@ -360,16 +404,31 @@ function render() {
             </div>
             <div>
                 <div style="display:flex;align-items:center;gap:4px;">
-                    <span class="avancement-badge ${badgeClass}">${pct}%</span>
+                    <input type="number"
+                           class="pct-inline ${badgeClass}"
+                           value="${pct}"
+                           min="0" max="100"
+                           data-id="${t.id}"
+                           title="Cliquer pour modifier"
+                           onchange="updateAvancementInline(this)">
                 </div>
                 <div class="progress-rc mt-1" style="width:60px;">
                     <div class="bar" style="width:${pct}%;background:${t.couleur};"></div>
                 </div>
             </div>
-            <div style="display:flex;gap:4px;">
-                <a href="/construction/taches/${t.id}/modifier/" class="btn btn-outline-secondary" style="padding:2px 6px;font-size:.7rem;">
+            <div style="display:flex;gap:3px;align-items:center;">
+                <a href="/construction/taches/${t.id}/modifier/"
+                   class="btn btn-outline-secondary"
+                   style="padding:2px 6px;font-size:.7rem;"
+                   title="Modifier">
                     <i class="fas fa-edit"></i>
                 </a>
+                <button onclick="deleteTache(${t.id}, '${t.titre}')"
+                        class="btn btn-outline-danger"
+                        style="padding:2px 6px;font-size:.7rem;"
+                        title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>`;
         taskListEl.appendChild(taskRow);
 
@@ -393,12 +452,33 @@ function render() {
         if (off >= 0) {
             const bar = document.createElement('div');
             bar.className = 'gantt-bar-wrap';
-            bar.style.left   = (off * cellW + 2) + 'px';
-            bar.style.width  = (dur * cellW - 4) + 'px';
-            bar.style.background = t.couleur;
+            bar.style.left  = (off * cellW + 2) + 'px';
+            bar.style.width = (dur * cellW - 4) + 'px';
+            bar.dataset.id  = t.id;
+
+            // ── Couleur selon statut deadline ──────────────────────
+            const deadline   = parseDate(t.fin);
+            const isFinished = t.avancement >= 100;
+            const isOverdue  = !isFinished && today > deadline;
+
+            if (isOverdue) {
+                // Hors deadline et pas terminé → rouge
+                bar.style.background = '#ef4444';
+            } else if (isFinished && today <= deadline) {
+                // Terminé avant/à la deadline → vert
+                bar.style.background = '#22c55e';
+            } else {
+                bar.style.background = t.couleur;
+            }
+
             bar.innerHTML = `
-                <div class="gantt-bar-fill" style="width:${t.avancement}%;"></div>
-                <span class="gantt-bar-label">${t.titre}</span>`;
+                <div class="gantt-bar-fill" style="width:${t.avancement}%;background:rgba(255,255,255,0.3);"></div>
+                <span class="gantt-bar-label">${t.titre}</span>
+                <div class="gantt-resize-handle left"  data-id="${t.id}" data-side="left"></div>
+                <div class="gantt-resize-handle right" data-id="${t.id}" data-side="right"></div>`;
+
+            // Attach drag-move + drag-resize
+            attachBarDrag(bar, t, cellW, start);
 
             // Tooltip
             bar.addEventListener('mousemove', (e) => {
@@ -430,11 +510,24 @@ function render() {
     });
 }
 
+// ── Mise à jour avancement (tooltip range) ──────────────────
 function updateAvancement(input) {
-    const id = input.dataset.id;
+    const id  = input.dataset.id;
     const val = parseInt(input.value);
-    document.getElementById('ttPct').textContent = val + '%';
+    const ttPct = document.getElementById('ttPct');
+    if (ttPct) ttPct.textContent = val + '%';
+    saveAvancement(id, val);
+}
 
+// ── Mise à jour avancement (inline input) ───────────────────
+function updateAvancementInline(input) {
+    const id  = input.dataset.id;
+    let   val = Math.max(0, Math.min(100, parseInt(input.value) || 0));
+    input.value = val;
+    saveAvancement(id, val);
+}
+
+function saveAvancement(id, val) {
     fetch(`/construction/taches/${id}/avancement/`, {
         method: 'POST',
         headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
@@ -444,10 +537,120 @@ function updateAvancement(input) {
     .then(data => {
         if (data.ok) {
             const t = TACHES.find(x => x.id == id);
-            if (t) { t.avancement = data.avancement; t.statut = data.statut; }
+            if (t) { t.avancement = data.avancement; t.statut = data.statut; t.retard = data.retard ?? t.retard; }
             render();
         }
-    });
+    })
+    .catch(() => { /* silencieux */ });
+}
+
+// ── Suppression de tâche ─────────────────────────────────────
+function deleteTache(id, titre) {
+    if (!confirm(`Supprimer la tâche "${titre}" ? Cette action est irréversible.`)) return;
+    fetch(`/construction/taches/${id}/supprimer/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            const idx = TACHES.findIndex(x => x.id == id);
+            if (idx !== -1) TACHES.splice(idx, 1);
+            render();
+        } else {
+            alert(data.error || 'Erreur lors de la suppression.');
+        }
+    })
+    .catch(() => alert('Erreur réseau.'));
+}
+
+// ── Drag-move + Drag-resize des barres ───────────────────────
+function attachBarDrag(bar, t, cellW, rangeStart) {
+    let dragState = null;
+
+    function onMouseDown(e) {
+        const handle = e.target.closest('.gantt-resize-handle');
+        const isResize = !!handle;
+        const side = handle ? handle.dataset.side : null;
+
+        dragState = {
+            type:    isResize ? 'resize' : 'move',
+            side,
+            startX:  e.clientX,
+            origLeft:  parseInt(bar.style.left),
+            origWidth: parseInt(bar.style.width),
+            origDebut: t.debut,
+            origFin:   t.fin,
+        };
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup',   onMouseUp);
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function onMouseMove(e) {
+        if (!dragState) return;
+        const dx    = e.clientX - dragState.startX;
+        const steps = Math.round(dx / cellW);
+
+        if (dragState.type === 'move') {
+            const newLeft = dragState.origLeft + steps * cellW;
+            bar.style.left = Math.max(0, newLeft) + 'px';
+        } else {
+            if (dragState.side === 'right') {
+                const newW = Math.max(cellW, dragState.origWidth + steps * cellW);
+                bar.style.width = newW + 'px';
+            } else {
+                const newLeft = dragState.origLeft + steps * cellW;
+                const newW    = dragState.origWidth - steps * cellW;
+                if (newW >= cellW) {
+                    bar.style.left  = newLeft + 'px';
+                    bar.style.width = newW + 'px';
+                }
+            }
+        }
+    }
+
+    function onMouseUp() {
+        if (!dragState) return;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup',   onMouseUp);
+
+        // Calcule les nouvelles dates depuis la position de la barre
+        const newLeft  = parseInt(bar.style.left);
+        const newWidth = parseInt(bar.style.width);
+        const newOff   = Math.round(newLeft / cellW);
+        const newDur   = Math.round(newWidth / cellW);
+
+        const newDebut = addDays(rangeStart, newOff);
+        const newFin   = addDays(newDebut, newDur - 1);
+
+        const fmt = d => d.toISOString().slice(0,10);
+
+        // Sauvegarde si changement
+        if (fmt(newDebut) !== t.debut || fmt(newFin) !== t.fin) {
+            fetch(`/construction/taches/${t.id}/modifier-dates/`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+                body: JSON.stringify({debut: fmt(newDebut), fin: fmt(newFin)}),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    t.debut = fmt(newDebut);
+                    t.fin   = fmt(newFin);
+                    render();
+                } else {
+                    // Annule visuellement
+                    bar.style.left  = dragState.origLeft + 'px';
+                    bar.style.width = dragState.origWidth + 'px';
+                }
+            });
+        }
+        dragState = null;
+    }
+
+    bar.addEventListener('mousedown', onMouseDown);
 }
 
 function getCookie(name) {
