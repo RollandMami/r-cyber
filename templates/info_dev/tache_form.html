@@ -1,0 +1,35 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ action }} tâche — Info-Dev{% endblock %}
+{% block sb_id_taches %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:tache_list' projet_pk=projet.pk %}">Kanban</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-tasks me-2" style="color:#6366f1;"></i>{{ action }} une tâche</h1>
+    </div>
+</div>
+<form method="post" style="max-width:600px;">{% csrf_token %}
+<div class="card p-4 mb-3">
+    <div class="row g-3">
+        <div class="col-12"><label class="form-label">Titre *</label>{{ form.titre }}{% for e in form.titre.errors %}<div class="text-danger" style="font-size:.78rem;">{{ e }}</div>{% endfor %}</div>
+        <div class="col-12"><label class="form-label">Description</label>{{ form.description }}</div>
+        <div class="col-md-4"><label class="form-label">Statut</label>{{ form.statut }}</div>
+        <div class="col-md-4"><label class="form-label">Priorité</label>{{ form.priorite }}</div>
+        <div class="col-md-4"><label class="form-label">Assigné à</label>{{ form.assignee }}</div>
+        <div class="col-md-4"><label class="form-label">Date début</label>{{ form.date_debut }}</div>
+        <div class="col-md-4"><label class="form-label">Date fin</label>{{ form.date_fin }}</div>
+        <div class="col-md-4"><label class="form-label">Ordre</label>{{ form.ordre }}</div>
+    </div>
+</div>
+<div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+    <a href="{% url 'info_dev:tache_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+    {% if tache %}<a href="{% url 'info_dev:tache_delete' pk=tache.pk %}" onclick="return confirm('Supprimer ?')" class="btn btn-outline-danger ms-auto"><i class="fas fa-trash"></i></a>{% endif %}
+</div>
+</form>
+{% endblock %}

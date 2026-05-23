@@ -1,0 +1,1016 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Éditeur PERT{% endblock %}
+{% block nav_class %}light{% endblock %}
+{% block extra_head %}
+<style>
+/* ============================================================
+   PERT EDITOR — Design: Industrial / Technical Blueprint
+   ============================================================ */
+:root {
+    --bg:          #0e1117;
+    --bg2:         #161b27;
+    --bg3:         #1e2535;
+    --panel:       #1a2234;
+    --border:      rgba(255,255,255,0.07);
+    --border2:     rgba(255,255,255,0.12);
+    --text:        #e2e8f0;
+    --text-muted:  #64748b;
+    --accent:      #3b82f6;
+    --accent2:     #60a5fa;
+    --gold:        #f59e0b;
+    --green:       #22c55e;
+    --red:         #ef4444;
+    --node-bg:     #1e293b;
+    --node-border: #334155;
+    --mono:        'JetBrains Mono', monospace;
+    --sans:        'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* ── TOPBAR ──────────────────────────────────────────────── */
+.topbar {
+    height: 52px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.topbar-logo {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-right: 0.75rem;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border2);
+    white-space: nowrap;
+}
+
+.tb-sep { width: 1px; height: 24px; background: var(--border); margin: 0 0.25rem; }
+
+.tb-btn {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.38rem 0.85rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.tb-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); border-color: var(--border2); }
+.tb-btn.active { background: rgba(59,130,246,0.15); color: var(--accent2); border-color: rgba(59,130,246,0.3); }
+.tb-btn.danger { color: #f87171; }
+.tb-btn.danger:hover { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #f87171; }
+.tb-btn.success-btn { background: rgba(34,197,94,0.15); color: var(--green); border-color: rgba(34,197,94,0.3); }
+
+.tb-title {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+}
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+.editor-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────── */
+.sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+}
+
+.sidebar-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+/* Widget cards */
+.widget-card {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 0.75rem;
+    cursor: grab;
+    transition: all 0.15s ease;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.widget-card:hover { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); transform: translateY(-1px); }
+.widget-card:active { cursor: grabbing; }
+
+.widget-icon {
+    width: 32px; height: 32px;
+    background: rgba(59,130,246,0.12);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; color: var(--accent); flex-shrink: 0;
+}
+.widget-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+.widget-sub  { font-size: 0.66rem; color: var(--text-muted); margin-top: 1px; }
+
+/* Mini nœud preview */
+.node-preview {
+    width: 80px; height: 48px;
+    border: 1.5px solid var(--node-border);
+    border-radius: 6px;
+    background: var(--node-bg);
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.np-top   { grid-column: 1/-1; background: rgba(59,130,246,0.18); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--accent2); border-bottom:1px solid var(--node-border); }
+.np-left  { border-right:1px solid var(--node-border); display:flex; align-items:center; justify-content:center; color:var(--green); }
+.np-right { display:flex; align-items:center; justify-content:center; color:var(--red); }
+
+/* Légende */
+.legend-item { display:flex; align-items:center; gap:0.5rem; font-size:0.72rem; color:var(--text-muted); margin-bottom:0.4rem; }
+.legend-line  { width:24px; height:3px; border-radius:2px; flex-shrink:0; }
+
+/* Propriétés nœud sélectionné */
+.prop-group { margin-bottom:0.75rem; }
+.prop-label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:0.3rem; }
+.prop-input {
+    width:100%; background:var(--bg3); border:1px solid var(--border2);
+    border-radius:6px; padding:0.45rem 0.6rem;
+    color:var(--text); font-size:0.8rem; font-family:var(--mono);
+    outline:none; transition:border-color .15s;
+}
+.prop-input:focus { border-color:var(--accent); }
+.prop-input[readonly] { color:var(--text-muted); cursor:default; }
+
+/* ── CANVAS ──────────────────────────────────────────────── */
+.canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+    background-size: 28px 28px;
+    cursor: default;
+}
+
+#pertSVG {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: visible;
+}
+
+/* ── SVG NODES ───────────────────────────────────────────── */
+.pert-node { cursor: grab; }
+.pert-node:active { cursor: grabbing; }
+.pert-node .node-outer {
+    fill: var(--node-bg);
+    stroke: var(--node-border);
+    stroke-width: 1.5;
+    rx: 8; ry: 8;
+    transition: stroke .15s;
+}
+.pert-node.selected .node-outer { stroke: var(--accent); stroke-width: 2; }
+.pert-node.critical .node-outer { stroke: var(--red); stroke-width: 2; }
+
+/* ── STATUS BAR ──────────────────────────────────────────── */
+.statusbar {
+    height: 26px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 1.5rem;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    flex-shrink: 0;
+}
+.sb-item { display:flex; align-items:center; gap:0.35rem; }
+.sb-dot  { width:6px; height:6px; border-radius:50%; }
+
+/* ── MODALE POIDS LIEN ───────────────────────────────────── */
+.modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(4px);
+    opacity:0; visibility:hidden; transition:all .2s;
+}
+.modal-overlay.open { opacity:1; visibility:visible; }
+.modal-box {
+    background:var(--panel); border:1px solid var(--border2);
+    border-radius:14px; padding:1.5rem; min-width:280px;
+    box-shadow:0 24px 64px rgba(0,0,0,0.5);
+    transform:translateY(-8px); transition:transform .2s;
+}
+.modal-overlay.open .modal-box { transform:translateY(0); }
+.modal-title { font-size:0.9rem; font-weight:700; color:var(--text); margin-bottom:1rem; }
+.modal-actions { display:flex; gap:0.5rem; margin-top:1rem; }
+.btn-modal-ok  { flex:1; padding:.55rem; background:var(--accent); border:none; border-radius:8px; color:#fff; font-weight:700; font-size:0.82rem; cursor:pointer; }
+.btn-modal-can { flex:1; padding:.55rem; background:transparent; border:1px solid var(--border2); border-radius:8px; color:var(--text-muted); font-size:0.82rem; cursor:pointer; }
+</style>
+{% endblock %}
+{% block content %}
+<!-- ── TOPBAR ──────────────────────────────────────────────── -->
+<div class="topbar">
+    <div class="topbar-logo">⬡ PERT EDITOR</div>
+
+    <button class="tb-btn" id="btnAddNode" title="Ajouter un nœud (N)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Nœud
+    </button>
+
+    <button class="tb-btn" id="btnLinkMode" title="Mode lien (L)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Lien
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <button class="tb-btn" id="btnCalc" title="Calculer le chemin critique">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 4.5V7l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Calculer
+    </button>
+
+    <button class="tb-btn success-btn" id="btnExport" title="Exporter JSON">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Export
+    </button>
+
+    <div class="tb-sep"></div>
+
+    <button class="tb-btn danger" id="btnClear" title="Effacer tout">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10M5 3V2h4v1M4 3l.5 9h5l.5-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Effacer
+    </button>
+
+    <div class="tb-title">Réseau PERT — <span id="nodeCount">0</span> nœuds · <span id="linkCount">0</span> liens</div>
+</div>
+
+<!-- ── LAYOUT ──────────────────────────────────────────────── -->
+<div class="editor-layout">
+
+    <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+    <div class="sidebar">
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Widgets</div>
+            <div class="widget-card" id="widgetNode" draggable="true">
+                <div class="node-preview">
+                    <div class="np-top">A</div>
+                    <div class="np-left">0</div>
+                    <div class="np-right">∞</div>
+                </div>
+                <div>
+                    <div class="widget-name">Nœud PERT</div>
+                    <div class="widget-sub">Glisser sur le canvas</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Structure du nœud</div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:0.5rem;font-family:var(--mono);font-size:0.65rem;line-height:1.8;">
+                <div style="text-align:center;border-bottom:1px solid var(--border2);padding-bottom:4px;color:var(--accent2);font-weight:700;">ID tâche</div>
+                <div style="display:flex;border-top:none;">
+                    <div style="flex:1;border-right:1px solid var(--border2);padding:2px 4px;color:var(--green);">Début tôt</div>
+                    <div style="flex:1;padding:2px 4px;color:var(--red);">Début tard</div>
+                </div>
+                <div style="text-align:center;border-top:1px solid var(--border2);padding-top:4px;color:var(--gold);font-size:0.6rem;">Marge = tard − tôt</div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Légende</div>
+            <div class="legend-item"><div class="legend-line" style="background:#ef4444;"></div> Chemin critique (marge=0)</div>
+            <div class="legend-item"><div class="legend-line" style="background:#22c55e;"></div> Chemin avec marge</div>
+            <div class="legend-item"><div class="legend-line" style="background:#64748b;"></div> Lien normal</div>
+            <div style="margin-top:0.5rem;font-size:0.65rem;color:var(--text-muted);line-height:1.6;">
+                <kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:0 4px;font-size:0.6rem;">N</kbd> Nouveau nœud<br>
+                <kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:0 4px;font-size:0.6rem;">L</kbd> Mode lien<br>
+                <kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:0 4px;font-size:0.6rem;">Del</kbd> Supprimer<br>
+                <kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:0 4px;font-size:0.6rem;">Esc</kbd> Annuler mode
+            </div>
+        </div>
+
+        <div class="sidebar-section" id="propPanel" style="display:none;">
+            <div class="sidebar-label">Propriétés</div>
+            <div class="prop-group">
+                <div class="prop-label">ID tâche</div>
+                <input class="prop-input" id="propId" maxlength="4" placeholder="A">
+            </div>
+            <div class="prop-group">
+                <div class="prop-label">Début au plus tôt</div>
+                <input class="prop-input" id="propEarly" type="number" min="0" placeholder="0">
+            </div>
+            <div class="prop-group">
+                <div class="prop-label">Début au plus tard</div>
+                <input class="prop-input" id="propLate" type="number" readonly placeholder="—">
+            </div>
+            <div class="prop-group">
+                <div class="prop-label">Marge totale</div>
+                <input class="prop-input" id="propMarge" readonly placeholder="—">
+            </div>
+        </div>
+
+        <div class="sidebar-section" id="propLinkPanel" style="display:none;">
+            <div class="sidebar-label">Lien sélectionné</div>
+            <div class="prop-group">
+                <div class="prop-label">Durée (jours)</div>
+                <input class="prop-input" id="propLinkWeight" type="number" min="0" placeholder="0">
+            </div>
+            <div class="prop-group">
+                <div class="prop-label">De → Vers</div>
+                <input class="prop-input" id="propLinkDesc" readonly>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── CANVAS ────────────────────────────────────────────── -->
+    <div class="canvas-wrap" id="canvasWrap">
+        <svg id="pertSVG">
+            <defs>
+                <marker id="arrow-normal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+                </marker>
+                <marker id="arrow-critical" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+                </marker>
+                <marker id="arrow-free" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L8,3 z" fill="#22c55e"/>
+                </marker>
+                <filter id="glow-red">
+                    <feGaussianBlur stdDeviation="2" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+            </defs>
+            <g id="linksLayer"></g>
+            <g id="nodesLayer"></g>
+        </svg>
+
+        <!-- Hint -->
+        <div id="canvasHint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0.35;">
+            <div style="font-size:2.5rem;margin-bottom:0.75rem;">⬡</div>
+            <div style="font-family:var(--mono);font-size:0.78rem;color:var(--text-muted);">
+                Glissez un <strong>Nœud</strong> depuis le panneau gauche<br>
+                ou appuyez <kbd style="background:var(--bg3);padding:1px 5px;border-radius:3px;">N</kbd> pour créer un nœud
+            </div>
+        </div>
+
+        <!-- Mode badge -->
+        <div id="modeBadge" style="position:absolute;top:1rem;right:1rem;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:var(--accent2);border-radius:8px;padding:0.4rem 0.85rem;font-size:0.75rem;font-weight:700;font-family:var(--mono);display:none;">
+            MODE LIEN — cliquez sur la source puis la cible
+        </div>
+    </div>
+</div>
+
+<!-- ── STATUSBAR ─────────────────────────────────────────────── -->
+<div class="statusbar">
+    <div class="sb-item"><div class="sb-dot" style="background:var(--green);"></div><span id="sbStatus">Prêt</span></div>
+    <div class="sb-item"><span>Chemin critique : </span><span id="sbCritical" style="color:var(--text);">—</span></div>
+    <div class="sb-item" style="margin-left:auto;">
+        <span>Durée totale : </span><span id="sbDuration" style="color:var(--gold);">—</span>
+    </div>
+</div>
+
+<!-- ── MODALE POIDS ────────────────────────────────────────────── -->
+<div class="modal-overlay" id="weightModal">
+    <div class="modal-box">
+        <div class="modal-title">⏱ Durée du lien (jours)</div>
+        <div class="prop-group">
+            <div class="prop-label">De <span id="modalFrom"></span> → <span id="modalTo"></span></div>
+            <input class="prop-input" id="modalWeight" type="number" min="0" value="1" style="font-size:1.2rem;text-align:center;">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal-ok" id="modalOk">Confirmer</button>
+            <button class="btn-modal-can" id="modalCancel">Annuler</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+/* ============================================================
+   PERT EDITOR — Engine
+   ============================================================ */
+
+// ── État global ────────────────────────────────────────────
+const state = {
+    nodes: [],          // { id, label, x, y, early, late, marge }
+    links: [],          // { id, from, to, weight, critical }
+    nextNodeId: 1,
+    nextLinkId: 1,
+    mode: 'select',     // 'select' | 'link' | 'addNode'
+    linkSource: null,
+    selected: null,     // { type:'node'|'link', id }
+    dragging: null,     // { nodeId, offX, offY }
+    calculated: false,
+};
+
+// ── Dimensions nœud ───────────────────────────────────────
+const NW = 120, NH = 64;   // width, height
+const CELL_H = NH / 2;
+
+// ── SVG helpers ───────────────────────────────────────────
+const svg       = document.getElementById('pertSVG');
+const nodesL    = document.getElementById('nodesLayer');
+const linksL    = document.getElementById('linksLayer');
+const hint      = document.getElementById('canvasHint');
+const modeBadge = document.getElementById('modeBadge');
+
+function svgPt(e) {
+    const rect = svg.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function uid(prefix) { return prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*9999); }
+
+function labelFor(n) { return n.label || ('T' + n.id); }
+
+// ── Créer un nœud ─────────────────────────────────────────
+function createNode(x, y, label) {
+    const n = {
+        id:    state.nextNodeId++,
+        label: label || nextLabel(),
+        x, y,
+        early: 0, late: null, marge: null,
+    };
+    state.nodes.push(n);
+    state.calculated = false;
+    renderNode(n);
+    updateCounts();
+    hideHint();
+    return n;
+}
+
+function nextLabel() {
+    const used = new Set(state.nodes.map(n => n.label));
+    const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (let i = 0; i < 26; i++) {
+        const l = alpha[i];
+        if (!used.has(l)) return l;
+    }
+    // Double lettres
+    for (let i = 0; i < 26; i++)
+        for (let j = 0; j < 26; j++) {
+            const l = alpha[i]+alpha[j];
+            if (!used.has(l)) return l;
+        }
+    return 'N' + state.nextNodeId;
+}
+
+// ── Rendre un nœud SVG ────────────────────────────────────
+function renderNode(n) {
+    const old = document.getElementById('node_' + n.id);
+    if (old) old.remove();
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('id', 'node_' + n.id);
+    g.setAttribute('class', 'pert-node' + (n.marge === 0 ? ' critical' : ''));
+    g.setAttribute('transform', `translate(${n.x},${n.y})`);
+
+    // Fond + bordure
+    const isCritical = n.marge === 0 && state.calculated;
+    const isSelected = state.selected?.type === 'node' && state.selected?.id === n.id;
+    const strokeC = isSelected ? '#3b82f6' : (isCritical ? '#ef4444' : '#334155');
+    const strokeW = (isSelected || isCritical) ? 2 : 1.5;
+
+    const rect = makeSVGEl('rect', {x:0,y:0,width:NW,height:NH,rx:8,fill:'#1e293b',
+        stroke:strokeC,'stroke-width':strokeW});
+    g.appendChild(rect);
+
+    // Ligne horizontale
+    const hLine = makeSVGEl('line', {x1:0,y1:CELL_H,x2:NW,y2:CELL_H,stroke:'#334155','stroke-width':1});
+    g.appendChild(hLine);
+    // Ligne verticale basse
+    const vLine = makeSVGEl('line', {x1:NW/2,y1:CELL_H,x2:NW/2,y2:NH,stroke:'#334155','stroke-width':1});
+    g.appendChild(vLine);
+
+    // Header — ID
+    const headerBg = makeSVGEl('rect', {x:0,y:0,width:NW,height:CELL_H,rx:8,fill:'rgba(59,130,246,0.12)'});
+    g.appendChild(headerBg);
+    const headerFix = makeSVGEl('rect', {x:0,y:4,width:NW,height:CELL_H-4,fill:'rgba(59,130,246,0.12)'});
+    g.appendChild(headerFix);
+
+    const labelTxt = makeSVGEl('text', {x:NW/2,y:CELL_H-9,'text-anchor':'middle','dominant-baseline':'auto',
+        fill:'#60a5fa','font-size':'14','font-weight':'700','font-family':'JetBrains Mono,monospace'});
+    labelTxt.textContent = labelFor(n);
+    g.appendChild(labelTxt);
+
+    // Bas gauche — début tôt
+    const earlyTxt = makeSVGEl('text', {x:NW/4,y:NH-11,'text-anchor':'middle','dominant-baseline':'auto',
+        fill:'#22c55e','font-size':'11','font-weight':'600','font-family':'JetBrains Mono,monospace'});
+    earlyTxt.textContent = n.early ?? '0';
+    g.appendChild(earlyTxt);
+
+    // Label "tôt"
+    const earlyLbl = makeSVGEl('text', {x:NW/4,y:CELL_H+10,'text-anchor':'middle',
+        fill:'#64748b','font-size':'8','font-family':'DM Sans,sans-serif'});
+    earlyLbl.textContent = 'tôt';
+    g.appendChild(earlyLbl);
+
+    // Bas droit — début tard
+    const lateTxt = makeSVGEl('text', {x:(3*NW)/4,y:NH-11,'text-anchor':'middle','dominant-baseline':'auto',
+        fill: isCritical ? '#ef4444' : '#f87171',
+        'font-size':'11','font-weight':'600','font-family':'JetBrains Mono,monospace'});
+    lateTxt.textContent = n.late !== null ? n.late : '∞';
+    g.appendChild(lateTxt);
+
+    // Label "tard"
+    const lateLbl = makeSVGEl('text', {x:(3*NW)/4,y:CELL_H+10,'text-anchor':'middle',
+        fill:'#64748b','font-size':'8','font-family':'DM Sans,sans-serif'});
+    lateLbl.textContent = 'tard';
+    g.appendChild(lateLbl);
+
+    // Marge badge (si calculée)
+    if (state.calculated && n.marge !== null) {
+        const margeBg = makeSVGEl('rect', {x:NW-28,y:0,width:28,height:14,rx:3,
+            fill: n.marge === 0 ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.2)'});
+        g.appendChild(margeBg);
+        const margeTxt = makeSVGEl('text', {x:NW-14,y:11,'text-anchor':'middle',
+            fill: n.marge === 0 ? '#ef4444' : '#22c55e',
+            'font-size':'7','font-weight':'700','font-family':'JetBrains Mono,monospace'});
+        margeTxt.textContent = 'M=' + n.marge;
+        g.appendChild(margeTxt);
+    }
+
+    // Events
+    g.addEventListener('mousedown', e => onNodeMouseDown(e, n.id));
+    g.addEventListener('click',     e => onNodeClick(e, n.id));
+
+    nodesL.appendChild(g);
+}
+
+function makeSVGEl(tag, attrs) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+    return el;
+}
+
+// ── Rendre un lien ────────────────────────────────────────
+function renderLink(lk) {
+    const old = document.getElementById('link_' + lk.id);
+    if (old) old.remove();
+
+    const from = state.nodes.find(n => n.id === lk.from);
+    const to   = state.nodes.find(n => n.id === lk.to);
+    if (!from || !to) return;
+
+    // Points de connexion
+    const x1 = from.x + NW, y1 = from.y + NH/2;
+    const x2 = to.x,        y2 = to.y + NH/2;
+
+    const isCritical = lk.critical && state.calculated;
+    const isSelected = state.selected?.type === 'link' && state.selected?.id === lk.id;
+    const isFree     = !lk.critical && state.calculated;
+
+    // Couleurs selon état
+    let strokeC, strokeW, marker;
+    if (isSelected) {
+        strokeC = '#3b82f6'; strokeW = 2.5; marker = 'url(#arrow-normal)';
+    } else if (isCritical) {
+        strokeC = '#ef4444'; strokeW = 3.5; marker = 'url(#arrow-critical)';
+    } else if (isFree) {
+        strokeC = '#22c55e'; strokeW = 2;   marker = 'url(#arrow-free)';
+    } else {
+        strokeC = '#64748b'; strokeW = 1.5; marker = 'url(#arrow-normal)';
+    }
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('id', 'link_' + lk.id);
+
+    // Courbe de Bézier
+    const cx = (x1+x2)/2, cy = (y1+y2)/2;
+    const d = `M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}`;
+
+    // Ligne invisible large pour faciliter le clic
+    const hitLine = makeSVGEl('path', {d, fill:'none', stroke:'transparent', 'stroke-width':'12', cursor:'pointer'});
+    hitLine.addEventListener('click', e => onLinkClick(e, lk.id));
+    g.appendChild(hitLine);
+
+    // Ligne visible
+    const line = makeSVGEl('path', {d, fill:'none', stroke:strokeC,
+        'stroke-width':strokeW, 'marker-end':marker,
+        'stroke-linecap':'round', 'stroke-linejoin':'round',
+        ...(isCritical ? {filter:'url(#glow-red)'} : {}),
+    });
+    g.appendChild(line);
+
+    // Badge poids
+    const midX = cx, midY = (y1+y2)/2;
+    const badgeBg = makeSVGEl('rect', {x:midX-14,y:midY-9,width:28,height:16,rx:4,
+        fill:'#1e293b',stroke: isSelected ? '#3b82f6' : '#334155','stroke-width':1});
+    badgeBg.style.cursor = 'pointer';
+    badgeBg.addEventListener('click', e => { e.stopPropagation(); openWeightModal(lk.id); });
+    g.appendChild(badgeBg);
+
+    const weightTxt = makeSVGEl('text', {x:midX,y:midY+4.5,'text-anchor':'middle',
+        fill: isCritical ? '#ef4444' : (isSelected ? '#60a5fa' : '#94a3b8'),
+        'font-size':'9','font-weight':'700','font-family':'JetBrains Mono,monospace',
+        cursor:'pointer'});
+    weightTxt.textContent = lk.weight + 'j';
+    weightTxt.addEventListener('click', e => { e.stopPropagation(); openWeightModal(lk.id); });
+    g.appendChild(weightTxt);
+
+    linksL.insertBefore(g, linksL.firstChild);
+}
+
+// ── Rendu complet ─────────────────────────────────────────
+function renderAll() {
+    nodesL.innerHTML = '';
+    linksL.innerHTML = '';
+    state.links.forEach(lk => renderLink(lk));
+    state.nodes.forEach(n  => renderNode(n));
+    updateCounts();
+}
+
+function updateCounts() {
+    document.getElementById('nodeCount').textContent = state.nodes.length;
+    document.getElementById('linkCount').textContent = state.links.length;
+    hint.style.display = state.nodes.length === 0 ? 'block' : 'none';
+}
+function hideHint() { hint.style.display = 'none'; }
+
+// ── Drag nœud ─────────────────────────────────────────────
+function onNodeMouseDown(e, nodeId) {
+    if (state.mode === 'link') return;
+    e.stopPropagation();
+    const n  = state.nodes.find(x => x.id === nodeId);
+    const pt = svgPt(e);
+    state.dragging = { nodeId, offX: pt.x - n.x, offY: pt.y - n.y };
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup',   onDragEnd);
+}
+
+function onDragMove(e) {
+    if (!state.dragging) return;
+    const n  = state.nodes.find(x => x.id === state.dragging.nodeId);
+    const pt = svgPt(e);
+    n.x = Math.max(0, pt.x - state.dragging.offX);
+    n.y = Math.max(0, pt.y - state.dragging.offY);
+    // Snap to grid 14px
+    n.x = Math.round(n.x / 14) * 14;
+    n.y = Math.round(n.y / 14) * 14;
+    renderAll();
+}
+
+function onDragEnd() {
+    state.dragging = null;
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup',   onDragEnd);
+}
+
+// ── Sélection / mode lien ─────────────────────────────────
+function onNodeClick(e, nodeId) {
+    e.stopPropagation();
+    if (state.mode === 'link') {
+        if (!state.linkSource) {
+            state.linkSource = nodeId;
+            setStatus('Cliquez sur le nœud cible…');
+        } else {
+            if (state.linkSource === nodeId) { state.linkSource = null; return; }
+            openWeightModalForNew(state.linkSource, nodeId);
+            state.linkSource = null;
+        }
+        return;
+    }
+    selectNode(nodeId);
+}
+
+function onLinkClick(e, linkId) {
+    e.stopPropagation();
+    selectLink(linkId);
+}
+
+svg.addEventListener('click', () => {
+    if (state.mode === 'select') deselect();
+});
+
+function selectNode(nodeId) {
+    state.selected = { type:'node', id:nodeId };
+    const n = state.nodes.find(x => x.id === nodeId);
+    // Panneau propriétés
+    document.getElementById('propPanel').style.display = 'block';
+    document.getElementById('propLinkPanel').style.display = 'none';
+    document.getElementById('propId').value = n.label;
+    document.getElementById('propEarly').value = n.early ?? 0;
+    document.getElementById('propLate').value = n.late !== null ? n.late : '';
+    document.getElementById('propMarge').value = n.marge !== null ? n.marge : '';
+    renderAll();
+}
+
+function selectLink(linkId) {
+    state.selected = { type:'link', id:linkId };
+    const lk = state.links.find(x => x.id === linkId);
+    const from = state.nodes.find(n => n.id === lk.from);
+    const to   = state.nodes.find(n => n.id === lk.to);
+    document.getElementById('propPanel').style.display = 'none';
+    document.getElementById('propLinkPanel').style.display = 'block';
+    document.getElementById('propLinkWeight').value = lk.weight;
+    document.getElementById('propLinkDesc').value = `${labelFor(from)} → ${labelFor(to)}`;
+    renderAll();
+}
+
+function deselect() {
+    state.selected = null;
+    document.getElementById('propPanel').style.display = 'none';
+    document.getElementById('propLinkPanel').style.display = 'none';
+    renderAll();
+}
+
+// ── Propriétés nœud ───────────────────────────────────────
+document.getElementById('propId').addEventListener('input', e => {
+    if (!state.selected || state.selected.type !== 'node') return;
+    const n = state.nodes.find(x => x.id === state.selected.id);
+    if (n) { n.label = e.target.value.toUpperCase(); renderAll(); }
+});
+
+document.getElementById('propEarly').addEventListener('change', e => {
+    if (!state.selected || state.selected.type !== 'node') return;
+    const n = state.nodes.find(x => x.id === state.selected.id);
+    if (n) { n.early = parseInt(e.target.value) || 0; state.calculated = false; renderAll(); }
+});
+
+document.getElementById('propLinkWeight').addEventListener('change', e => {
+    if (!state.selected || state.selected.type !== 'link') return;
+    const lk = state.links.find(x => x.id === state.selected.id);
+    if (lk) { lk.weight = parseInt(e.target.value) || 0; state.calculated = false; renderAll(); }
+});
+
+// ── Modal poids ───────────────────────────────────────────
+let pendingLink = null;
+
+function openWeightModalForNew(fromId, toId) {
+    pendingLink = { fromId, toId, existing: null };
+    const from = state.nodes.find(n => n.id === fromId);
+    const to   = state.nodes.find(n => n.id === toId);
+    document.getElementById('modalFrom').textContent = labelFor(from);
+    document.getElementById('modalTo').textContent   = labelFor(to);
+    document.getElementById('modalWeight').value     = 1;
+    document.getElementById('weightModal').classList.add('open');
+    document.getElementById('modalWeight').focus();
+}
+
+function openWeightModal(linkId) {
+    const lk = state.links.find(x => x.id === linkId);
+    pendingLink = { fromId: lk.from, toId: lk.to, existing: linkId };
+    const from = state.nodes.find(n => n.id === lk.from);
+    const to   = state.nodes.find(n => n.id === lk.to);
+    document.getElementById('modalFrom').textContent = labelFor(from);
+    document.getElementById('modalTo').textContent   = labelFor(to);
+    document.getElementById('modalWeight').value     = lk.weight;
+    document.getElementById('weightModal').classList.add('open');
+    document.getElementById('modalWeight').focus();
+}
+
+document.getElementById('modalOk').addEventListener('click', () => {
+    if (!pendingLink) return;
+    const w = parseInt(document.getElementById('modalWeight').value) || 0;
+    if (pendingLink.existing !== null) {
+        const lk = state.links.find(x => x.id === pendingLink.existing);
+        if (lk) { lk.weight = w; state.calculated = false; }
+    } else {
+        // Vérifie pas de doublon
+        const exists = state.links.find(l => l.from === pendingLink.fromId && l.to === pendingLink.toId);
+        if (!exists) {
+            state.links.push({ id: state.nextLinkId++, from: pendingLink.fromId, to: pendingLink.toId, weight: w, critical: false });
+            state.calculated = false;
+        }
+    }
+    document.getElementById('weightModal').classList.remove('open');
+    pendingLink = null;
+    renderAll();
+    setStatus('Lien créé/modifié');
+});
+
+document.getElementById('modalCancel').addEventListener('click', () => {
+    document.getElementById('weightModal').classList.remove('open');
+    pendingLink = null;
+});
+
+document.getElementById('modalWeight').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('modalOk').click();
+    if (e.key === 'Escape') document.getElementById('modalCancel').click();
+});
+
+// ── Calcul PERT (forward + backward pass) ────────────────
+function calculate() {
+    if (state.nodes.length === 0) return;
+
+    // Reset
+    state.nodes.forEach(n => { n.early = 0; n.late = null; n.marge = null; });
+    state.links.forEach(l => { l.critical = false; });
+
+    // Tri topologique (Kahn)
+    const inDeg = {};
+    state.nodes.forEach(n => { inDeg[n.id] = 0; });
+    state.links.forEach(l => { inDeg[l.to] = (inDeg[l.to] || 0) + 1; });
+
+    const queue = state.nodes.filter(n => inDeg[n.id] === 0).map(n => n.id);
+    const order = [];
+
+    while (queue.length) {
+        const cur = queue.shift();
+        order.push(cur);
+        state.links.filter(l => l.from === cur).forEach(l => {
+            inDeg[l.to]--;
+            if (inDeg[l.to] === 0) queue.push(l.to);
+        });
+    }
+
+    // Forward pass — début au plus tôt
+    order.forEach(nid => {
+        const n    = state.nodes.find(x => x.id === nid);
+        const preds = state.links.filter(l => l.to === nid);
+        if (preds.length === 0) { n.early = n.early || 0; return; }
+        n.early = Math.max(...preds.map(l => {
+            const pred = state.nodes.find(x => x.id === l.from);
+            return (pred.early || 0) + l.weight;
+        }));
+    });
+
+    // Durée totale = max early
+    const maxEarly = Math.max(...state.nodes.map(n => n.early));
+
+    // Backward pass — début au plus tard
+    const reverseOrder = [...order].reverse();
+    reverseOrder.forEach(nid => {
+        const n     = state.nodes.find(x => x.id === nid);
+        const succs = state.links.filter(l => l.from === nid);
+        if (succs.length === 0) { n.late = maxEarly; return; }
+        n.late = Math.min(...succs.map(l => {
+            const succ = state.nodes.find(x => x.id === l.to);
+            return (succ.late !== null ? succ.late : maxEarly) - l.weight;
+        }));
+    });
+
+    // Marges
+    state.nodes.forEach(n => { n.marge = n.late - n.early; });
+
+    // Chemin critique — liens dont les deux nœuds ont marge 0
+    state.links.forEach(l => {
+        const from = state.nodes.find(n => n.id === l.from);
+        const to   = state.nodes.find(n => n.id === l.to);
+        l.critical = from.marge === 0 && to.marge === 0 && (from.early + l.weight === to.early);
+    });
+
+    state.calculated = true;
+
+    // Statut
+    const critPath = order
+        .map(id => state.nodes.find(n => n.id === id))
+        .filter(n => n.marge === 0)
+        .map(n => labelFor(n))
+        .join(' → ');
+
+    document.getElementById('sbCritical').textContent = critPath || '—';
+    document.getElementById('sbDuration').textContent = maxEarly + ' jours';
+    setStatus('Calcul terminé — chemin critique identifié');
+    renderAll();
+}
+
+// ── Toolbar buttons ───────────────────────────────────────
+function setMode(m) {
+    state.mode = m;
+    state.linkSource = null;
+    document.getElementById('btnLinkMode').classList.toggle('active', m === 'link');
+    document.getElementById('btnAddNode').classList.toggle('active', m === 'addNode');
+    modeBadge.style.display = m === 'link' ? 'block' : 'none';
+    svg.style.cursor = m === 'link' ? 'crosshair' : 'default';
+    setStatus(m === 'link' ? 'Mode lien — cliquez sur le nœud source' : 'Prêt');
+}
+
+document.getElementById('btnAddNode').addEventListener('click', () => {
+    // Crée un nœud au centre du canvas
+    const wrap = document.getElementById('canvasWrap').getBoundingClientRect();
+    const cx = (wrap.width  / 2) - NW/2 + Math.random()*60 - 30;
+    const cy = (wrap.height / 2) - NH/2 + Math.random()*60 - 30;
+    createNode(cx, cy);
+    setMode('select');
+});
+
+document.getElementById('btnLinkMode').addEventListener('click', () => {
+    setMode(state.mode === 'link' ? 'select' : 'link');
+});
+
+document.getElementById('btnCalc').addEventListener('click', calculate);
+
+document.getElementById('btnClear').addEventListener('click', () => {
+    if (state.nodes.length > 0 && !confirm('Effacer tout le réseau PERT ?')) return;
+    state.nodes = []; state.links = [];
+    state.nextNodeId = 1; state.nextLinkId = 1;
+    state.selected = null; state.calculated = false;
+    state.linkSource = null;
+    state.dragging = null;
+    nodesL.innerHTML = '';
+    linksL.innerHTML = '';
+    setMode('select');
+    document.getElementById('propPanel').style.display = 'none';
+    document.getElementById('propLinkPanel').style.display = 'none';
+    document.getElementById('sbCritical').textContent = '—';
+    document.getElementById('sbDuration').textContent = '—';
+    hint.style.display = 'block';
+    updateCounts();
+    setStatus('Canvas effacé');
+});
+
+document.getElementById('btnExport').addEventListener('click', () => {
+    const data = { nodes: state.nodes, links: state.links };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'pert_' + Date.now() + '.json'; a.click();
+});
+
+// ── Drag depuis sidebar ───────────────────────────────────
+document.getElementById('widgetNode').addEventListener('dragstart', e => {
+    e.dataTransfer.setData('type', 'node');
+});
+
+document.getElementById('canvasWrap').addEventListener('dragover', e => e.preventDefault());
+document.getElementById('canvasWrap').addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.dataTransfer.getData('type') === 'node') {
+        const rect = document.getElementById('canvasWrap').getBoundingClientRect();
+        createNode(e.clientX - rect.left - NW/2, e.clientY - rect.top - NH/2);
+    }
+});
+
+// ── Clavier ───────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'n' || e.key === 'N') document.getElementById('btnAddNode').click();
+    if (e.key === 'l' || e.key === 'L') document.getElementById('btnLinkMode').click();
+    if (e.key === 'Escape') setMode('select');
+    if ((e.key === 'Delete' || e.key === 'Backspace') && state.selected) {
+        if (state.selected.type === 'node') {
+            state.nodes = state.nodes.filter(n => n.id !== state.selected.id);
+            state.links = state.links.filter(l => l.from !== state.selected.id && l.to !== state.selected.id);
+        } else {
+            state.links = state.links.filter(l => l.id !== state.selected.id);
+        }
+        state.selected = null;
+        state.calculated = false;
+        renderAll();
+        deselect();
+    }
+});
+
+// ── Status ────────────────────────────────────────────────
+function setStatus(msg) {
+    document.getElementById('sbStatus').textContent = msg;
+}
+
+// ── Init ──────────────────────────────────────────────────
+renderAll();
+</script>
+{% endblock %}

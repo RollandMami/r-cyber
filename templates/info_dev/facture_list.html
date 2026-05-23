@@ -1,0 +1,49 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}Facturation — {{ projet.titre }}{% endblock %}
+{% block sb_id_factures %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Facturation</li>
+        </ol></nav>
+        <h1><i class="fas fa-receipt me-2" style="color:#22c55e;"></i>Facturation</h1>
+    </div>
+    <a href="{% url 'info_dev:facture_create' projet_pk=projet.pk %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Nouvelle facture</a>
+</div>
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:1.25rem;">
+    <div class="stat-card"><div class="stat-card-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-file-invoice-dollar"></i></div><div class="stat-card-val" style="font-size:1.2rem;">{{ total_facture|floatformat:0 }}</div><div class="stat-card-lbl">Total facturé (Ar)</div></div>
+    <div class="stat-card"><div class="stat-card-icon" style="background:#f0fdf4;color:#15803d;"><i class="fas fa-check-circle"></i></div><div class="stat-card-val" style="font-size:1.2rem;">{{ total_paye|floatformat:0 }}</div><div class="stat-card-lbl">Encaissé (Ar)</div></div>
+    <div class="stat-card"><div class="stat-card-icon" style="background:#fef2f2;color:#b91c1c;"><i class="fas fa-hourglass-half"></i></div><div class="stat-card-val" style="font-size:1.2rem;{% if total_restant > 0 %}color:#ef4444;{% endif %}">{{ total_restant|floatformat:0 }}</div><div class="stat-card-lbl">Restant (Ar)</div></div>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.85rem;">
+            <thead style="background:#f8fafc;">
+                <tr><th class="px-3 py-2">Numéro</th><th>Type</th><th>Jalon</th><th>Émission</th><th>Échéance</th><th class="text-end">TTC</th><th class="text-center">Statut</th><th class="text-end pe-3">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for f in factures %}
+                <tr {% if f.est_en_retard %}style="background:#fff5f5;"{% endif %}>
+                    <td class="px-3"><a href="{% url 'info_dev:facture_detail' pk=f.pk %}" style="font-weight:700;color:#0a1628;text-decoration:none;">{{ f.numero }}</a>{% if f.est_en_retard %}<div style="font-size:.65rem;color:#ef4444;font-weight:600;"><i class="fas fa-exclamation-triangle me-1"></i>Retard</div>{% endif %}</td>
+                    <td style="font-size:.78rem;color:#64748b;">{{ f.get_type_facture_display }}</td>
+                    <td style="font-size:.78rem;color:#64748b;">{{ f.jalon|truncatechars:30|default:"—" }}</td>
+                    <td style="color:#64748b;">{{ f.date_emission|date:"d/m/Y" }}</td>
+                    <td style="{% if f.est_en_retard %}color:#ef4444;font-weight:600;{% else %}color:#64748b;{% endif %}">{% if f.date_echeance %}{{ f.date_echeance|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                    <td class="text-end" style="font-weight:700;">{{ f.montant_ttc|floatformat:0 }} Ar</td>
+                    <td class="text-center"><span class="badge {% if f.statut == 'payee' %}bg-success{% elif f.statut == 'retard' %}bg-danger{% elif f.statut == 'envoyee' %}bg-primary{% elif f.statut == 'partielle' %}bg-warning text-dark{% else %}bg-secondary{% endif %}" style="font-size:.7rem;">{{ f.get_statut_display }}</span></td>
+                    <td class="text-end pe-3">
+                        <a href="{% url 'info_dev:facture_detail' pk=f.pk %}" class="btn btn-outline-secondary btn-sm me-1"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'info_dev:facture_print' pk=f.pk %}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fas fa-print"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-receipt fa-2x d-block mb-2 opacity-20"></i>Aucune facture.<br><a href="{% url 'info_dev:facture_create' projet_pk=projet.pk %}" class="btn btn-primary btn-sm mt-2"><i class="fas fa-plus me-1"></i>Créer</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

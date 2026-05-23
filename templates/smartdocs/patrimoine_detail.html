@@ -1460,223 +1460,113 @@ function addBatiment(){const pk=document.getElementById('select-bat-add')?.value
 </script>
 
 <!-- ══════════════════════════════════════════════════════════════
-     DONNÉES POUR EXPORT EXCEL — injectées côté serveur Django
+     EXPORT EXCEL — SheetJS via API (pas de JSON inline Django)
 ══════════════════════════════════════════════════════════════ -->
-<script id="export-data-json" type="application/json">
-{
-  "batiment": "{{ patrimoine.nom|escapejs }}",
-  "adresse":  "{{ patrimoine.adresse|escapejs }}",
-  "annee":    "{{ patrimoine.annee_construction|default:'' }}",
-  "surface":  "{% if surface_ifc %}{{ surface_ifc|floatformat:2 }}{% elif patrimoine.surface_totale %}{{ patrimoine.surface_totale }}{% endif %}",
-
-  "revetements": [
-    {% for g in groupes_revetements %}{% for r in g.items %}
-    {
-      "batiment":    "{{ patrimoine.nom|escapejs }}",
-      "etage":       "{{ r.etage.nom|default:'—'|escapejs }}",
-      "piece":       "{{ r.piece.nom|default:'—'|escapejs }}",
-      "type":        "{{ r.get_type_revetement_display|escapejs }}",
-      "nature":      "{{ r.nature|default:'—'|escapejs }}",
-      "materiau":    "{{ r.materiau|default:'—'|escapejs }}",
-      "surface_m2":  {% if r.surface %}{{ r.surface|floatformat:2 }}{% else %}null{% endif %}
-    }{% if not forloop.last or not forloop.parentloop.last %},{% endif %}
-    {% endfor %}{% endfor %}
-  ],
-
-  "equipements": [
-    {% for groupe in groupes_tableau %}{% for ligne in groupe.lignes %}
-    {
-      "categorie":   "{{ groupe.label|escapejs }}",
-      "nomenclature":"{{ ligne.nomenclature|escapejs }}",
-      "quantite":    {{ ligne.quantite }},
-      "longueur_cm": {% if ligne.longueur %}{{ ligne.longueur }}{% else %}null{% endif %},
-      "largeur_cm":  {% if ligne.largeur %}{{ ligne.largeur }}{% else %}null{% endif %},
-      "hauteur_cm":  {% if ligne.hauteur %}{{ ligne.hauteur }}{% else %}null{% endif %},
-      "materiau":    "{{ ligne.materiau|default:'—'|escapejs }}",
-      "marque":      "{{ ligne.marque|default:'—'|escapejs }}",
-      "vitrage":     "{{ ligne.vitrage|default:'—'|escapejs }}",
-      "puissance":   "{{ ligne.puissance|default:'—'|escapejs }}"
-    }{% if not forloop.last or not forloop.parentloop.last %},{% endif %}
-    {% endfor %}{% endfor %}
-  ],
-
-  "recap_revetements": [
-    {% for g in groupes_revetements %}
-    {
-      "type":        "{{ g.label|escapejs }}",
-      "nb_elements": {{ g.items|length }},
-      "surface_m2":  {% if g.total_surf %}{{ g.total_surf }}{% else %}null{% endif %}
-    }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ],
-
-  "recap_equipements": [
-    {% for g in groupes_tableau %}
-    {
-      "categorie":     "{{ g.label|escapejs }}",
-      "types_distincts": {{ g.lignes|length }},
-      "quantite_totale": {% with total=0 %}{% for l in g.lignes %}{{ l.quantite }}{% if not forloop.last %}+{% endif %}{% endfor %}{% endwith %}
-    }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ]
-}
-</script>
-
 <script>
-// ══════════════════════════════════════════════════════════════
-//  EXPORT EXCEL — SheetJS
-// ══════════════════════════════════════════════════════════════
+const EXPORT_API_URL = "{% url 'smartdocs:api_export_data' patrimoine.pk %}";
 
-function exportExcel(mode) {
+async function exportExcel(mode) {
     if (typeof XLSX === 'undefined') {
         alert('Chargement en cours, réessayez dans quelques secondes.');
         return;
     }
 
-    // Récupère les données injectées par Django
+    // Indicateur visuel pendant le chargement
+    const btn = event?.currentTarget;
+    const originalHTML = btn?.innerHTML;
+    if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Génération…';
+
     let exportData;
     try {
-        const raw = document.getElementById('export-data-json').textContent;
-        exportData = JSON.parse(raw);
+        const resp = await fetch(EXPORT_API_URL, { credentials: 'same-origin' });
+        if (!resp.ok) throw new Error('Erreur serveur : ' + resp.status);
+        exportData = await resp.json();
     } catch(e) {
-        alert('Erreur de lecture des données : ' + e.message);
+        alert('Impossible de récupérer les données : ' + e.message);
+        if (btn) btn.innerHTML = originalHTML;
         return;
     }
 
-    const wb = XLSX.utils.book_new();
+    const wb     = XLSX.utils.book_new();
     const batNom = exportData.batiment || 'Bâtiment';
-
-    // ── Styles header ─────────────────────────────────────────
-    // SheetJS CE ne supporte pas les styles — on utilise des
-    // bordures via colWidths et des entêtes clairs.
+    const infos  = `Adresse : ${exportData.adresse || '—'}   |   Année : ${exportData.annee || '—'}   |   Surface : ${exportData.surface ? exportData.surface + ' m²' : '—'}`;
 
     // ── Onglet 1 : REVÊTEMENTS ────────────────────────────────
     if (mode === 'all' || mode === 'revetements') {
-        const revRows = [
-            // Titre
+        const rows = [
             [`REVÊTEMENTS — ${batNom}`, '', '', '', '', '', ''],
-            [`Adresse : ${exportData.adresse || '—'}   |   Année : ${exportData.annee || '—'}   |   Surface : ${exportData.surface ? exportData.surface + ' m²' : '—'}`],
-            [],  // ligne vide
-            // En-têtes colonnes
+            [infos, '', '', '', '', '', ''],
+            [],
             ['Bâtiment', 'Étage', 'Zone / Pièce', 'Revêtement', 'Nature', 'Matériau', 'Surface (m²)'],
         ];
-        exportData.revetements.forEach(r => {
-            revRows.push([
-                r.batiment,
-                r.etage,
-                r.piece,
-                r.type,
-                r.nature,
-                r.materiau,
-                r.surface_m2 !== null ? r.surface_m2 : '',
-            ]);
-        });
-        // Total surface
+        exportData.revetements.forEach(r => rows.push([
+            r.batiment, r.etage, r.piece, r.type, r.nature, r.materiau,
+            r.surface_m2 !== null ? r.surface_m2 : '',
+        ]));
         const totalSurf = exportData.revetements.reduce((s, r) => s + (r.surface_m2 || 0), 0);
-        revRows.push([]);
-        revRows.push(['', '', '', '', '', 'TOTAL', Math.round(totalSurf * 100) / 100]);
+        rows.push([], ['', '', '', '', '', 'TOTAL', Math.round(totalSurf * 100) / 100]);
 
-        const wsRev = XLSX.utils.aoa_to_sheet(revRows);
-        // Largeurs colonnes
-        wsRev['!cols'] = [
-            {wch:22}, {wch:14}, {wch:18}, {wch:12}, {wch:22}, {wch:22}, {wch:14}
-        ];
-        // Fusion titre sur toute la largeur
-        wsRev['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:6} },
-            { s:{r:1,c:0}, e:{r:1,c:6} },
-        ];
-        XLSX.utils.book_append_sheet(wb, wsRev, 'Revêtements');
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols']   = [{wch:22},{wch:14},{wch:18},{wch:12},{wch:22},{wch:22},{wch:14}];
+        ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:6} }, { s:{r:1,c:0}, e:{r:1,c:6} }];
+        XLSX.utils.book_append_sheet(wb, ws, 'Revêtements');
     }
 
     // ── Onglet 2 : ÉQUIPEMENTS ────────────────────────────────
     if (mode === 'all' || mode === 'equipements') {
-        const eqRows = [
+        const rows = [
             [`ÉQUIPEMENTS & OUVERTURES — ${batNom}`, '', '', '', '', '', '', '', '', ''],
-            [`Adresse : ${exportData.adresse || '—'}   |   Année : ${exportData.annee || '—'}`],
+            [infos, '', '', '', '', '', '', '', '', ''],
             [],
-            ['Catégorie', 'Nomenclature', 'Qté',
-             'Long. (cm)', 'Larg. (cm)', 'Haut. (cm)',
-             'Matériau', 'Marque', 'Vitrage', 'Puissance'],
+            ['Catégorie','Nomenclature','Qté','Long.(cm)','Larg.(cm)','Haut.(cm)','Matériau','Marque','Vitrage','Puissance'],
         ];
-        exportData.equipements.forEach(e => {
-            eqRows.push([
-                e.categorie,
-                e.nomenclature,
-                e.quantite,
-                e.longueur_cm !== null ? e.longueur_cm : '',
-                e.largeur_cm  !== null ? e.largeur_cm  : '',
-                e.hauteur_cm  !== null ? e.hauteur_cm  : '',
-                e.materiau !== '—' ? e.materiau : '',
-                e.marque   !== '—' ? e.marque   : '',
-                e.vitrage  !== '—' ? e.vitrage  : '',
-                e.puissance !== '—' ? e.puissance : '',
-            ]);
-        });
-        const wsEq = XLSX.utils.aoa_to_sheet(eqRows);
-        wsEq['!cols'] = [
-            {wch:22}, {wch:32}, {wch:6},
-            {wch:11}, {wch:11}, {wch:11},
-            {wch:18}, {wch:16}, {wch:18}, {wch:12}
-        ];
-        wsEq['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:9} },
-            { s:{r:1,c:0}, e:{r:1,c:9} },
-        ];
-        XLSX.utils.book_append_sheet(wb, wsEq, 'Équipements');
+        exportData.equipements.forEach(e => rows.push([
+            e.categorie, e.nomenclature, e.quantite,
+            e.longueur_cm ?? '', e.largeur_cm ?? '', e.hauteur_cm ?? '',
+            e.materiau || '', e.marque || '', e.vitrage || '', e.puissance || '',
+        ]));
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols']   = [{wch:22},{wch:32},{wch:6},{wch:11},{wch:11},{wch:11},{wch:18},{wch:16},{wch:18},{wch:12}];
+        ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:9} }, { s:{r:1,c:0}, e:{r:1,c:9} }];
+        XLSX.utils.book_append_sheet(wb, ws, 'Équipements');
     }
 
     // ── Onglet 3 : RÉCAPITULATIFS ─────────────────────────────
     if (mode === 'all' || mode === 'recap') {
-        const recapRows = [
+        const rows = [
             [`RÉCAPITULATIFS — ${batNom}`, '', '', ''],
             [],
-
-            // Sous-titre revêtements
             ['RÉCAP REVÊTEMENTS', '', '', ''],
             ['Type', 'Nb éléments', 'Surface totale (m²)', ''],
         ];
-        exportData.recap_revetements.forEach(r => {
-            recapRows.push([r.type, r.nb_elements, r.surface_m2 !== null ? r.surface_m2 : '', '']);
-        });
+        exportData.recap_revetements.forEach(r =>
+            rows.push([r.type, r.nb_elements, r.surface_m2 ?? '', ''])
+        );
         const totalRevSurf = exportData.recap_revetements.reduce((s, r) => s + (r.surface_m2 || 0), 0);
-        recapRows.push(['TOTAL', exportData.recap_revetements.reduce((s,r) => s + r.nb_elements, 0),
-                        Math.round(totalRevSurf * 100) / 100, '']);
-        recapRows.push([]);
-        recapRows.push([]);
+        const totalRevNb   = exportData.recap_revetements.reduce((s, r) => s + r.nb_elements, 0);
+        rows.push(['TOTAL', totalRevNb, Math.round(totalRevSurf * 100) / 100, '']);
+        rows.push([], []);
 
-        // Sous-titre équipements
-        recapRows.push(['RÉCAP ÉQUIPEMENTS', '', '', '']);
-        recapRows.push(['Catégorie', 'Types distincts', 'Quantité totale', '']);
-        exportData.recap_equipements.forEach(e => {
-            // quantite_totale peut être une expression Django — on somme depuis equipements
-            const total = exportData.equipements
-                .filter(eq => eq.categorie === e.categorie)
-                .reduce((s, eq) => s + eq.quantite, 0);
-            recapRows.push([e.categorie, e.types_distincts, total, '']);
-        });
+        rows.push(['RÉCAP ÉQUIPEMENTS', '', '', '']);
+        rows.push(['Catégorie', 'Types distincts', 'Quantité totale', '']);
+        exportData.recap_equipements.forEach(e =>
+            rows.push([e.categorie, e.types_distincts, e.quantite_totale, ''])
+        );
 
-        const wsRecap = XLSX.utils.aoa_to_sheet(recapRows);
-        wsRecap['!cols'] = [{wch:28}, {wch:16}, {wch:22}, {wch:8}];
-        wsRecap['!merges'] = [
-            { s:{r:0,c:0}, e:{r:0,c:3} },
-            { s:{r:2,c:0}, e:{r:2,c:3} },
-        ];
-        XLSX.utils.book_append_sheet(wb, wsRecap, 'Récapitulatifs');
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols']   = [{wch:28},{wch:16},{wch:22},{wch:8}];
+        ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:3} }, { s:{r:2,c:0}, e:{r:2,c:3} }];
+        XLSX.utils.book_append_sheet(wb, ws, 'Récapitulatifs');
     }
 
-    // ── Génère le fichier ─────────────────────────────────────
-    if (wb.SheetNames.length === 0) {
-        alert('Aucune donnée à exporter.');
-        return;
-    }
+    if (btn) btn.innerHTML = originalHTML;
 
-    const modeLabel = { all: 'Complet', revetements: 'Revetements', equipements: 'Equipements', recap: 'Recap' };
+    if (wb.SheetNames.length === 0) { alert('Aucune donnée à exporter.'); return; }
+
+    const labels  = { all:'Complet', revetements:'Revetements', equipements:'Equipements', recap:'Recap' };
     const safeNom = batNom.replace(/[^a-zA-Z0-9\-_]/g, '_').slice(0, 30);
     const today   = new Date().toISOString().slice(0, 10);
-    const filename = `SmartDocs_${safeNom}_${modeLabel[mode]}_${today}.xlsx`;
-
-    XLSX.writeFile(wb, filename);
+    XLSX.writeFile(wb, `SmartDocs_${safeNom}_${labels[mode]}_${today}.xlsx`);
 }
 </script>
 {% endblock %}

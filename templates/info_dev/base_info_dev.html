@@ -1,0 +1,21 @@
+{% extends "dashboard/base_dashboard.html" %}
+
+{# Accordéon Info-Dev toujours ouvert sur ces pages #}
+{% block acc_infodev_open %}open{% endblock %}
+{% block acc_infodev_panel %}open{% endblock %}
+
+{# Activer le bon sous-lien selon la vue courante #}
+{% block sb_id_projets  %}{% if not projet and request.resolver_match.url_name == 'projet_list' %}active{% endif %}{% endblock %}
+{% block sb_id_new      %}{% if request.resolver_match.url_name == 'projet_create' %}active{% endif %}{% endblock %}
+{% block sb_id_clients  %}{% if request.resolver_match.url_name == 'client_list' %}active{% endif %}{% endblock %}
+{% block sb_id_detail   %}{% if projet and request.resolver_match.url_name == 'projet_detail' %}active{% endif %}{% endblock %}
+{% block sb_id_taches   %}{% if projet and 'tache' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_id_bugs     %}{% if projet and 'bug' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_id_livrables %}{% if projet and 'livrable' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_id_docs     %}{% if projet and 'doc' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_id_devis    %}{% if projet and 'devis' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+{% block sb_id_factures %}{% if projet and 'facture' in request.resolver_match.url_name %}active{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+    {% block id_content %}{% endblock %}
+{% endblock %}

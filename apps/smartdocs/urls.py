@@ -32,4 +32,6 @@ urlpatterns = [
 
     # ── API ────────────────────────────────────────────────────────
     path('api/patrimoines-sans-site/',       views.api_tous_patrimoines, name='api_sans_site'),
+	path('api/<int:pk>/export/',             views.api_export_data,      name='api_export_data'),
+
 ]

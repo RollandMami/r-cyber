@@ -1,0 +1,32 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}Clients Info-Dev{% endblock %}
+{% block sb_id_clients %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div><h1><i class="fas fa-users me-2" style="color:#6366f1;"></i>Clients Info-Dev</h1></div>
+    <a href="{% url 'info_dev:client_create' %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Nouveau client</a>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.85rem;">
+            <thead style="background:#f8fafc;">
+                <tr><th class="px-3 py-2">Nom</th><th>Entreprise</th><th class="d-none d-md-table-cell">Email</th><th class="d-none d-md-table-cell">Téléphone</th><th class="text-center">Projets</th><th class="text-end pe-3">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for c in clients %}
+                <tr>
+                    <td class="px-3" style="font-weight:600;">{{ c.nom }}</td>
+                    <td style="color:#64748b;">{{ c.entreprise|default:"—" }}</td>
+                    <td class="d-none d-md-table-cell" style="color:#64748b;">{{ c.email|default:"—" }}</td>
+                    <td class="d-none d-md-table-cell" style="color:#64748b;">{{ c.telephone|default:"—" }}</td>
+                    <td class="text-center"><span style="background:#ede9fe;color:#7c3aed;font-size:.75rem;font-weight:700;padding:.15rem .55rem;border-radius:10px;">{{ c.nb_projets }}</span></td>
+                    <td class="text-end pe-3"><a href="{% url 'info_dev:client_edit' pk=c.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-edit"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-users fa-2x d-block mb-2 opacity-20"></i>Aucun client.<br><a href="{% url 'info_dev:client_create' %}" class="btn btn-primary btn-sm mt-2"><i class="fas fa-plus me-1"></i>Créer</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

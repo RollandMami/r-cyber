@@ -1,0 +1,34 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ doc.titre }} — Doc{% endblock %}
+{% block sb_id_docs %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=doc.projet.pk %}">{{ doc.projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:doc_list' projet_pk=doc.projet.pk %}">Documentation</a></li>
+            <li class="breadcrumb-item active">{{ doc.titre }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-book me-2" style="color:#0369a1;"></i>{{ doc.titre }}</h1>
+        <div style="font-size:.78rem;color:#64748b;">
+            {{ doc.get_categorie_display }} · {{ doc.version }} · Modifié le {{ doc.modifie_le|date:"d/m/Y" }}
+            {% if doc.publie %} · <span style="color:#15803d;font-weight:600;">Public</span>{% endif %}
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'info_dev:doc_edit' pk=doc.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-edit me-1"></i>Modifier</a>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="fas fa-print me-1"></i>Imprimer</button>
+    </div>
+</div>
+<div class="card p-4">
+    <!-- Contenu texte avec formatage basique -->
+    <div style="font-size:.9rem;line-height:1.85;color:#475569;white-space:pre-wrap;font-family:'DM Sans',sans-serif;">{{ doc.contenu }}</div>
+</div>
+{% if doc.fichier %}
+<div class="card p-3 mt-3">
+    <h6 class="fw-bold mb-2" style="font-size:.82rem;">Fichier annexe</h6>
+    <a href="{{ doc.fichier.url }}" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="fas fa-download me-1"></i>Télécharger</a>
+</div>
+{% endif %}
+{% endblock %}

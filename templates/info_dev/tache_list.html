@@ -1,0 +1,190 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}Kanban — {{ projet.titre }}{% endblock %}
+{% block sb_id_taches %}active{% endblock %}
+
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Kanban</li>
+        </ol></nav>
+        <h1><i class="fas fa-columns me-2" style="color:#6366f1;"></i>Kanban — {{ projet.titre }}</h1>
+        <p class="text-muted mb-0" style="font-size:.83rem;">
+            Avancement : <strong>{{ projet.avancement }}%</strong> · {{ taches.count }} tâche(s)
+        </p>
+    </div>
+    <a href="{% url 'info_dev:tache_create' projet_pk=projet.pk %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouvelle tâche
+    </a>
+</div>
+
+<!-- Barre avancement globale -->
+<div class="card p-3 mb-3">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:.82rem;">
+        <span style="font-weight:600;">Avancement global du projet</span>
+        <strong>{{ projet.avancement }}%</strong>
+    </div>
+    <div class="progress-rc" style="height:8px;">
+        <div class="bar" style="width:{{ projet.avancement }}%;background:#6366f1;"></div>
+    </div>
+</div>
+
+<!-- Kanban board -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;align-items:start;" id="kanbanBoard">
+    {% for col_id,col_lbl,col_color in cols %}
+    <div class="kanban-col"
+         data-col="{{ col_id }}"
+         style="background:#f8fafc;border-radius:12px;padding:.75rem;">
+
+        <!-- En-tête colonne -->
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
+            <div style="width:10px;height:10px;border-radius:50%;background:{{ col_color }};flex-shrink:0;"></div>
+            <span style="font-size:.78rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;flex:1;">{{ col_lbl }}</span>
+            <span class="col-count" style="font-size:.7rem;font-weight:700;background:rgba(0,0,0,.06);padding:.1rem .45rem;border-radius:10px;color:#64748b;">
+                {{ taches|dictsort:"statut"|length }}
+            </span>
+        </div>
+
+        <!-- Cartes -->
+        <div class="kanban-cards" data-col="{{ col_id }}" style="min-height:80px;display:flex;flex-direction:column;gap:.5rem;">
+            {% for t in taches %}
+            {% if t.statut == col_id %}
+            <div class="kanban-card"
+                 data-id="{{ t.pk }}"
+                 draggable="true"
+                 style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;
+                        padding:.75rem;cursor:grab;transition:box-shadow .2s,transform .15s;
+                        border-left:3px solid {% if t.priorite == 'critique' %}#ef4444{% elif t.priorite == 'haute' %}#f59e0b{% elif t.priorite == 'normale' %}#6366f1{% else %}#94a3b8{% endif %};">
+                <!-- Priorité + actions -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.35rem;">
+                    <span style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+                        color:{% if t.priorite == 'critique' %}#ef4444{% elif t.priorite == 'haute' %}#f59e0b{% elif t.priorite == 'normale' %}#6366f1{% else %}#94a3b8{% endif %};">
+                        {{ t.get_priorite_display }}
+                    </span>
+                    <div style="display:flex;gap:.2rem;">
+                        <a href="{% url 'info_dev:tache_edit' pk=t.pk %}"
+                           style="width:22px;height:22px;border-radius:5px;background:#f1f5f9;
+                                  display:flex;align-items:center;justify-content:center;
+                                  font-size:.62rem;color:#64748b;text-decoration:none;transition:all .15s;"
+                           onmouseover="this.style.background='#6366f1';this.style.color='#fff'"
+                           onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'info_dev:tache_delete' pk=t.pk %}"
+                           onclick="return confirm('Supprimer cette tâche ?')"
+                           style="width:22px;height:22px;border-radius:5px;background:#f1f5f9;
+                                  display:flex;align-items:center;justify-content:center;
+                                  font-size:.62rem;color:#64748b;text-decoration:none;transition:all .15s;"
+                           onmouseover="this.style.background='#fef2f2';this.style.color='#ef4444'"
+                           onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b'">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Titre -->
+                <div style="font-size:.85rem;font-weight:600;color:#1a2332;margin-bottom:.3rem;line-height:1.3;">{{ t.titre }}</div>
+
+                {% if t.description %}
+                <div style="font-size:.75rem;color:#94a3b8;line-height:1.4;margin-bottom:.4rem;
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    {{ t.description|truncatechars:60 }}
+                </div>
+                {% endif %}
+
+                <!-- Méta -->
+                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.4rem;">
+                    {% if t.assignee %}
+                    <div style="width:22px;height:22px;border-radius:50%;background:#6366f1;
+                                display:flex;align-items:center;justify-content:center;
+                                font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0;"
+                         title="{{ t.assignee.get_full_name|default:t.assignee.username }}">
+                        {{ t.assignee.username|slice:":2"|upper }}
+                    </div>
+                    {% endif %}
+                    {% if t.date_fin %}
+                    <span style="font-size:.68rem;{% if t.est_en_retard %}color:#ef4444;font-weight:700;{% else %}color:#94a3b8;{% endif %}">
+                        <i class="fas fa-calendar me-1"></i>{{ t.date_fin|date:"d/m" }}
+                        {% if t.est_en_retard %}<i class="fas fa-exclamation-circle ms-1"></i>{% endif %}
+                    </span>
+                    {% endif %}
+                    {% if t.bugs.count > 0 %}
+                    <span style="font-size:.68rem;color:#ef4444;">
+                        <i class="fas fa-bug me-1"></i>{{ t.bugs.count }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Ajouter dans cette colonne -->
+        <a href="{% url 'info_dev:tache_create' projet_pk=projet.pk %}?statut={{ col_id }}"
+           style="display:flex;align-items:center;gap:.4rem;margin-top:.5rem;padding:.4rem .5rem;
+                  border-radius:8px;color:#94a3b8;font-size:.78rem;text-decoration:none;
+                  transition:all .15s;"
+           onmouseover="this.style.background='rgba(99,102,241,.08)';this.style.color='#6366f1'"
+           onmouseout="this.style.background='';this.style.color='#94a3b8'">
+            <i class="fas fa-plus" style="font-size:.65rem;"></i> Ajouter
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+let dragCard = null;
+
+document.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+        dragCard = card;
+        card.style.opacity = '.4';
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+        card.style.opacity = '1';
+        dragCard = null;
+    });
+});
+
+document.querySelectorAll('.kanban-cards').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        zone.style.background = 'rgba(99,102,241,.07)';
+    });
+    zone.addEventListener('dragleave', () => zone.style.background = '');
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.style.background = '';
+        if (!dragCard) return;
+        const nouveau = zone.dataset.col;
+        const id      = dragCard.dataset.id;
+        zone.appendChild(dragCard);
+        updateCounts();
+        // AJAX
+        fetch(`/info-dev/taches/${id}/statut/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type':    'application/json',
+                'X-CSRFToken':     CSRF,
+            },
+            body: JSON.stringify({ statut: nouveau }),
+        })
+        .then(r => r.json())
+        .then(d => { if (!d.ok) console.warn('Erreur statut', d); });
+    });
+});
+
+function updateCounts() {
+    document.querySelectorAll('.kanban-col').forEach(col => {
+        const n = col.querySelectorAll('.kanban-card').length;
+        col.querySelector('.col-count').textContent = n;
+    });
+}
+updateCounts();
+</script>
+{% endblock %}

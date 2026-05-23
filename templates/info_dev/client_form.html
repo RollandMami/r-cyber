@@ -1,0 +1,31 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ action }} client — Info-Dev{% endblock %}
+{% block sb_id_clients %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:client_list' %}">Clients</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1>{{ action }} un client</h1>
+    </div>
+</div>
+<div style="max-width:600px;"><div class="card p-4">
+    <form method="post">{% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Nom *</label>{{ form.nom }}</div>
+        <div class="col-md-6"><label class="form-label">Entreprise</label>{{ form.entreprise }}</div>
+        <div class="col-md-6"><label class="form-label">Email</label>{{ form.email }}</div>
+        <div class="col-md-6"><label class="form-label">Téléphone</label>{{ form.telephone }}</div>
+        <div class="col-12"><label class="form-label">Adresse</label>{{ form.adresse }}</div>
+        <div class="col-12"><label class="form-label">Référence client partagée</label>{{ form.client_ref }}<div style="font-size:.72rem;color:#94a3b8;margin-top:.2rem;">Lien vers construction ou bureau d'étude si applicable</div></div>
+        <div class="col-12"><label class="form-label">Note</label>{{ form.note }}</div>
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+            <a href="{% url 'info_dev:client_list' %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </div>
+    </form>
+</div></div>
+{% endblock %}

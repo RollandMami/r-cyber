@@ -1,0 +1,49 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ bug.titre }} — Bug{% endblock %}
+{% block sb_id_bugs %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=bug.projet.pk %}">{{ bug.projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:bug_list' projet_pk=bug.projet.pk %}">Bugs</a></li>
+            <li class="breadcrumb-item active">Détail</li>
+        </ol></nav>
+        <h1><i class="fas fa-bug me-2" style="color:#ef4444;"></i>{{ bug.titre }}</h1>
+        <div style="font-size:.78rem;color:#64748b;">{{ bug.get_type_bug_display }} · {{ bug.get_severite_display }} · Ouvert le {{ bug.date_ouvert|date:"d/m/Y" }}</div>
+    </div>
+    <a href="{% url 'info_dev:bug_edit' pk=bug.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-edit me-1"></i>Modifier</a>
+</div>
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card p-4 mb-3">
+            <div style="font-size:.7rem;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-align-left me-2"></i>Description</div>
+            <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#f8fafc;border-radius:8px;padding:1rem;">{{ bug.description }}</div>
+        </div>
+        {% if bug.etapes_repro %}<div class="card p-4 mb-3">
+            <div style="font-size:.7rem;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-list me-2"></i>Étapes pour reproduire</div>
+            <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#fffbeb;border-radius:8px;padding:1rem;">{{ bug.etapes_repro }}</div>
+        </div>{% endif %}
+        {% if bug.solution %}<div class="card p-4">
+            <div style="font-size:.7rem;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;"><i class="fas fa-check me-2"></i>Solution</div>
+            <div style="font-size:.9rem;line-height:1.75;color:#475569;white-space:pre-line;background:#f0fdf4;border-radius:8px;padding:1rem;">{{ bug.solution }}</div>
+        </div>{% endif %}
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-3">
+            <h6 class="fw-bold mb-3" style="font-size:.83rem;">Détails</h6>
+            <div style="font-size:.83rem;">
+                {% for label,val in "Projet,bug.projet.titre;Type,bug.get_type_bug_display;Sévérité,bug.get_severite_display;Statut,bug.get_statut_display;Rapporté par,bug.rapporte_par;Environnement,bug.environnement"|split:";" %}{% endfor %}
+                <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Projet</span><span>{{ bug.projet.reference }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Type</span><span>{{ bug.get_type_bug_display }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Sévérité</span><strong style="{% if bug.severite == 'critique' %}color:#ef4444;{% elif bug.severite == 'haute' %}color:#d97706;{% endif %}">{{ bug.get_severite_display }}</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Statut</span><span class="badge {% if bug.statut == 'ouvert' %}bg-danger{% elif bug.statut == 'en_cours' %}bg-warning text-dark{% elif bug.statut == 'resolu' %}bg-success{% else %}bg-secondary{% endif %}">{{ bug.get_statut_display }}</span></div>
+                {% if bug.rapporte_par %}<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Rapporté par</span><span>{{ bug.rapporte_par }}</span></div>{% endif %}
+                {% if bug.assigne_a %}<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Assigné à</span><span>{{ bug.assigne_a.get_full_name|default:bug.assigne_a.username }}</span></div>{% endif %}
+                {% if bug.date_resolu %}<div style="display:flex;justify-content:space-between;padding:.35rem 0;color:#15803d;"><span>Résolu le</span><strong>{{ bug.date_resolu|date:"d/m/Y" }}</strong></div>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

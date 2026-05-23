@@ -1,0 +1,72 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}Livrables — {{ projet.titre }}{% endblock %}
+{% block sb_id_livrables %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Livrables</li>
+        </ol></nav>
+        <h1><i class="fas fa-archive me-2" style="color:#15803d;"></i>Livrables</h1>
+    </div>
+    <a href="{% url 'info_dev:livrable_add' projet_pk=projet.pk %}" class="btn btn-primary">
+        <i class="fas fa-upload me-2"></i>Ajouter
+    </a>
+</div>
+<div style="display:flex;flex-direction:column;gap:.75rem;">
+    {% for l in livrables %}
+    <div class="card p-3" style="transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''">
+        <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+            <div style="flex:1;">
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span style="background:#dcfce7;color:#15803d;font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:6px;text-transform:uppercase;">
+                        {{ l.get_type_livrable_display }}
+                    </span>
+                    <span style="font-size:.72rem;color:#94a3b8;">{{ l.version }}</span>
+                    <span style="font-size:.72rem;color:#64748b;"><i class="fas fa-calendar me-1"></i>{{ l.date_livraison|date:"d/m/Y" }}</span>
+                    {% if l.livre_au_client %}
+                    <span style="background:#dcfce7;color:#15803d;font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:6px;">
+                        <i class="fas fa-check me-1"></i>Livré client
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.97rem;margin-bottom:.25rem;">{{ l.titre }}</div>
+                {% if l.description %}
+                <div style="font-size:.8rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:500px;">{{ l.description|truncatechars:100 }}</div>
+                {% endif %}
+                {% if l.changelog %}
+                <div style="font-size:.75rem;color:#94a3b8;margin-top:.25rem;font-style:italic;">
+                    <i class="fas fa-list me-1"></i>{{ l.changelog|truncatechars:80 }}
+                </div>
+                {% endif %}
+            </div>
+            <div class="d-flex gap-1 flex-shrink-0">
+                {% if l.fichier %}
+                <a href="{{ l.fichier.url }}" class="btn btn-outline-secondary btn-sm" target="_blank" title="Télécharger">
+                    <i class="fas fa-download me-1"></i>{{ l.extension|upper }}
+                </a>
+                {% endif %}
+                {% if l.url_externe %}
+                <a href="{{ l.url_externe }}" class="btn btn-outline-secondary btn-sm" target="_blank" title="Lien externe">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                {% endif %}
+                <a href="{% url 'info_dev:livrable_delete' pk=l.pk %}" onclick="return confirm('Supprimer ce livrable ?')" class="btn btn-outline-danger btn-sm" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card" style="padding:4rem;text-align:center;color:#64748b;">
+        <i class="fas fa-archive fa-2x mb-2 d-block opacity-20"></i>
+        Aucun livrable.
+        <br><a href="{% url 'info_dev:livrable_add' projet_pk=projet.pk %}" class="btn btn-primary btn-sm mt-2">
+            <i class="fas fa-upload me-1"></i>Ajouter le premier
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

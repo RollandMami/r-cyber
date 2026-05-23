@@ -1,0 +1,46 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ action }} bug — Info-Dev{% endblock %}
+{% block sb_id_bugs %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:bug_list' projet_pk=projet.pk %}">Bugs</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-bug me-2" style="color:#ef4444;"></i>{{ action }} bug / demande</h1>
+    </div>
+</div>
+<form method="post" style="max-width:800px;">{% csrf_token %}
+<div class="row g-3">
+    <div class="col-12"><div class="card p-4">
+        <h6 class="fw-bold mb-3" style="color:#ef4444;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-info-circle me-2"></i>Identification</h6>
+        <div class="row g-3">
+            <div class="col-12"><label class="form-label">Titre *</label>{{ form.titre }}</div>
+            <div class="col-md-4"><label class="form-label">Type</label>{{ form.type_bug }}</div>
+            <div class="col-md-4"><label class="form-label">Sévérité</label>{{ form.severite }}</div>
+            <div class="col-md-4"><label class="form-label">Statut</label>{{ form.statut }}</div>
+            <div class="col-md-4"><label class="form-label">Rapporté par</label>{{ form.rapporte_par }}</div>
+            <div class="col-md-4"><label class="form-label">Assigné à</label>{{ form.assigne_a }}</div>
+            <div class="col-md-4"><label class="form-label">Environnement</label>{{ form.environnement }}</div>
+        </div>
+    </div></div>
+    <div class="col-12"><div class="card p-4">
+        <h6 class="fw-bold mb-3" style="color:#7c3aed;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-align-left me-2"></i>Détails</h6>
+        <div class="row g-3">
+            <div class="col-12"><label class="form-label">Description *</label>{{ form.description }}</div>
+            <div class="col-12"><label class="form-label">Étapes pour reproduire</label>{{ form.etapes_repro }}</div>
+            <div class="col-md-4"><label class="form-label">Date ouvert</label>{{ form.date_ouvert }}</div>
+            <div class="col-md-4"><label class="form-label">Date résolu</label>{{ form.date_resolu }}</div>
+            <div class="col-12"><label class="form-label">Solution apportée</label>{{ form.solution }}</div>
+        </div>
+    </div></div>
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+        <a href="{% url 'info_dev:bug_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+    </div>
+</div>
+</form>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ action }} projet — Info-Dev{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        {% if projet %}
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Modifier</li>
+        </ol></nav>
+        {% endif %}
+        <h1>{{ action }} un projet</h1>
+    </div>
+</div>
+<form method="post" style="max-width:800px;">{% csrf_token %}
+<div class="row g-3">
+    <div class="col-12"><div class="card p-4">
+        <h6 class="fw-bold mb-3" style="color:#6366f1;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-info-circle me-2"></i>Identité</h6>
+        <div class="row g-3">
+            <div class="col-md-8"><label class="form-label">Titre *</label>{{ form.titre }}</div>
+            <div class="col-md-4"><label class="form-label">Type</label>{{ form.type_projet }}</div>
+            <div class="col-md-4"><label class="form-label">Statut</label>{{ form.statut }}</div>
+            <div class="col-md-4"><label class="form-label">Priorité</label>{{ form.priorite }}</div>
+            <div class="col-md-4"><label class="form-label">Client</label>{{ form.client }}</div>
+            <div class="col-md-6"><label class="form-label">Responsable</label>{{ form.responsable }}</div>
+            <div class="col-md-6"><label class="form-label">Stack technique</label>{{ form.stack_technique }}</div>
+            <div class="col-12"><label class="form-label">Description</label>{{ form.description }}</div>
+            <div class="col-12"><label class="form-label">Cahier des charges</label>{{ form.cahier_charges }}</div>
+        </div>
+    </div></div>
+    <div class="col-md-6"><div class="card p-4">
+        <h6 class="fw-bold mb-3" style="color:#0369a1;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-link me-2"></i>URLs & Liens</h6>
+        <div class="row g-2">
+            <div class="col-12"><label class="form-label">Repository (GitHub/GitLab)</label>{{ form.repo_url }}</div>
+            <div class="col-12"><label class="form-label">URL Production</label>{{ form.url_prod }}</div>
+            <div class="col-12"><label class="form-label">URL Recette / Staging</label>{{ form.url_recette }}</div>
+        </div>
+    </div></div>
+    <div class="col-md-6"><div class="card p-4">
+        <h6 class="fw-bold mb-3" style="color:#d97706;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-calendar me-2"></i>Planning & Budget</h6>
+        <div class="row g-2">
+            <div class="col-md-6"><label class="form-label">Date début</label>{{ form.date_debut }}</div>
+            <div class="col-md-6"><label class="form-label">Date fin prévue</label>{{ form.date_fin_prevue }}</div>
+            <div class="col-md-6"><label class="form-label">Budget HT (Ar)</label>{{ form.budget_ht }}</div>
+            <div class="col-md-6"><label class="form-label">TVA (%)</label>{{ form.tva_pct }}</div>
+        </div>
+    </div></div>
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+        {% if projet %}<a href="{% url 'info_dev:projet_detail' pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        {% else %}<a href="{% url 'info_dev:projet_list' %}" class="btn btn-outline-secondary">Annuler</a>{% endif %}
+    </div>
+</div>
+</form>
+{% endblock %}

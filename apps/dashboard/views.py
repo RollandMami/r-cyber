@@ -7,6 +7,26 @@ from django.utils import timezone
 def dashboard(request):
     """Hub central — agrège les stats de toutes les apps."""
     context = {}
+    
+    # ── Stats Info-Dev ────────────────────────────────────────────────────────
+    try:
+        from apps.info_dev.models import Projet as ProjetDev, Bug, Facture as FactureDev
+        context['infodev'] = {
+            'projets_total':   ProjetDev.objects.count(),
+            'projets_encours': ProjetDev.objects.filter(statut='en_cours').count(),
+            'projets_livres':  ProjetDev.objects.filter(statut='livre').count(),
+            'bugs_ouverts':    Bug.objects.filter(statut__in=['ouvert','en_cours']).count(),
+            'ca_facture':      FactureDev.objects.filter(
+                statut__in=['envoyee','payee']
+            ).aggregate(t=Sum('montant_ttc'))['t'] or 0,
+            'projets_recents': ProjetDev.objects.select_related('client')
+                                                .order_by('-cree_le')[:5],
+            'bugs_recents':    Bug.objects.select_related('projet')
+                                          .filter(statut__in=['ouvert','en_cours'])
+                                          .order_by('-date_ouvert')[:4],
+        }
+    except Exception:
+        context['infodev'] = None
 
     # ── Stats Bureau d'Étude ──────────────────────────────────────────────
     try:

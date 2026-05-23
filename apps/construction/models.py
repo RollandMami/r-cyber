@@ -561,7 +561,7 @@ class Facture(models.Model):
     conditions_paiement = models.TextField(blank=True)
     note            = models.TextField(blank=True)
 
-    cree_par        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    cree_par        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='construction_factures_creees')
     cree_le         = models.DateTimeField(auto_now_add=True)
     modifie_le      = models.DateTimeField(auto_now=True)
 

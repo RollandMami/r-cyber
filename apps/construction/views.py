@@ -211,6 +211,11 @@ def doc_chantier_delete(request, pk):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
+def pert_editor(request):
+    return render(request, 'construction/pert_editor.html')
+
+
+@login_required
 def gantt_view(request, projet_pk):
     projet = get_object_or_404(Projet, pk=projet_pk)
     taches = projet.taches.select_related('assignee_a', 'parent').prefetch_related('dependances')

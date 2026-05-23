@@ -248,7 +248,7 @@ class Devis(models.Model):
     note            = models.TextField(blank=True)
     fichier_pdf     = models.FileField(upload_to=devis_path, null=True, blank=True)
 
-    cree_par        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    cree_par        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='bureau_etude_devis_crees')
     cree_le         = models.DateTimeField(auto_now_add=True)
 
     class Meta:

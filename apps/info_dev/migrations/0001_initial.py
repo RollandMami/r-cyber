@@ -1,0 +1,247 @@
+from django.db import migrations, models
+import django.db.models.deletion
+import django.utils.timezone
+import apps.info_dev.models
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+        ('auth', '0012_alter_user_first_name_max_length'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Client',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('nom', models.CharField(max_length=200)),
+                ('email', models.EmailField(blank=True)),
+                ('telephone', models.CharField(blank=True, max_length=30)),
+                ('adresse', models.TextField(blank=True)),
+                ('entreprise', models.CharField(blank=True, max_length=200)),
+                ('client_ref', models.CharField(blank=True, max_length=100)),
+                ('note', models.TextField(blank=True)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+            ],
+            options={'verbose_name': 'Client', 'verbose_name_plural': 'Clients', 'ordering': ['nom']},
+        ),
+        migrations.CreateModel(
+            name='Projet',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('reference', models.CharField(blank=True, max_length=30, unique=True)),
+                ('titre', models.CharField(max_length=255)),
+                ('type_projet', models.CharField(choices=[
+                    ('script','Script Python / Bash / C'),('web','Site web / Application web'),
+                    ('logiciel','Logiciel desktop'),('api','API / Intégration'),
+                    ('maintenance','Maintenance & Support')], default='web', max_length=20)),
+                ('statut', models.CharField(choices=[
+                    ('prospect','Prospection'),('en_cours','En cours'),
+                    ('recette','Recette / Tests'),('livre','Livré'),
+                    ('maintenance','En maintenance'),('archive','Archivé')], default='prospect', max_length=20)),
+                ('priorite', models.CharField(choices=[
+                    ('haute','Haute'),('normale','Normale'),('basse','Basse')], default='normale', max_length=10)),
+                ('description', models.TextField(blank=True)),
+                ('cahier_charges', models.TextField(blank=True)),
+                ('stack_technique', models.CharField(blank=True, max_length=300)),
+                ('repo_url', models.URLField(blank=True)),
+                ('url_prod', models.URLField(blank=True)),
+                ('url_recette', models.URLField(blank=True)),
+                ('date_debut', models.DateField(default=django.utils.timezone.now)),
+                ('date_fin_prevue', models.DateField(blank=True, null=True)),
+                ('date_livraison', models.DateField(blank=True, null=True)),
+                ('budget_ht', models.DecimalField(blank=True, decimal_places=2, max_digits=14, null=True)),
+                ('tva_pct', models.DecimalField(decimal_places=2, default=20, max_digits=5)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('modifie_le', models.DateTimeField(auto_now=True)),
+                ('client', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='projets', to='info_dev.client')),
+                ('cree_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='infdev_projets_crees', to='auth.user')),
+                ('responsable', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='infdev_projets_responsable', to='auth.user')),
+            ],
+            options={'verbose_name': 'Projet Info-Dev', 'verbose_name_plural': 'Projets Info-Dev', 'ordering': ['-cree_le']},
+        ),
+        migrations.CreateModel(
+            name='Tache',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('titre', models.CharField(max_length=255)),
+                ('description', models.TextField(blank=True)),
+                ('statut', models.CharField(choices=[
+                    ('todo','À faire'),('en_cours','En cours'),
+                    ('review','En révision'),('termine','Terminée'),('annulee','Annulée')], default='todo', max_length=15)),
+                ('priorite', models.CharField(choices=[
+                    ('critique','Critique'),('haute','Haute'),('normale','Normale'),('basse','Basse')], default='normale', max_length=10)),
+                ('date_debut', models.DateField(blank=True, null=True)),
+                ('date_fin', models.DateField(blank=True, null=True)),
+                ('ordre', models.PositiveIntegerField(default=0)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('assignee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='infdev_taches', to='auth.user')),
+                ('projet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='taches', to='info_dev.projet')),
+            ],
+            options={'ordering': ['ordre', 'cree_le']},
+        ),
+        migrations.CreateModel(
+            name='Bug',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('titre', models.CharField(max_length=255)),
+                ('type_bug', models.CharField(choices=[
+                    ('bug','Bug'),('feature','Nouvelle fonctionnalité'),
+                    ('perf','Performance'),('secu','Sécurité'),('question','Question / Support')], default='bug', max_length=15)),
+                ('statut', models.CharField(choices=[
+                    ('ouvert','Ouvert'),('en_cours','En cours'),
+                    ('resolu','Résolu'),('ferme','Fermé / Non reproductible'),('reporte','Reporté')], default='ouvert', max_length=15)),
+                ('severite', models.CharField(choices=[
+                    ('critique','Critique'),('haute','Haute'),('normale','Normale'),('basse','Basse')], default='normale', max_length=10)),
+                ('description', models.TextField()),
+                ('etapes_repro', models.TextField(blank=True)),
+                ('environnement', models.CharField(blank=True, max_length=200)),
+                ('solution', models.TextField(blank=True)),
+                ('rapporte_par', models.CharField(blank=True, max_length=100)),
+                ('date_ouvert', models.DateField(default=django.utils.timezone.now)),
+                ('date_resolu', models.DateField(blank=True, null=True)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('assigne_a', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='infdev_bugs', to='auth.user')),
+                ('projet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bugs', to='info_dev.projet')),
+                ('tache_liee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bugs', to='info_dev.tache')),
+            ],
+            options={'ordering': ['-date_ouvert', 'severite']},
+        ),
+        migrations.CreateModel(
+            name='Livrable',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('type_livrable', models.CharField(choices=[
+                    ('code_source','Code source / Archive'),('executable','Exécutable / Build'),
+                    ('script','Script'),('config','Fichier de configuration'),
+                    ('doc_tech','Documentation technique'),('manuel','Manuel utilisateur'),('autre','Autre')], default='code_source', max_length=20)),
+                ('titre', models.CharField(max_length=255)),
+                ('version', models.CharField(default='v1.0.0', max_length=30)),
+                ('fichier', models.FileField(blank=True, null=True, upload_to=apps.info_dev.models.projet_livrable_path)),
+                ('url_externe', models.URLField(blank=True)),
+                ('description', models.TextField(blank=True)),
+                ('changelog', models.TextField(blank=True)),
+                ('livre_au_client', models.BooleanField(default=False)),
+                ('date_livraison', models.DateField(default=django.utils.timezone.now)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('produit_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+                ('projet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='livrables', to='info_dev.projet')),
+            ],
+            options={'ordering': ['-date_livraison', 'type_livrable']},
+        ),
+        migrations.CreateModel(
+            name='Documentation',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('categorie', models.CharField(choices=[
+                    ('installation',"Guide d'installation"),('api','Documentation API'),
+                    ('architecture','Architecture système'),('utilisation',"Manuel d'utilisation"),
+                    ('maintenance','Guide de maintenance'),('autre','Autre')], default='autre', max_length=20)),
+                ('titre', models.CharField(max_length=255)),
+                ('contenu', models.TextField()),
+                ('version', models.CharField(default='v1.0', max_length=20)),
+                ('fichier', models.FileField(blank=True, null=True, upload_to=apps.info_dev.models.projet_doc_path)),
+                ('publie', models.BooleanField(default=False)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('modifie_le', models.DateTimeField(auto_now=True)),
+                ('projet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='docs', to='info_dev.projet')),
+                ('redige_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+            ],
+            options={'ordering': ['categorie', '-modifie_le']},
+        ),
+        migrations.CreateModel(
+            name='Devis',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('numero', models.CharField(blank=True, max_length=30, unique=True)),
+                ('statut', models.CharField(choices=[
+                    ('brouillon','Brouillon'),('envoye','Envoyé'),
+                    ('accepte','Accepté'),('refuse','Refusé'),('expire','Expiré')], default='brouillon', max_length=15)),
+                ('emetteur_nom', models.CharField(default="R-CYBER Info-Dev", max_length=200)),
+                ('emetteur_adresse', models.TextField(blank=True)),
+                ('emetteur_tel', models.CharField(blank=True, max_length=30)),
+                ('emetteur_email', models.EmailField(blank=True)),
+                ('emetteur_nif', models.CharField(blank=True, max_length=50)),
+                ('client_nom', models.CharField(max_length=200)),
+                ('client_adresse', models.TextField(blank=True)),
+                ('date_devis', models.DateField(default=django.utils.timezone.now)),
+                ('date_validite', models.DateField(blank=True, null=True)),
+                ('tva_pct', models.DecimalField(decimal_places=2, default=20, max_digits=5)),
+                ('montant_ht', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('montant_tva', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('montant_ttc', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('objet', models.CharField(blank=True, max_length=300)),
+                ('conditions', models.TextField(blank=True)),
+                ('note', models.TextField(blank=True)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('cree_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+                ('projet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='devis', to='info_dev.projet')),
+            ],
+            options={'ordering': ['-date_devis']},
+        ),
+        migrations.CreateModel(
+            name='LigneDevis',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('designation', models.CharField(max_length=255)),
+                ('unite', models.CharField(blank=True, default='forfait', max_length=30)),
+                ('quantite', models.DecimalField(decimal_places=3, default=1, max_digits=10)),
+                ('prix_unitaire', models.DecimalField(decimal_places=2, max_digits=12)),
+                ('montant_ht', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('devis', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lignes', to='info_dev.devis')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Facture',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('numero', models.CharField(blank=True, max_length=30, unique=True)),
+                ('type_facture', models.CharField(choices=[
+                    ('acompte','Acompte'),('jalon','Facturation par jalon'),
+                    ('solde','Solde / Finale'),('mensuelle','Maintenance mensuelle'),('avoir','Avoir')], default='jalon', max_length=15)),
+                ('statut', models.CharField(choices=[
+                    ('brouillon','Brouillon'),('envoyee','Envoyée'),('payee','Payée'),
+                    ('partielle','Paiement partiel'),('retard','En retard'),('annulee','Annulée')], default='brouillon', max_length=15)),
+                ('emetteur_nom', models.CharField(default="R-CYBER Info-Dev", max_length=200)),
+                ('emetteur_adresse', models.TextField(blank=True)),
+                ('emetteur_tel', models.CharField(blank=True, max_length=30)),
+                ('emetteur_email', models.EmailField(blank=True)),
+                ('emetteur_nif', models.CharField(blank=True, max_length=50)),
+                ('client_nom', models.CharField(max_length=200)),
+                ('client_adresse', models.TextField(blank=True)),
+                ('date_emission', models.DateField(default=django.utils.timezone.now)),
+                ('date_echeance', models.DateField(blank=True, null=True)),
+                ('date_paiement', models.DateField(blank=True, null=True)),
+                ('tva_pct', models.DecimalField(decimal_places=2, default=20, max_digits=5)),
+                ('montant_ht', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('montant_tva', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('montant_ttc', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('montant_paye', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('jalon', models.CharField(blank=True, max_length=200)),
+                ('objet', models.CharField(blank=True, max_length=300)),
+                ('conditions', models.TextField(blank=True)),
+                ('note', models.TextField(blank=True)),
+                ('cree_le', models.DateTimeField(auto_now_add=True)),
+                ('modifie_le', models.DateTimeField(auto_now=True)),
+                ('cree_par', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.user')),
+                ('devis_origine', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='factures', to='info_dev.devis')),
+                ('projet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='factures', to='info_dev.projet')),
+            ],
+            options={'ordering': ['-date_emission']},
+        ),
+        migrations.CreateModel(
+            name='LigneFacture',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True)),
+                ('designation', models.CharField(max_length=255)),
+                ('unite', models.CharField(blank=True, default='forfait', max_length=30)),
+                ('quantite', models.DecimalField(decimal_places=3, default=1, max_digits=10)),
+                ('prix_unitaire', models.DecimalField(decimal_places=2, max_digits=12)),
+                ('montant_ht', models.DecimalField(decimal_places=2, default=0, max_digits=14)),
+                ('facture', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lignes', to='info_dev.facture')),
+            ],
+        ),
+    ]

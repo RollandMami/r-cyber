@@ -457,17 +457,29 @@ function render() {
             bar.dataset.id  = t.id;
 
             // ── Couleur selon statut deadline ──────────────────────
-            const deadline   = parseDate(t.fin);
-            const isFinished = t.avancement >= 100;
-            const isOverdue  = !isFinished && today > deadline;
+            const deadline    = parseDate(t.fin);
+            const tacheStart  = parseDate(t.debut);
+            const isFinished  = t.avancement >= 100;
+            const isOverdue   = !isFinished && today > deadline;   // passé + pas fini
+            const isDueToday  = !isFinished                         // deadline = aujourd'hui + pas fini
+                                && deadline.getTime() === today.getTime();
+            const isNotStarted = t.avancement === 0                 // pas encore commencé
+                                && tacheStart > today;              // début dans le futur
 
-            if (isOverdue) {
-                // Hors deadline et pas terminé → rouge
+            if (isNotStarted) {
+                // À faire — début futur → bleu
+                bar.style.background = '#3b82f6';
+            } else if (isDueToday) {
+                // Deadline aujourd'hui et pas terminé → jaune/ambre
+                bar.style.background = '#f59e0b';
+            } else if (isOverdue) {
+                // Passé la deadline et pas terminé → rouge
                 bar.style.background = '#ef4444';
             } else if (isFinished && today <= deadline) {
                 // Terminé avant/à la deadline → vert
                 bar.style.background = '#22c55e';
             } else {
+                // En cours dans les délais → couleur du projet
                 bar.style.background = t.couleur;
             }
 

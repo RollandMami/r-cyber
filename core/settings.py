@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 	'apps.home.apps.HomeConfig',
 	'apps.construction.apps.ConstructionConfig',
 	'apps.bureau_etude.apps.BureauEtudeConfig',
+	'apps.info_dev.apps.InfoDevConfig',
 	
 	# rest framework
 	'rest_framework',

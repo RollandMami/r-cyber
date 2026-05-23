@@ -1,0 +1,42 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}Devis — {{ projet.titre }}{% endblock %}
+{% block sb_id_devis %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Devis</li>
+        </ol></nav>
+        <h1><i class="fas fa-file-invoice me-2" style="color:#d97706;"></i>Devis</h1>
+    </div>
+    <a href="{% url 'info_dev:devis_create' projet_pk=projet.pk %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Nouveau</a>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.85rem;">
+            <thead style="background:#f8fafc;">
+                <tr><th class="px-3 py-2">Numéro</th><th>Objet</th><th>Date</th><th class="text-end">Montant TTC</th><th class="text-center">Statut</th><th class="text-end pe-3">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for d in devis %}
+                <tr>
+                    <td class="px-3"><a href="{% url 'info_dev:devis_detail' pk=d.pk %}" style="font-weight:700;color:#0a1628;text-decoration:none;">{{ d.numero }}</a></td>
+                    <td style="color:#64748b;font-size:.8rem;">{{ d.objet|truncatechars:45 }}</td>
+                    <td style="color:#64748b;">{{ d.date_devis|date:"d/m/Y" }}</td>
+                    <td class="text-end" style="font-weight:700;">{{ d.montant_ttc|floatformat:0 }} Ar</td>
+                    <td class="text-center"><span class="badge {% if d.statut == 'accepte' %}bg-success{% elif d.statut == 'refuse' %}bg-danger{% elif d.statut == 'envoye' %}bg-primary{% elif d.statut == 'expire' %}bg-warning text-dark{% else %}bg-secondary{% endif %}" style="font-size:.7rem;">{{ d.get_statut_display }}</span></td>
+                    <td class="text-end pe-3">
+                        <a href="{% url 'info_dev:devis_detail' pk=d.pk %}" class="btn btn-outline-secondary btn-sm me-1"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'info_dev:devis_print' pk=d.pk %}" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="fas fa-print"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-file-invoice fa-2x d-block mb-2 opacity-20"></i>Aucun devis.<br><a href="{% url 'info_dev:devis_create' projet_pk=projet.pk %}" class="btn btn-primary btn-sm mt-2"><i class="fas fa-plus me-1"></i>Créer</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

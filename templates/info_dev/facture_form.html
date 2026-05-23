@@ -1,0 +1,77 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ action }} facture — Info-Dev{% endblock %}
+{% block sb_id_factures %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">{{ action }} facture</li>
+        </ol></nav>
+        <h1><i class="fas fa-receipt me-2" style="color:#22c55e;"></i>{{ action }} une facture</h1>
+    </div>
+</div>
+<form method="post">{% csrf_token %}
+<div class="row g-3" style="max-width:960px;">
+    <div class="col-12"><div class="card p-4"><div class="row g-3">
+        <div class="col-md-3"><label class="form-label fw-bold">Type</label>{{ form.type_facture }}</div>
+        <div class="col-md-3"><label class="form-label fw-bold">Statut</label>{{ form.statut }}</div>
+        <div class="col-md-6"><label class="form-label fw-bold">Objet</label>{{ form.objet }}</div>
+        <div class="col-md-12"><label class="form-label fw-bold">Jalon facturé</label>{{ form.jalon }}</div>
+        <div class="col-md-3"><label class="form-label fw-bold">TVA (%)</label>{{ form.tva_pct }}</div>
+        <div class="col-md-3"><label class="form-label fw-bold">Date émission</label>{{ form.date_emission }}</div>
+        <div class="col-md-3"><label class="form-label fw-bold">Échéance</label>{{ form.date_echeance }}</div>
+    </div></div></div>
+    <div class="col-md-6"><div class="card p-4"><h6 class="fw-bold mb-3" style="color:#6366f1;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-building me-2"></i>Émetteur</h6>
+        <div class="row g-2">
+            <div class="col-12"><label class="form-label">Nom *</label>{{ form.emetteur_nom }}</div>
+            <div class="col-12"><label class="form-label">Adresse</label>{{ form.emetteur_adresse }}</div>
+            <div class="col-md-6"><label class="form-label">Téléphone</label>{{ form.emetteur_tel }}</div>
+            <div class="col-md-6"><label class="form-label">Email</label>{{ form.emetteur_email }}</div>
+            <div class="col-12"><label class="form-label">NIF/STAT</label>{{ form.emetteur_nif }}</div>
+        </div>
+    </div></div>
+    <div class="col-md-6"><div class="card p-4"><h6 class="fw-bold mb-3" style="color:#0369a1;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-user me-2"></i>Client</h6>
+        <div class="row g-2">
+            <div class="col-12"><label class="form-label">Nom *</label>{{ form.client_nom }}</div>
+            <div class="col-12"><label class="form-label">Adresse</label>{{ form.client_adresse }}</div>
+        </div>
+    </div></div>
+    <div class="col-12"><div class="card p-4"><h6 class="fw-bold mb-3" style="color:#22c55e;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;"><i class="fas fa-list me-2"></i>Lignes</h6>
+        {{ formset.management_form }}
+        <div class="table-responsive"><table class="table mb-0" style="font-size:.84rem;">
+            <thead style="background:#f8fafc;"><tr><th class="py-2">Désignation *</th><th style="width:90px;">Unité</th><th style="width:100px;">Quantité</th><th style="width:120px;">P.U. HT</th><th style="width:120px;" class="text-end">Montant HT</th><th style="width:36px;"></th></tr></thead>
+            <tbody>
+                {% for f in formset %}
+                <tr class="fc-row">{% for h in f.hidden_fields %}{{ h }}{% endfor %}
+                    <td>{{ f.designation }}</td><td>{{ f.unite }}</td>
+                    <td><input type="number" name="{{ f.quantite.html_name }}" value="{{ f.quantite.value|default:1 }}" class="form-control form-control-sm fc-q" step="any" min="0" oninput="calcFc(this)"></td>
+                    <td><input type="number" name="{{ f.prix_unitaire.html_name }}" value="{{ f.prix_unitaire.value|default:'' }}" class="form-control form-control-sm fc-p" step="any" min="0" oninput="calcFc(this)"></td>
+                    <td class="text-end" style="font-weight:600;"><span class="fc-m">—</span></td>
+                    <td>{% if f.DELETE %}<label style="cursor:pointer;">{{ f.DELETE }}<i class="fas fa-times" style="color:#ef4444;"></i></label>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="background:#f8fafc;"><td colspan="4" class="py-2 text-end" style="font-size:.8rem;color:#64748b;">Total HT</td><td class="text-end" style="font-weight:700;" id="fcTHT">0 Ar</td><td></td></tr>
+                <tr style="background:#f8fafc;"><td colspan="4" class="py-1 text-end" style="font-size:.8rem;color:#94a3b8;">TVA (<span id="fcTvaPct">20</span>%)</td><td class="text-end" style="font-size:.82rem;" id="fcTVA">0 Ar</td><td></td></tr>
+                <tr style="background:#0a1628;color:#fff;"><td colspan="4" class="py-2 pe-3 text-end" style="font-weight:700;">Total TTC</td><td class="text-end" style="font-weight:800;" id="fcTTTC">0 Ar</td><td></td></tr>
+            </tfoot>
+        </table></div>
+    </div></div>
+    <div class="col-md-6"><div class="card p-3"><label class="form-label fw-bold">Conditions</label>{{ form.conditions }}</div></div>
+    <div class="col-md-6"><div class="card p-3"><label class="form-label fw-bold">Note</label>{{ form.note }}</div></div>
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+        <a href="{% url 'info_dev:facture_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+    </div>
+</div>
+</form>
+<script>
+function calcFc(i){const r=i.closest('tr');const q=parseFloat(r.querySelector('.fc-q')?.value||0);const p=parseFloat(r.querySelector('.fc-p')?.value||0);const h=isNaN(q)||isNaN(p)?0:q*p;r.querySelector('.fc-m').textContent=h.toLocaleString('fr-FR')+' Ar';calcFcT();}
+function calcFcT(){let t=0;document.querySelectorAll('.fc-row').forEach(r=>{const q=parseFloat(r.querySelector('.fc-q')?.value||0);const p=parseFloat(r.querySelector('.fc-p')?.value||0);if(!isNaN(q)&&!isNaN(p))t+=q*p;});const tv=parseFloat(document.querySelector('[name$="tva_pct"]')?.value||20);document.getElementById('fcTHT').textContent=t.toLocaleString('fr-FR')+' Ar';document.getElementById('fcTVA').textContent=(t*tv/100).toLocaleString('fr-FR')+' Ar';document.getElementById('fcTTTC').textContent=(t+t*tv/100).toLocaleString('fr-FR')+' Ar';const el=document.getElementById('fcTvaPct');if(el)el.textContent=isNaN(tv)?20:tv;}
+document.querySelector('[name$="tva_pct"]')?.addEventListener('input',calcFcT);
+document.querySelectorAll('.fc-q,.fc-p').forEach(el=>calcFc(el));
+</script>
+{% endblock %}

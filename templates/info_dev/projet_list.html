@@ -1,0 +1,173 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}Projets Info-Dev{% endblock %}
+{% block sb_id_projets %}active{% endblock %}
+
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-code me-2" style="color:#6366f1;"></i>Projets Info-Dev</h1>
+        <p class="text-muted mb-0" style="font-size:.85rem;">{{ projets|length }} projet(s)</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'info_dev:client_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-users me-1"></i>Clients
+        </a>
+        <a href="{% url 'info_dev:projet_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouveau projet
+        </a>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-folder-open"></i></div>
+        <div class="stat-card-val">{{ stats.total }}</div>
+        <div class="stat-card-lbl">Projets totaux</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-code-branch"></i></div>
+        <div class="stat-card-val">{{ stats.en_cours }}</div>
+        <div class="stat-card-lbl">En cours</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-rocket"></i></div>
+        <div class="stat-card-val">{{ stats.livres }}</div>
+        <div class="stat-card-lbl">Livrés</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div class="stat-card-val" style="font-size:1.1rem;">{{ stats.ca_facture|floatformat:0 }}</div>
+        <div class="stat-card-lbl">CA facturé (Ar)</div>
+    </div>
+    {% if stats.bugs_ouverts > 0 %}
+    <div class="stat-card" style="border-color:#fecaca;">
+        <div class="stat-card-icon" style="background:#fef2f2;color:#ef4444;"><i class="fas fa-bug"></i></div>
+        <div class="stat-card-val" style="color:#ef4444;">{{ stats.bugs_ouverts }}</div>
+        <div class="stat-card-lbl">Bugs ouverts</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filtres -->
+<div class="card p-3 mb-3">
+    <form method="get" class="d-flex gap-2 flex-wrap align-items-end">
+        <div style="flex:1;min-width:180px;">
+            <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Titre, référence, client…">
+        </div>
+        <select name="statut" class="form-select form-select-sm" style="width:150px;">
+            <option value="">Tous statuts</option>
+            {% for val,lbl in statuts %}<option value="{{ val }}" {% if statut_filter == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+        </select>
+        <select name="type" class="form-select form-select-sm" style="width:170px;">
+            <option value="">Tous types</option>
+            {% for val,lbl in types %}<option value="{{ val }}" {% if type_filter == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-primary btn-sm">Filtrer</button>
+        {% if q or statut_filter or type_filter %}
+        <a href="{% url 'info_dev:projet_list' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-times me-1"></i>Reset</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Grille -->
+{% if projets %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem;">
+    {% for p in projets %}
+    <div class="card" style="overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
+         onclick="location.href='{% url 'info_dev:projet_detail' pk=p.pk %}'"
+         onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,.1)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
+
+        <!-- Barre de priorité -->
+        <div style="height:3px;background:{% if p.priorite == 'haute' %}#ef4444{% elif p.priorite == 'basse' %}#94a3b8{% else %}#6366f1{% endif %};"></div>
+
+        <div style="padding:1rem 1.1rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem;">
+                <!-- Type badge -->
+                <span style="font-size:.63rem;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;">
+                    <i class="fas fa-{% if p.type_projet == 'web' %}globe{% elif p.type_projet == 'script' %}terminal{% elif p.type_projet == 'logiciel' %}desktop{% elif p.type_projet == 'api' %}plug{% else %}tools{% endif %} me-1"></i>
+                    {{ p.get_type_projet_display }}
+                </span>
+                <!-- Statut badge -->
+                <span style="font-size:.68rem;font-weight:700;padding:.2rem .55rem;border-radius:12px;white-space:nowrap;
+                    {% if p.statut == 'en_cours' %}background:#ede9fe;color:#7c3aed;
+                    {% elif p.statut == 'livre' %}background:#dcfce7;color:#15803d;
+                    {% elif p.statut == 'recette' %}background:#fef3c7;color:#92400e;
+                    {% elif p.statut == 'maintenance' %}background:#e0f2fe;color:#0369a1;
+                    {% elif p.statut == 'archive' %}background:#f1f5f9;color:#64748b;
+                    {% else %}background:#f8f9fa;color:#94a3b8;{% endif %}">
+                    {{ p.get_statut_display }}
+                </span>
+            </div>
+
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.97rem;margin-bottom:.2rem;line-height:1.2;">{{ p.titre }}</div>
+            <div style="font-size:.75rem;color:#64748b;margin-bottom:.5rem;">
+                <i class="fas fa-tag me-1"></i>{{ p.reference }}
+                {% if p.client %}&nbsp;·&nbsp;<i class="fas fa-user me-1"></i>{{ p.client.nom }}{% endif %}
+            </div>
+
+            {% if p.stack_technique %}
+            <div style="font-size:.72rem;color:#94a3b8;margin-bottom:.6rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                <i class="fas fa-layer-group me-1"></i>{{ p.stack_technique }}
+            </div>
+            {% endif %}
+
+            <!-- Avancement -->
+            <div style="display:flex;justify-content:space-between;font-size:.72rem;color:#64748b;margin-bottom:3px;">
+                <span>Avancement tâches</span>
+                <span style="font-weight:700;color:#1a2332;">{{ p.avancement }}%</span>
+            </div>
+            <div class="progress-rc mb-2">
+                <div class="bar" style="width:{{ p.avancement }}%;background:#6366f1;"></div>
+            </div>
+
+            <!-- Alertes -->
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem;">
+                {% if p.nb_bugs_ouverts > 0 %}
+                <span style="font-size:.68rem;background:#fef2f2;color:#ef4444;padding:.15rem .5rem;border-radius:6px;font-weight:600;">
+                    <i class="fas fa-bug me-1"></i>{{ p.nb_bugs_ouverts }} bug(s)
+                </span>
+                {% endif %}
+                {% if p.est_en_retard %}
+                <span style="font-size:.68rem;background:#fef2f2;color:#ef4444;padding:.15rem .5rem;border-radius:6px;font-weight:600;">
+                    <i class="fas fa-clock me-1"></i>En retard
+                </span>
+                {% elif p.nb_jours_restants is not None and p.nb_jours_restants <= 7 and p.nb_jours_restants >= 0 %}
+                <span style="font-size:.68rem;background:#fef3c7;color:#92400e;padding:.15rem .5rem;border-radius:6px;font-weight:600;">
+                    <i class="fas fa-hourglass-half me-1"></i>J-{{ p.nb_jours_restants }}
+                </span>
+                {% endif %}
+                {% if p.repo_url %}
+                <a href="{{ p.repo_url }}" target="_blank" onclick="event.stopPropagation()"
+                   style="font-size:.68rem;background:#f1f5f9;color:#475569;padding:.15rem .5rem;border-radius:6px;text-decoration:none;">
+                    <i class="fas fa-code-branch me-1"></i>Repo
+                </a>
+                {% endif %}
+                {% if p.url_prod %}
+                <a href="{{ p.url_prod }}" target="_blank" onclick="event.stopPropagation()"
+                   style="font-size:.68rem;background:#dcfce7;color:#15803d;padding:.15rem .5rem;border-radius:6px;text-decoration:none;">
+                    <i class="fas fa-external-link-alt me-1"></i>Prod
+                </a>
+                {% endif %}
+            </div>
+
+            <div style="display:flex;gap:.4rem;">
+                <a href="{% url 'info_dev:projet_detail' pk=p.pk %}" class="btn btn-primary btn-sm" style="flex:1;text-align:center;" onclick="event.stopPropagation()">
+                    <i class="fas fa-eye me-1"></i>Ouvrir
+                </a>
+                <a href="{% url 'info_dev:tache_list' projet_pk=p.pk %}" class="btn btn-outline-secondary btn-sm" title="Kanban" onclick="event.stopPropagation()"><i class="fas fa-columns"></i></a>
+                <a href="{% url 'info_dev:bug_list' projet_pk=p.pk %}" class="btn btn-outline-secondary btn-sm" title="Bugs" onclick="event.stopPropagation()"><i class="fas fa-bug"></i></a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="padding:4rem;text-align:center;color:#64748b;">
+    <i class="fas fa-code fa-3x mb-3 d-block opacity-20"></i>
+    Aucun projet Info-Dev.
+    <br><a href="{% url 'info_dev:projet_create' %}" class="btn btn-primary btn-sm mt-3"><i class="fas fa-plus me-1"></i>Créer le premier</a>
+</div>
+{% endif %}
+{% endblock %}

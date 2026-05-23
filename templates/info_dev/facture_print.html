@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>{{ facture.numero }}</title>
+<style>
+@media print{.np{display:none!important;}body{margin:0;}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a2e;background:#fff;}
+.np{position:fixed;top:1rem;right:1rem;z-index:999;display:flex;gap:.5rem;}
+.bp{padding:.5rem 1.25rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:.88rem;}
+.bp.p{background:#22c55e;color:#fff;} .bp.s{background:#f1f5f9;color:#475569;}
+.page{max-width:794px;margin:0 auto;padding:40px 48px;min-height:100vh;position:relative;}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;}
+.li{display:flex;align-items:center;gap:10px;}
+.lic{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#22c55e);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;font-weight:900;}
+.ln{font-size:1.3rem;font-weight:900;color:#0a1628;} .ls{font-size:.65rem;color:#64748b;letter-spacing:.08em;text-transform:uppercase;}
+.nb{text-align:right;} .nt{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;border:1px solid #dde6f0;border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:4px;}
+.nn{font-size:1.5rem;font-weight:900;color:#0a1628;display:block;} .nd{font-size:.75rem;color:#64748b;}
+.st{height:3px;background:linear-gradient(90deg,#6366f1,#22c55e);margin-bottom:28px;border-radius:2px;}
+.pts{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;}
+.pt{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#6366f1;margin-bottom:6px;}
+.pn{font-weight:700;font-size:.95rem;margin-bottom:3px;} .pi{font-size:.78rem;color:#475569;line-height:1.6;}
+.ob{margin-bottom:20px;} .ol{font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;} .ov{font-size:.88rem;font-weight:600;}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+thead tr{background:#0a1628;color:#fff;} thead th{padding:8px 10px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+tbody tr{border-bottom:1px solid #f1f5f9;} tbody td{padding:8px 10px;font-size:.82rem;}
+.tr{text-align:right;} .tc{text-align:center;}
+.tot{display:flex;justify-content:flex-end;margin-bottom:24px;}
+.tb{min-width:240px;border:1px solid #eef3f9;border-radius:8px;overflow:hidden;}
+.tr2{display:flex;justify-content:space-between;padding:6px 14px;font-size:.82rem;border-bottom:1px solid #f1f5f9;}
+.tr2:last-child{background:#0a1628;color:#fff;font-weight:800;font-size:.95rem;padding:10px 14px;border:none;}
+.stm{position:absolute;top:80px;right:40px;transform:rotate(-20deg);border:3px solid;border-radius:6px;padding:4px 12px;font-size:1rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;opacity:.18;pointer-events:none;}
+.stm.payee{color:#15803d;border-color:#15803d;} .stm.annulee{color:#b91c1c;border-color:#b91c1c;}
+.co{font-size:.75rem;color:#64748b;margin-bottom:16px;line-height:1.6;}
+.ft{margin-top:36px;padding-top:16px;border-top:1px solid #eef3f9;text-align:center;font-size:.7rem;color:#94a3b8;}
+</style></head><body>
+<div class="np">
+    <button class="bp s" onclick="window.close()">← Retour</button>
+    <button class="bp p" onclick="window.print()">🖨 Imprimer / PDF</button>
+</div>
+<div class="page">
+    {% if facture.statut == 'payee' %}<div class="stm payee">PAYÉE</div>{% elif facture.statut == 'annulee' %}<div class="stm annulee">ANNULÉE</div>{% endif %}
+    <div class="hdr">
+        <div class="li"><div class="lic">RC</div><div><div class="ln">{{ facture.emetteur_nom }}</div><div class="ls">Info-Dev</div></div></div>
+        <div class="nb"><span class="nt">{{ facture.get_type_facture_display }}</span><span class="nn">{{ facture.numero }}</span><div class="nd">Émise le {{ facture.date_emission|date:"d/m/Y" }}{% if facture.date_echeance %} · Échéance {{ facture.date_echeance|date:"d/m/Y" }}{% endif %}</div></div>
+    </div>
+    <div class="st"></div>
+    <div class="pts">
+        <div><div class="pt">Émetteur</div><div class="pn">{{ facture.emetteur_nom }}</div><div class="pi">{{ facture.emetteur_adresse|linebreaksbr }}<br>{% if facture.emetteur_tel %}Tél : {{ facture.emetteur_tel }}<br>{% endif %}{% if facture.emetteur_email %}{{ facture.emetteur_email }}<br>{% endif %}{% if facture.emetteur_nif %}NIF/STAT : {{ facture.emetteur_nif }}{% endif %}</div></div>
+        <div><div class="pt">Facturé à</div><div class="pn">{{ facture.client_nom }}</div><div class="pi">{{ facture.client_adresse|linebreaksbr }}</div></div>
+    </div>
+    {% if facture.jalon or facture.objet %}<div class="ob"><div class="ol">{% if facture.jalon %}Jalon{% else %}Objet{% endif %}</div><div class="ov">{{ facture.jalon|default:facture.objet }}</div></div>{% endif %}
+    <table><thead><tr><th style="width:45%;">Désignation</th><th class="tc" style="width:10%;">Unité</th><th class="tc" style="width:10%;">Qté</th><th class="tr" style="width:15%;">P.U. HT</th><th class="tr" style="width:20%;">Montant HT</th></tr></thead>
+    <tbody>{% for l in facture.lignes.all %}<tr><td>{{ l.designation }}</td><td class="tc">{{ l.unite|default:"—" }}</td><td class="tc">{{ l.quantite|floatformat:2 }}</td><td class="tr">{{ l.prix_unitaire|floatformat:0 }} Ar</td><td class="tr" style="font-weight:600;">{{ l.montant_ht|floatformat:0 }} Ar</td></tr>{% empty %}<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:1rem;">Aucune ligne.</td></tr>{% endfor %}</tbody>
+    </table>
+    <div class="tot"><div class="tb"><div class="tr2"><span style="color:#64748b;">Total HT</span><strong>{{ facture.montant_ht|floatformat:0 }} Ar</strong></div><div class="tr2"><span style="color:#64748b;">TVA ({{ facture.tva_pct }}%)</span><strong>{{ facture.montant_tva|floatformat:0 }} Ar</strong></div><div class="tr2"><span>Total TTC</span><strong>{{ facture.montant_ttc|floatformat:0 }} Ar</strong></div></div></div>
+    {% if facture.conditions %}<div class="co"><strong style="color:#475569;">Conditions :</strong><br>{{ facture.conditions|linebreaksbr }}</div>{% endif %}
+    {% if facture.note %}<div class="co"><strong style="color:#475569;">Note :</strong><br>{{ facture.note|linebreaksbr }}</div>{% endif %}
+    <div class="ft">{{ facture.emetteur_nom }}{% if facture.emetteur_adresse %} — {{ facture.emetteur_adresse|truncatechars:80 }}{% endif %}{% if facture.emetteur_nif %} — NIF/STAT : {{ facture.emetteur_nif }}{% endif %}<br>Document généré par R-CYBER Info-Dev — {{ facture.date_emission|date:"d/m/Y" }}</div>
+</div></body></html>

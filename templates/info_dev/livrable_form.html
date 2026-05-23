@@ -1,0 +1,39 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ action }} livrable — Info-Dev{% endblock %}
+{% block sb_id_livrables %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:livrable_list' projet_pk=projet.pk %}">Livrables</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-archive me-2" style="color:#15803d;"></i>{{ action }} un livrable</h1>
+    </div>
+</div>
+<div style="max-width:640px;"><div class="card p-4">
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Type</label>{{ form.type_livrable }}</div>
+        <div class="col-md-6"><label class="form-label">Version *</label>{{ form.version }}</div>
+        <div class="col-12"><label class="form-label">Titre *</label>{{ form.titre }}</div>
+        <div class="col-12"><label class="form-label">Fichier</label>{{ form.fichier }}</div>
+        <div class="col-12"><label class="form-label">URL externe (GitHub release, CDN…)</label>{{ form.url_externe }}</div>
+        <div class="col-12"><label class="form-label">Description</label>{{ form.description }}</div>
+        <div class="col-12"><label class="form-label">Notes de version (changelog)</label>{{ form.changelog }}</div>
+        <div class="col-md-6"><label class="form-label">Date de livraison</label>{{ form.date_livraison }}</div>
+        <div class="col-md-6">
+            <label class="form-label" style="display:flex;align-items:center;gap:.5rem;margin-top:1.75rem;">
+                {{ form.livre_au_client }} Livré au client
+            </label>
+        </div>
+        <div class="col-12 d-flex gap-2 mt-1">
+            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-upload me-2"></i>{{ action }}</button>
+            <a href="{% url 'info_dev:livrable_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </div>
+    </form>
+</div></div>
+{% endblock %}

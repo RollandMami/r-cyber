@@ -557,3 +557,97 @@ def api_patrimoines_sans_site(request):
 def api_tous_patrimoines(request):
     pats = Patrimoine.objects.filter(site__isnull=True).values('id', 'nom', 'adresse')
     return JsonResponse({'patrimoines': list(pats)})
+
+
+@login_required
+def api_export_data(request, pk):
+    """
+    Retourne en JSON toutes les données nécessaires à l'export Excel.
+    Utilise json.dumps → pas de risque de JSON invalide côté template.
+    """
+    import json as _json
+    from django.http import JsonResponse
+
+    patrimoine = get_object_or_404(Patrimoine, pk=pk)
+
+    # ── Revêtements ───────────────────────────────────────────
+    revetements_qs = (RevetementMur.objects
+                      .filter(patrimoine=patrimoine)
+                      .select_related('etage', 'piece')
+                      .order_by('etage__niveau', 'type_revetement', 'nature', 'nom'))
+
+    revetements_data = []
+    for r in revetements_qs:
+        revetements_data.append({
+            'batiment':   patrimoine.nom,
+            'etage':      r.etage.nom if r.etage else '—',
+            'piece':      r.piece.nom if r.piece else '—',
+            'type':       r.get_type_revetement_display(),
+            'nature':     r.nature or '—',
+            'materiau':   r.materiau or '—',
+            'surface_m2': float(r.surface) if r.surface else None,
+        })
+
+    # ── Équipements ───────────────────────────────────────────
+    equipements_qs = EquipementOuverture.objects.filter(patrimoine=patrimoine).select_related('etage')
+    groupes_eq     = _build_equipment_groups(equipements_qs)
+
+    equipements_data = []
+    for groupe in groupes_eq:
+        for ligne in groupe['lignes']:
+            equipements_data.append({
+                'categorie':    groupe['label'],
+                'nomenclature': ligne['nomenclature'],
+                'quantite':     ligne['quantite'],
+                'longueur_cm':  float(ligne['longueur']) if ligne.get('longueur') else None,
+                'largeur_cm':   float(ligne['largeur'])  if ligne.get('largeur')  else None,
+                'hauteur_cm':   float(ligne['hauteur'])  if ligne.get('hauteur')  else None,
+                'materiau':     ligne.get('materiau') or '',
+                'marque':       ligne.get('marque')   or '',
+                'vitrage':      ligne.get('vitrage')  or '',
+                'puissance':    ligne.get('puissance') or '',
+            })
+
+    # ── Récaps ────────────────────────────────────────────────
+    # Revêtements par type
+    recap_rev = []
+    from collections import defaultdict
+    rev_buckets = defaultdict(lambda: {'items': 0, 'surface': 0.0, 'label': ''})
+    TYPE_LABELS = {'mur': 'Murs', 'sol': 'Sols', 'plafond': 'Plafonds', 'autre': 'Autres'}
+    for r in revetements_qs:
+        b = rev_buckets[r.type_revetement]
+        b['label'] = TYPE_LABELS.get(r.type_revetement, r.type_revetement)
+        b['items'] += 1
+        if r.surface:
+            b['surface'] += float(r.surface)
+    for type_key in ('mur', 'sol', 'plafond', 'autre'):
+        if type_key in rev_buckets:
+            b = rev_buckets[type_key]
+            recap_rev.append({
+                'type':        b['label'],
+                'nb_elements': b['items'],
+                'surface_m2':  round(b['surface'], 2) if b['surface'] else None,
+            })
+
+    # Équipements par catégorie
+    recap_eq = []
+    for groupe in groupes_eq:
+        total_qte = sum(l['quantite'] for l in groupe['lignes'])
+        recap_eq.append({
+            'categorie':       groupe['label'],
+            'types_distincts': len(groupe['lignes']),
+            'quantite_totale': total_qte,
+        })
+
+    surface = patrimoine.surface_ifc() or patrimoine.surface_totale
+    data = {
+        'batiment': patrimoine.nom,
+        'adresse':  patrimoine.adresse or '',
+        'annee':    str(patrimoine.annee_construction) if patrimoine.annee_construction else '',
+        'surface':  str(round(float(surface), 2)) if surface else '',
+        'revetements':        revetements_data,
+        'equipements':        equipements_data,
+        'recap_revetements':  recap_rev,
+        'recap_equipements':  recap_eq,
+    }
+    return JsonResponse(data)

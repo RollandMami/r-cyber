@@ -1,0 +1,70 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ facture.numero }} — Facture Info-Dev{% endblock %}
+{% block sb_id_factures %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=facture.projet.pk %}">{{ facture.projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:facture_list' projet_pk=facture.projet.pk %}">Factures</a></li>
+            <li class="breadcrumb-item active">{{ facture.numero }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-receipt me-2" style="color:#22c55e;"></i>{{ facture.numero }}</h1>
+        <div style="font-size:.78rem;color:#64748b;">{{ facture.get_type_facture_display }} · Émise le {{ facture.date_emission|date:"d/m/Y" }}{% if facture.date_echeance %} · Échéance {{ facture.date_echeance|date:"d/m/Y" }}{% if facture.est_en_retard %} <span style="color:#ef4444;font-weight:700;">⚠ EN RETARD</span>{% endif %}{% endif %}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'info_dev:facture_print' pk=facture.pk %}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-print me-1"></i>Imprimer / PDF</a>
+    </div>
+</div>
+{% if facture.est_en_retard %}
+<div class="alert alert-danger mb-3" style="border-radius:10px;font-size:.88rem;"><i class="fas fa-exclamation-triangle me-2"></i>Facture en retard. Restant dû : <strong>{{ facture.montant_restant|floatformat:0 }} Ar</strong></div>
+{% endif %}
+<div class="row g-3">
+<div class="col-lg-8">
+    <div class="card mb-3" style="overflow:hidden;">
+        <div style="height:4px;background:linear-gradient(90deg,#6366f1,#22c55e);"></div>
+        <div class="p-4">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+                <div><div style="font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;border:1px solid rgba(99,102,241,.2);border-radius:4px;padding:2px 8px;display:inline-block;margin-bottom:.4rem;">{{ facture.get_type_facture_display }}</div><div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;">{{ facture.numero }}</div></div>
+                <span class="badge {% if facture.statut == 'payee' %}bg-success{% elif facture.statut == 'retard' %}bg-danger{% elif facture.statut == 'envoyee' %}bg-primary{% elif facture.statut == 'partielle' %}bg-warning text-dark{% else %}bg-secondary{% endif %}" style="font-size:.85rem;padding:.45rem .9rem;">{{ facture.get_statut_display }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+                <div style="background:#f8fafc;border-radius:10px;padding:1rem;"><div style="font-size:.63rem;font-weight:700;text-transform:uppercase;color:#6366f1;letter-spacing:.08em;margin-bottom:.5rem;">Émetteur</div><div style="font-weight:700;">{{ facture.emetteur_nom }}</div>{% if facture.emetteur_adresse %}<div style="font-size:.8rem;color:#64748b;">{{ facture.emetteur_adresse|linebreaksbr }}</div>{% endif %}{% if facture.emetteur_nif %}<div style="font-size:.75rem;color:#94a3b8;">NIF/STAT : {{ facture.emetteur_nif }}</div>{% endif %}</div>
+                <div style="background:#f8fafc;border-radius:10px;padding:1rem;"><div style="font-size:.63rem;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.08em;margin-bottom:.5rem;">Client</div><div style="font-weight:700;">{{ facture.client_nom }}</div>{% if facture.client_adresse %}<div style="font-size:.8rem;color:#64748b;">{{ facture.client_adresse|linebreaksbr }}</div>{% endif %}</div>
+            </div>
+            {% if facture.objet or facture.jalon %}<div style="margin-bottom:1.25rem;padding:.75rem 1rem;border-left:3px solid #22c55e;background:#f0fdf4;border-radius:0 8px 8px 0;"><div style="font-size:.7rem;color:#94a3b8;margin-bottom:.2rem;">{% if facture.jalon %}Jalon{% else %}Objet{% endif %}</div><div style="font-size:.9rem;font-weight:600;">{{ facture.jalon|default:facture.objet }}</div></div>{% endif %}
+            <table style="width:100%;border-collapse:collapse;margin-bottom:1rem;">
+                <thead><tr style="background:#0a1628;color:#fff;"><th style="padding:.6rem .75rem;font-size:.72rem;border-radius:6px 0 0 6px;">Désignation</th><th style="padding:.6rem .5rem;font-size:.72rem;text-align:center;">Unité</th><th style="padding:.6rem .5rem;font-size:.72rem;text-align:center;">Qté</th><th style="padding:.6rem .5rem;font-size:.72rem;text-align:right;">P.U. HT</th><th style="padding:.6rem .75rem;font-size:.72rem;text-align:right;border-radius:0 6px 6px 0;">Montant HT</th></tr></thead>
+                <tbody>
+                    {% for l in facture.lignes.all %}<tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:.55rem .75rem;font-size:.84rem;font-weight:500;">{{ l.designation }}</td><td style="padding:.55rem .5rem;font-size:.82rem;text-align:center;color:#94a3b8;">{{ l.unite|default:"—" }}</td><td style="padding:.55rem .5rem;font-size:.82rem;text-align:center;">{{ l.quantite|floatformat:2 }}</td><td style="padding:.55rem .5rem;font-size:.82rem;text-align:right;">{{ l.prix_unitaire|floatformat:0 }} Ar</td><td style="padding:.55rem .75rem;font-size:.84rem;text-align:right;font-weight:700;">{{ l.montant_ht|floatformat:0 }} Ar</td></tr>{% empty %}<tr><td colspan="5" style="padding:1.5rem;text-align:center;color:#94a3b8;">Aucune ligne.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+            <div style="display:flex;justify-content:flex-end;"><div style="min-width:240px;border:1px solid #eef3f9;border-radius:10px;overflow:hidden;"><div style="display:flex;justify-content:space-between;padding:.5rem .9rem;font-size:.82rem;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Total HT</span><strong>{{ facture.montant_ht|floatformat:0 }} Ar</strong></div><div style="display:flex;justify-content:space-between;padding:.5rem .9rem;font-size:.82rem;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">TVA ({{ facture.tva_pct }}%)</span><span>{{ facture.montant_tva|floatformat:0 }} Ar</span></div><div style="display:flex;justify-content:space-between;padding:.7rem .9rem;background:#0a1628;color:#fff;font-weight:800;"><span>Total TTC</span><span style="font-size:1rem;">{{ facture.montant_ttc|floatformat:0 }} Ar</span></div></div></div>
+        </div>
+    </div>
+</div>
+<div class="col-lg-4">
+    <div class="card p-3 mb-3"><h6 class="fw-bold mb-3">Statut paiement</h6>
+        <form method="post" action="{% url 'info_dev:facture_statut' pk=facture.pk %}">{% csrf_token %}
+            <select name="statut" class="form-select form-select-sm mb-2">{% for val,lbl in facture.STATUT %}<option value="{{ val }}" {% if facture.statut == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}</select>
+            <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-sync me-1"></i>Mettre à jour</button>
+        </form>
+    </div>
+    <div class="card p-3 mb-3"><h6 class="fw-bold mb-3">Suivi financier</h6>
+        <div style="font-size:.83rem;">
+            <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Montant TTC</span><strong>{{ facture.montant_ttc|floatformat:0 }} Ar</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid #f1f5f9;"><span style="color:#64748b;">Encaissé</span><strong style="color:#15803d;">{{ facture.montant_paye|floatformat:0 }} Ar</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:.5rem 0;background:#fef2f2;margin:0 -.5rem;padding-left:.5rem;padding-right:.5rem;border-radius:6px;margin-top:.25rem;"><span style="font-weight:700;color:#b91c1c;">Restant dû</span><strong style="color:#b91c1c;">{{ facture.montant_restant|floatformat:0 }} Ar</strong></div>
+        </div>
+        {% if facture.date_paiement %}<div style="font-size:.75rem;color:#15803d;margin-top:.75rem;text-align:center;"><i class="fas fa-check-circle me-1"></i>Payée le {{ facture.date_paiement|date:"d/m/Y" }}</div>{% endif %}
+    </div>
+    <div class="card p-3"><h6 class="fw-bold mb-2">Projet</h6>
+        <a href="{% url 'info_dev:projet_detail' pk=facture.projet.pk %}" style="display:flex;align-items:center;gap:.75rem;text-decoration:none;color:inherit;">
+            <div style="width:36px;height:36px;border-radius:9px;background:#ede9fe;color:#6366f1;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-code"></i></div>
+            <div><div style="font-size:.85rem;font-weight:600;">{{ facture.projet.titre }}</div><div style="font-size:.72rem;color:#94a3b8;">{{ facture.projet.reference }}</div></div>
+        </a>
+    </div>
+</div>
+</div>
+{% endblock %}

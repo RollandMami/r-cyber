@@ -1,0 +1,47 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}{{ action }} doc — Info-Dev{% endblock %}
+{% block sb_id_docs %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:doc_list' projet_pk=projet.pk %}">Documentation</a></li>
+            <li class="breadcrumb-item active">{{ action }}</li>
+        </ol></nav>
+        <h1><i class="fas fa-book me-2" style="color:#0369a1;"></i>{{ action }} documentation</h1>
+    </div>
+</div>
+<form method="post" enctype="multipart/form-data" style="max-width:800px;">{% csrf_token %}
+<div class="row g-3">
+    <div class="col-12"><div class="card p-4">
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Catégorie</label>{{ form.categorie }}</div>
+            <div class="col-md-4"><label class="form-label">Version</label>{{ form.version }}</div>
+            <div class="col-md-2">
+                <label class="form-label" style="display:flex;align-items:center;gap:.5rem;margin-top:1.75rem;">
+                    {{ form.publie }} Public
+                </label>
+            </div>
+            <div class="col-12"><label class="form-label">Titre *</label>{{ form.titre }}</div>
+            <div class="col-12">
+                <label class="form-label">Contenu *
+                    <span style="font-size:.72rem;font-weight:400;color:#94a3b8;margin-left:.5rem;">Markdown ou texte brut</span>
+                </label>
+                {{ form.contenu }}
+            </div>
+            <div class="col-12"><label class="form-label">Fichier annexe</label>{{ form.fichier }}</div>
+        </div>
+    </div></div>
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-2"></i>{{ action }}</button>
+        {% if doc %}
+        <a href="{% url 'info_dev:doc_detail' pk=doc.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        {% else %}
+        <a href="{% url 'info_dev:doc_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        {% endif %}
+    </div>
+</div>
+</form>
+{% endblock %}

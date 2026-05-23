@@ -1,0 +1,54 @@
+{% extends "info_dev/base_info_dev.html" %}
+{% block title %}Bugs — {{ projet.titre }}{% endblock %}
+{% block sb_id_bugs %}active{% endblock %}
+{% block id_content %}
+<div class="page-header">
+    <div>
+        <nav aria-label="breadcrumb"><ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'info_dev:projet_detail' pk=projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Bugs / Demandes</li>
+        </ol></nav>
+        <h1><i class="fas fa-bug me-2" style="color:#ef4444;"></i>Bugs & Demandes</h1>
+    </div>
+    <a href="{% url 'info_dev:bug_create' projet_pk=projet.pk %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Nouveau</a>
+</div>
+<div class="card mb-3 p-2">
+    <form method="get" class="d-flex gap-2 flex-wrap align-items-center">
+        <select name="statut" class="form-select form-select-sm" style="width:auto;">
+            <option value="">Tous statuts</option>
+            {% for val,lbl in statuts %}<option value="{{ val }}" {% if statut_filter == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-primary btn-sm">Filtrer</button>
+        {% if statut_filter %}<a href="{% url 'info_dev:bug_list' projet_pk=projet.pk %}" class="btn btn-outline-secondary btn-sm">Reset</a>{% endif %}
+    </form>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.84rem;">
+            <thead style="background:#f8fafc;">
+                <tr><th class="px-3 py-2">Titre</th><th>Type</th><th>Sévérité</th><th>Rapporté par</th><th>Date</th><th>Assigné</th><th class="text-center">Statut</th><th class="pe-3 text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for b in bugs %}
+                <tr>
+                    <td class="px-3"><a href="{% url 'info_dev:bug_detail' pk=b.pk %}" style="font-weight:600;color:#1a2332;text-decoration:none;">{{ b.titre }}</a></td>
+                    <td style="font-size:.78rem;color:#64748b;">{{ b.get_type_bug_display }}</td>
+                    <td><span style="font-size:.68rem;font-weight:700;padding:.15rem .45rem;border-radius:6px;{% if b.severite == 'critique' %}background:#fef2f2;color:#ef4444;{% elif b.severite == 'haute' %}background:#fef3c7;color:#d97706;{% else %}background:#f1f5f9;color:#64748b;{% endif %}">{{ b.get_severite_display }}</span></td>
+                    <td style="color:#64748b;font-size:.8rem;">{{ b.rapporte_par|default:"—" }}</td>
+                    <td style="color:#64748b;font-size:.8rem;">{{ b.date_ouvert|date:"d/m/Y" }}</td>
+                    <td style="font-size:.8rem;">{{ b.assigne_a.username|default:"—" }}</td>
+                    <td class="text-center"><span class="badge {% if b.statut == 'ouvert' %}bg-danger{% elif b.statut == 'en_cours' %}bg-warning text-dark{% elif b.statut == 'resolu' %}bg-success{% else %}bg-secondary{% endif %}" style="font-size:.7rem;">{{ b.get_statut_display }}</span></td>
+                    <td class="text-end pe-3">
+                        <a href="{% url 'info_dev:bug_detail' pk=b.pk %}" class="btn btn-outline-secondary btn-sm me-1"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'info_dev:bug_edit' pk=b.pk %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-edit"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-check-circle fa-2x d-block mb-2 opacity-20"></i>Aucun bug. 🎉<br><a href="{% url 'info_dev:bug_create' projet_pk=projet.pk %}" class="btn btn-outline-danger btn-sm mt-2">Signaler un bug</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
