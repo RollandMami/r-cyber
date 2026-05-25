@@ -212,8 +212,168 @@ def doc_chantier_delete(request, pk):
 
 @login_required
 def pert_editor(request):
+    """PERT standalone sans projet — redirige vers la liste des projets."""
     return render(request, 'construction/pert_editor.html')
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  PERT PAR PROJET
+# ─────────────────────────────────────────────────────────────────────────────
+
+@login_required
+def pert_projet(request, projet_pk):
+    """Ouvre le dernier réseau PERT actif du projet, ou en crée un."""
+    from .models import ReseauPert
+    projet = get_object_or_404(Projet, pk=projet_pk)
+    reseau = (ReseauPert.objects
+              .filter(projet=projet, est_actif=True)
+              .order_by('-cree_le')
+              .first())
+    if not reseau:
+        reseau = ReseauPert.objects.create(
+            projet=projet,
+            nom=f'PERT — {projet.titre}',
+            version='v1',
+            est_actif=True,
+            cree_par=request.user,
+        )
+    return render(request, 'construction/pert_editor.html', {
+        'projet':  projet,
+        'reseau':  reseau,
+        'reseau_json': _reseau_to_json(reseau),
+    })
+
+
+@login_required
+def pert_list(request, projet_pk):
+    """Liste toutes les versions PERT d'un projet."""
+    from .models import ReseauPert
+    projet  = get_object_or_404(Projet, pk=projet_pk)
+    reseaux = ReseauPert.objects.filter(projet=projet).order_by('-cree_le')
+    return render(request, 'construction/pert_list.html', {
+        'projet':  projet,
+        'reseaux': reseaux,
+    })
+
+
+@login_required
+def pert_version(request, projet_pk, reseau_pk):
+    """Ouvre une version PERT spécifique."""
+    from .models import ReseauPert
+    projet = get_object_or_404(Projet, pk=projet_pk)
+    reseau = get_object_or_404(ReseauPert, pk=reseau_pk, projet=projet)
+    return render(request, 'construction/pert_editor.html', {
+        'projet':      projet,
+        'reseau':      reseau,
+        'reseau_json': _reseau_to_json(reseau),
+    })
+
+
+@login_required
+@require_POST
+def pert_save(request, projet_pk, reseau_pk=None):
+    """
+    Sauvegarde complète du réseau PERT depuis l'éditeur JS.
+    Payload JSON : { nodes: [...], links: [...], nom, version }
+    """
+    import json
+    from django.utils import timezone
+    from .models import ReseauPert, NoeudPert, LienPert
+
+    projet = get_object_or_404(Projet, pk=projet_pk)
+    data   = json.loads(request.body)
+
+    # Récupère ou crée le réseau
+    if reseau_pk:
+        reseau = get_object_or_404(ReseauPert, pk=reseau_pk, projet=projet)
+    else:
+        reseau = ReseauPert.objects.create(
+            projet=projet,
+            nom=data.get('nom', 'Réseau PERT'),
+            version=data.get('version', 'v1'),
+            est_actif=True,
+            cree_par=request.user,
+        )
+
+    reseau.nom          = data.get('nom', reseau.nom)
+    reseau.version      = data.get('version', reseau.version)
+    reseau.duree_totale = data.get('duree_totale')
+    reseau.calcule_le   = timezone.now() if data.get('duree_totale') else reseau.calcule_le
+    reseau.save()
+
+    # Recrée les nœuds
+    reseau.noeuds.all().delete()
+    id_map = {}   # id JS → pk Django
+    for n in data.get('nodes', []):
+        noeud = NoeudPert.objects.create(
+            reseau=reseau,
+            label=n.get('label', str(n['id'])),
+            early=n.get('early', 0),
+            late=n.get('late'),
+            marge=n.get('marge'),
+            est_critique=(n.get('marge') == 0 and data.get('duree_totale') is not None),
+            pos_x=n.get('x', 0),
+            pos_y=n.get('y', 0),
+        )
+        id_map[n['id']] = noeud
+
+    # Recrée les liens
+    reseau.liens.all().delete()
+    for lk in data.get('links', []):
+        from_node = id_map.get(lk['from'])
+        to_node   = id_map.get(lk['to'])
+        if from_node and to_node:
+            LienPert.objects.create(
+                reseau=reseau,
+                noeud_from=from_node,
+                noeud_to=to_node,
+                poids=lk.get('weight', 0),
+                est_critique=lk.get('critical', False),
+            )
+
+    return JsonResponse({
+        'ok':       True,
+        'reseau_id': reseau.pk,
+        'message':  f'Réseau PERT sauvegardé — {len(data.get("nodes",[]))} nœuds, {len(data.get("links",[]))} liens',
+    })
+
+
+@login_required
+@require_POST
+def pert_delete(request, projet_pk, reseau_pk):
+    """Supprime une version PERT."""
+    from .models import ReseauPert
+    projet = get_object_or_404(Projet, pk=projet_pk)
+    reseau = get_object_or_404(ReseauPert, pk=reseau_pk, projet=projet)
+    reseau.delete()
+    return JsonResponse({'ok': True})
+
+
+def _reseau_to_json(reseau):
+    """Sérialise un ReseauPert en JSON pour l'éditeur JS."""
+    import json
+    nodes = []
+    for n in reseau.noeuds.all():
+        nodes.append({
+            'id':    n.pk,
+            'label': n.label,
+            'early': n.early,
+            'late':  n.late,
+            'marge': n.marge,
+            'x':     n.pos_x,
+            'y':     n.pos_y,
+        })
+    links = []
+    for lk in reseau.liens.all():
+        links.append({
+            'id':       lk.pk,
+            'from':     lk.noeud_from.pk,
+            'to':       lk.noeud_to.pk,
+            'weight':   lk.poids,
+            'critical': lk.est_critique,
+        })
+    return json.dumps({'nodes': nodes, 'links': links,
+                       'duree_totale': reseau.duree_totale})
 
 @login_required
 def gantt_view(request, projet_pk):

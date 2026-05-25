@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Versions PERT — {{ projet.titre }}{% endblock %}
+{% block nav_class %}light{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:860px;">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size:0.8rem;">
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_list' %}">Projets</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'construction:projet_detail' projet.pk %}">{{ projet.reference }}</a></li>
+            <li class="breadcrumb-item active">Réseaux PERT</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:0.2rem;">Réseaux PERT</h1>
+            <p style="color:#64748b;font-size:0.9rem;margin:0;">{{ projet.titre }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'construction:gantt' projet.pk %}"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-chart-gantt me-1"></i> Gantt
+            </a>
+            <a href="{% url 'construction:pert_projet' projet.pk %}"
+               class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i> Nouveau PERT
+            </a>
+        </div>
+    </div>
+
+    {% if reseaux %}
+    <div class="d-flex flex-column gap-3">
+        {% for r in reseaux %}
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.25rem 1.5rem;
+                    display:flex;align-items:center;gap:1.25rem;
+                    {% if r.est_actif %}border-left:3px solid #3b82f6;{% endif %}">
+
+            <!-- Icône -->
+            <div style="width:44px;height:44px;border-radius:12px;
+                        background:{% if r.est_actif %}rgba(59,130,246,0.1){% else %}#f8fafc{% endif %};
+                        display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-project-diagram"
+                   style="color:{% if r.est_actif %}#3b82f6{% else %}#94a3b8{% endif %};"></i>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-grow-1">
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.2rem;">
+                    <span style="font-weight:700;font-size:0.95rem;color:#0f172a;">{{ r.nom }}</span>
+                    <span style="background:#f1f5f9;color:#475569;font-size:0.65rem;font-weight:700;
+                                 padding:0.15rem 0.5rem;border-radius:4px;font-family:monospace;">
+                        {{ r.version }}
+                    </span>
+                    {% if r.est_actif %}
+                    <span style="background:rgba(59,130,246,0.1);color:#3b82f6;font-size:0.65rem;
+                                 font-weight:700;padding:0.15rem 0.5rem;border-radius:4px;">
+                        ACTIF
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="font-size:0.78rem;color:#94a3b8;display:flex;gap:1.25rem;">
+                    {% if r.duree_totale %}
+                    <span><i class="fas fa-clock me-1"></i>{{ r.duree_totale }} jours</span>
+                    {% endif %}
+                    <span><i class="fas fa-circle-nodes me-1"></i>
+                        {{ r.noeuds.count }} nœuds · {{ r.liens.count }} liens
+                    </span>
+                    <span><i class="fas fa-calendar me-1"></i>{{ r.cree_le|date:"d/m/Y H:i" }}</span>
+                    {% if r.calcule_le %}
+                    <span style="color:#22c55e;"><i class="fas fa-check-circle me-1"></i>Calculé {{ r.calcule_le|timesince }} ago</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{% url 'construction:pert_version' projet.pk r.pk %}"
+                   class="btn btn-sm btn-primary">
+                    <i class="fas fa-edit me-1"></i> Éditer
+                </a>
+                <form method="post" action="{% url 'construction:pert_delete' projet.pk r.pk %}"
+                      onsubmit="return confirm('Supprimer cette version PERT ?');">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="text-center py-5" style="color:#94a3b8;">
+        <i class="fas fa-project-diagram fa-3x mb-3" style="opacity:0.3;"></i>
+        <p class="mb-3">Aucun réseau PERT pour ce projet.</p>
+        <a href="{% url 'construction:pert_projet' projet.pk %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Créer le premier réseau PERT
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

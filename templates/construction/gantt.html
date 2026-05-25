@@ -255,6 +255,10 @@
             <button class="btn btn-outline-secondary btn-sm" id="btnZoomIn"><i class="fas fa-search-plus"></i></button>
             <button class="btn btn-outline-secondary btn-sm" id="btnToday"><i class="fas fa-crosshairs me-1"></i>Aujourd'hui</button>
         </div>
+        <a href="{% url 'construction:pert_projet' projet.pk %}"
+                class="btn btn-outline-secondary btn-sm" title="Ouvrir l'éditeur PERT">
+            <i class="fas fa-project-diagram me-1"></i> PERT
+        </a>
     </div>
 
     <div class="gantt-container">

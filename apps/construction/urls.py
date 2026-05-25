@@ -64,4 +64,40 @@ urlpatterns = [
     path('factures/<int:pk>/modifier/',                   views.facture_edit,        name='facture_edit'),
     path('factures/<int:pk>/statut/',                     views.facture_statut,      name='facture_statut'),
     path('factures/<int:pk>/imprimer/',                   views.facture_print,       name='facture_print'),
+	
+	# ── PERT ────────────────────────────────────────────────
+    # PERT standalone (sans projet)
+    path('pert/',
+         views.pert_editor,
+         name='pert_editor'),
+
+    # PERT d'un projet — ouvre le réseau actif ou en crée un
+    path('projets/<int:projet_pk>/pert/',
+         views.pert_projet,
+         name='pert_projet'),
+
+    # Liste de toutes les versions PERT d'un projet
+    path('projets/<int:projet_pk>/pert/versions/',
+         views.pert_list,
+         name='pert_list'),
+
+    # Ouvre une version PERT spécifique
+    path('projets/<int:projet_pk>/pert/<int:reseau_pk>/',
+         views.pert_version,
+         name='pert_version'),
+
+    # Sauvegarde PERT — réseau existant
+    path('projets/<int:projet_pk>/pert/<int:reseau_pk>/sauvegarder/',
+         views.pert_save,
+         name='pert_save'),
+
+    # Sauvegarde PERT — nouveau réseau
+    path('projets/<int:projet_pk>/pert/nouveau/sauvegarder/',
+         views.pert_save,
+         name='pert_save_new'),
+
+    # Suppression d'une version PERT
+    path('projets/<int:projet_pk>/pert/<int:reseau_pk>/supprimer/',
+         views.pert_delete,
+         name='pert_delete'),
 ]

@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Éditeur PERT{% endblock %}
+{% block title %}Éditeur PERT{% if projet %} — {{ projet.titre }}{% endif %}{% endblock %}
 {% block nav_class %}light{% endblock %}
 {% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    PERT EDITOR — Design: Industrial / Technical Blueprint
@@ -259,10 +260,19 @@ body {
 .btn-modal-can { flex:1; padding:.55rem; background:transparent; border:1px solid var(--border2); border-radius:8px; color:var(--text-muted); font-size:0.82rem; cursor:pointer; }
 </style>
 {% endblock %}
+
 {% block content %}
+
 <!-- ── TOPBAR ──────────────────────────────────────────────── -->
 <div class="topbar">
-    <div class="topbar-logo">⬡ PERT EDITOR</div>
+    <div class="topbar-logo">
+        ⬡ PERT
+        {% if projet %}
+        <span style="color:rgba(255,255,255,0.4);font-weight:400;margin-left:0.4rem;font-size:0.72rem;">
+            {{ projet.reference }}
+        </span>
+        {% endif %}
+    </div>
 
     <button class="tb-btn" id="btnAddNode" title="Ajouter un nœud (N)">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -280,6 +290,22 @@ body {
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 4.5V7l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Calculer
     </button>
+
+    <button class="tb-btn success-btn" id="btnSave" title="Sauvegarder en base">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h8l2 2v8a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="8" width="6" height="4" rx=".5" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="2" width="5" height="3" rx=".5" stroke="currentColor" stroke-width="1.5"/></svg>
+        Sauvegarder
+    </button>
+
+    {% if projet %}
+    <a href="{% url 'construction:pert_list' projet.pk %}" class="tb-btn" title="Voir toutes les versions PERT">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Versions
+    </a>
+    <a href="{% url 'construction:gantt' projet.pk %}" class="tb-btn" title="Retour au Gantt">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v2H2zM2 6h7v2H2zM2 10h9v2H2z" stroke="currentColor" stroke-width="1.2"/></svg>
+        Gantt
+    </a>
+    {% endif %}
 
     <button class="tb-btn success-btn" id="btnExport" title="Exporter JSON">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -417,6 +443,12 @@ body {
 <!-- ── STATUSBAR ─────────────────────────────────────────────── -->
 <div class="statusbar">
     <div class="sb-item"><div class="sb-dot" style="background:var(--green);"></div><span id="sbStatus">Prêt</span></div>
+    {% if reseau %}
+    <div class="sb-item" style="color:var(--accent2);">
+        <span>{{ reseau.nom }} · {{ reseau.version }}</span>
+        {% if reseau.calcule_le %}<span style="color:var(--text-muted);margin-left:0.5rem;">calculé {{ reseau.calcule_le|timesince }} ago</span>{% endif %}
+    </div>
+    {% endif %}
     <div class="sb-item"><span>Chemin critique : </span><span id="sbCritical" style="color:var(--text);">—</span></div>
     <div class="sb-item" style="margin-left:auto;">
         <span>Durée totale : </span><span id="sbDuration" style="color:var(--gold);">—</span>
@@ -437,8 +469,7 @@ body {
         </div>
     </div>
 </div>
-{% endblock %}
-{% block extra_js %}
+
 <script>
 /* ============================================================
    PERT EDITOR — Engine
@@ -1011,6 +1042,96 @@ function setStatus(msg) {
 }
 
 // ── Init ──────────────────────────────────────────────────
+
+// ── Config Django injectée par le template ─────────────────
+const DJANGO_CONFIG = {
+    projetPk:  {% if projet %}{{ projet.pk }}{% else %}null{% endif %},
+    reseauPk:  {% if reseau %}{{ reseau.pk }}{% else %}null{% endif %},
+    saveUrl:   {% if projet and reseau %}"{% url 'construction:pert_save' projet.pk reseau.pk %}"{% elif projet %}"{% url 'construction:pert_save_new' projet.pk %}"{% else %}null{% endif %},
+    csrfToken: "{{ csrf_token }}",
+};
+
+// ── Chargement données existantes ──────────────────────────
+const INITIAL_DATA = {% if reseau_json %}{{ reseau_json|safe }}{% else %}null{% endif %};
+
+if (INITIAL_DATA && INITIAL_DATA.nodes && INITIAL_DATA.nodes.length > 0) {
+    INITIAL_DATA.nodes.forEach(n => {
+        state.nodes.push({
+            id: n.id, label: n.label,
+            x: n.x || 80, y: n.y || 80 + (state.nodes.length * 100),
+            early: n.early || 0,
+            late:  n.late !== undefined ? n.late : null,
+            marge: n.marge !== undefined ? n.marge : null,
+        });
+        if (n.id >= state.nextNodeId) state.nextNodeId = n.id + 1;
+    });
+    INITIAL_DATA.links.forEach(lk => {
+        state.links.push({
+            id: lk.id, from: lk.from, to: lk.to,
+            weight: lk.weight || 0, critical: lk.critical || false,
+        });
+        if (lk.id >= state.nextLinkId) state.nextLinkId = lk.id + 1;
+    });
+    if (INITIAL_DATA.duree_totale) {
+        state.calculated = true;
+        document.getElementById('sbDuration').textContent = INITIAL_DATA.duree_totale + ' jours';
+        const critPath = state.nodes.filter(n => n.marge === 0).map(n => n.label).join(' → ');
+        document.getElementById('sbCritical').textContent = critPath || '—';
+    }
+    setStatus('Réseau chargé — ' + state.nodes.length + ' nœuds, ' + state.links.length + ' liens');
+}
+
+// ── Sauvegarde Django ──────────────────────────────────────
+document.getElementById('btnSave').addEventListener('click', saveToDjango);
+
+function saveToDjango() {
+    if (!DJANGO_CONFIG.saveUrl) {
+        document.getElementById('btnExport').click();
+        return;
+    }
+    const payload = {
+        nodes: state.nodes.map(n => ({
+            id: n.id, label: n.label,
+            early: n.early, late: n.late, marge: n.marge,
+            x: Math.round(n.x), y: Math.round(n.y),
+        })),
+        links: state.links.map(l => ({
+            id: l.id, from: l.from, to: l.to,
+            weight: l.weight, critical: l.critical,
+        })),
+        duree_totale: state.calculated && state.nodes.length
+            ? (Math.max(...state.nodes.map(n => n.early || 0)) || null)
+            : null,
+    };
+    setStatus('Sauvegarde en cours…');
+    document.getElementById('btnSave').disabled = true;
+    fetch(DJANGO_CONFIG.saveUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': DJANGO_CONFIG.csrfToken},
+        body: JSON.stringify(payload),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            setStatus('✓ Sauvegardé — ' + data.message);
+            if (data.reseau_id && !DJANGO_CONFIG.reseauPk) {
+                DJANGO_CONFIG.reseauPk = data.reseau_id;
+            }
+            const btn = document.getElementById('btnSave');
+            btn.style.background = 'rgba(34,197,94,0.25)';
+            setTimeout(() => { btn.style.background = ''; }, 1500);
+        } else {
+            setStatus('⚠ Erreur sauvegarde');
+        }
+    })
+    .catch(() => setStatus('⚠ Erreur réseau'))
+    .finally(() => { document.getElementById('btnSave').disabled = false; });
+}
+
+if (DJANGO_CONFIG.projetPk) {
+    setInterval(() => { if (state.nodes.length > 0) saveToDjango(); }, 120000);
+}
+
 renderAll();
 </script>
 {% endblock %}

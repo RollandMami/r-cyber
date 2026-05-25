@@ -218,6 +218,10 @@
             <a href="{% url 'construction:gantt' projet_pk=projet.pk %}" class="btn btn-outline-primary btn-sm">
                 Voir le Gantt
             </a>
+            <a href="{% url 'construction:pert_projet' projet.pk %}"
+                    class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-project-diagram me-1"></i> Réseau PERT
+            </a>
         </div>
         {% for t in taches|slice:":5" %}
         <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid #f1f5f9;">
@@ -247,6 +251,12 @@
             </a>
         </div>
         {% endif %}
+        <!-- Compteur PERT dans les stats du projet : -->
+        {% with nb_pert=projet.reseaux_pert.count %}
+        {% if nb_pert %}
+        <span class="badge bg-info">{{ nb_pert }} version{{ nb_pert|pluralize }} PERT</span>
+        {% endif %}
+        {% endwith %}
     </div>
 </div>
 

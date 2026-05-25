@@ -4,6 +4,7 @@ from .models import (
     TacheGantt, LigneBudget, BonCommande, LigneBonCommande,
     RapportActivite, Facture, LigneFacture,
 )
+from .models import ReseauPert, NoeudPert, LienPert
 
 
 class PhotoInline(admin.TabularInline):
@@ -56,6 +57,28 @@ class BonAdmin(admin.ModelAdmin):
     list_filter   = ['statut']
     inlines       = [LigneBonInline]
     readonly_fields = ['numero']
+
+class NoeudPertInline(admin.TabularInline):
+    model  = NoeudPert
+    extra  = 0
+    fields = ['label', 'early', 'late', 'marge', 'est_critique', 'pos_x', 'pos_y']
+    readonly_fields = ['late', 'marge', 'est_critique']
+
+
+class LienPertInline(admin.TabularInline):
+    model  = LienPert
+    extra  = 0
+    fields = ['noeud_from', 'noeud_to', 'poids', 'est_critique']
+    readonly_fields = ['est_critique']
+
+
+@admin.register(ReseauPert)
+class ReseauPertAdmin(admin.ModelAdmin):
+    list_display    = ['projet', 'nom', 'version', 'est_actif', 'duree_totale', 'cree_le']
+    list_filter     = ['est_actif', 'projet']
+    search_fields   = ['nom', 'projet__titre']
+    readonly_fields = ['cree_le', 'modifie_le', 'calcule_le']
+    inlines         = [NoeudPertInline, LienPertInline]
 
 admin.site.register(PhotoProjet)
 admin.site.register(DocumentClient)

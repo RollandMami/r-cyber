@@ -622,3 +622,104 @@ class LigneFacture(models.Model):
             montant_tva=f.montant_tva,
             montant_ttc=f.montant_ttc,
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  RÉSEAU PERT
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ReseauPert(models.Model):
+    """
+    Réseau PERT rattaché à un projet.
+    Un projet peut avoir plusieurs versions de PERT (ex: initial, révisé v2…).
+    """
+    projet      = models.ForeignKey(Projet, on_delete=models.CASCADE,
+                                    related_name='reseaux_pert')
+    nom         = models.CharField(max_length=200, default='Réseau PERT initial')
+    description = models.TextField(blank=True)
+    version     = models.CharField(max_length=20, default='v1',
+                                   help_text='ex. v1, v2-révisé, baseline…')
+    est_actif   = models.BooleanField(default=True,
+                                      help_text='Réseau de référence actif pour ce projet')
+    duree_totale = models.PositiveIntegerField(null=True, blank=True,
+                                               help_text='Durée critique calculée (jours)')
+    calcule_le  = models.DateTimeField(null=True, blank=True)
+    cree_par    = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                    related_name='reseaux_pert_crees')
+    cree_le     = models.DateTimeField(auto_now_add=True)
+    modifie_le  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name        = 'Réseau PERT'
+        verbose_name_plural = 'Réseaux PERT'
+        ordering            = ['-cree_le']
+
+    def __str__(self):
+        return f'PERT {self.version} — {self.projet.titre}'
+
+
+class NoeudPert(models.Model):
+    """
+    Nœud du réseau PERT.
+    Structure en T :
+      ┌────────────────┐
+      │   label (ID)   │  ← identifiant de la tâche (A, B, C…)
+      ├───────┬────────┤
+      │  tôt  │  tard  │  ← dates calculées
+      └───────┴────────┘
+    """
+    reseau      = models.ForeignKey(ReseauPert, on_delete=models.CASCADE,
+                                    related_name='noeuds')
+    label       = models.CharField(max_length=10,
+                                   help_text='Identifiant court — A, B, C…')
+    early       = models.IntegerField(default=0,
+                                      help_text='Date début au plus tôt (jours)')
+    late        = models.IntegerField(null=True, blank=True,
+                                      help_text='Date début au plus tard (jours) — calculé')
+    marge       = models.IntegerField(null=True, blank=True,
+                                      help_text='Marge totale = tard − tôt — calculé')
+    est_critique = models.BooleanField(default=False)
+
+    # Position sur le canvas SVG
+    pos_x       = models.FloatField(default=0, help_text='Position X sur le canvas')
+    pos_y       = models.FloatField(default=0, help_text='Position Y sur le canvas')
+
+    # Lien optionnel vers une TacheGantt
+    tache_gantt = models.ForeignKey(TacheGantt, on_delete=models.SET_NULL,
+                                    null=True, blank=True,
+                                    related_name='noeuds_pert',
+                                    help_text='Tâche Gantt associée à ce nœud (optionnel)')
+
+    class Meta:
+        verbose_name        = 'Nœud PERT'
+        verbose_name_plural = 'Nœuds PERT'
+        ordering            = ['label']
+        unique_together     = [('reseau', 'label')]
+
+    def __str__(self):
+        return f'{self.label} (tôt={self.early}, tard={self.late})'
+
+
+class LienPert(models.Model):
+    """
+    Lien orienté entre deux nœuds PERT.
+    Le poids représente la durée de la tâche en jours.
+    """
+    reseau      = models.ForeignKey(ReseauPert, on_delete=models.CASCADE,
+                                    related_name='liens')
+    noeud_from  = models.ForeignKey(NoeudPert, on_delete=models.CASCADE,
+                                    related_name='liens_sortants')
+    noeud_to    = models.ForeignKey(NoeudPert, on_delete=models.CASCADE,
+                                    related_name='liens_entrants')
+    poids       = models.PositiveIntegerField(default=0,
+                                              help_text='Durée de la tâche en jours')
+    est_critique = models.BooleanField(default=False,
+                                       help_text='Appartient au chemin critique')
+
+    class Meta:
+        verbose_name        = 'Lien PERT'
+        verbose_name_plural = 'Liens PERT'
+        unique_together     = [('reseau', 'noeud_from', 'noeud_to')]
+
+    def __str__(self):
+        return f'{self.noeud_from.label} →[{self.poids}j]→ {self.noeud_to.label}'
