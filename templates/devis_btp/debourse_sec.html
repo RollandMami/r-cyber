@@ -1,0 +1,57 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Déboursé sec (DEPS) — {{ devis.reference }}{% endblock %}
+{% block topbar_actions %}
+  <form method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn amber"><i class="ti ti-refresh"></i> Recalculer DEPS</button>
+  </form>
+  <a href="{% url 'devis_btp:recap_final' pk=devis.pk %}" class="btn primary"><i class="ti ti-arrow-right"></i> Récapitulatif →</a>
+{% endblock %}
+{% block content %}
+<div class="metrics">
+  <div class="metric"><div class="label">Matériaux</div><div class="value" style="font-size:14px;">{{ totaux.mat|default:0|ariary }}</div></div>
+  <div class="metric"><div class="label">Main d'œuvre</div><div class="value" style="font-size:14px;">{{ totaux.mo|default:0|ariary }}</div></div>
+  <div class="metric"><div class="label">Frais chantier</div><div class="value" style="font-size:14px;">{{ frais_global|ariary }}</div></div>
+  <div class="metric accent"><div class="label">Déboursé sec total</div><div class="value" style="font-size:14px;">{{ totaux.total|default:0|ariary }}</div></div>
+</div>
+
+<div class="alert info"><i class="ti ti-info-circle"></i> Cliquez "Recalculer DEPS" pour régénérer ce tableau après toute modification de l'avant-métré, des dosages, du PHMO ou des frais.</div>
+
+<div class="card no-pad">
+  <table>
+    <thead><tr>
+      <th>N°</th><th>Désignation</th><th>U</th><th class="num">QAM</th>
+      <th class="num">PU Mat.</th><th class="num">PU MO</th><th class="num">PU Frais</th>
+      <th class="num">Mat. total</th><th class="num">MO total</th><th class="num">Frais total</th>
+      <th class="num">DEPS ligne</th>
+    </tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr>
+      <td class="muted">{{ l.numero }}</td>
+      <td>{{ l.designation }}</td>
+      <td>{{ l.unite }}</td>
+      <td class="num">{{ l.qam }}</td>
+      <td class="num">{{ l.pu_materiaux|ariary }}</td>
+      <td class="num">{{ l.pu_mo|ariary }}</td>
+      <td class="num">{{ l.pu_frais|ariary }}</td>
+      <td class="num">{{ l.montant_materiaux|ariary }}</td>
+      <td class="num">{{ l.montant_mo|ariary }}</td>
+      <td class="num">{{ l.montant_frais|ariary }}</td>
+      <td class="num" style="font-weight:600;color:var(--accent-dark);">{{ l.montant_total|ariary }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="11" style="text-align:center;padding:20px;color:var(--text2);">Cliquez "Recalculer DEPS" pour générer ce tableau.</td></tr>
+    {% endfor %}
+    <tr class="total-row">
+      <td colspan="7">TOTAL DÉBOURSÉ SEC</td>
+      <td class="num">{{ totaux.mat|default:0|ariary }}</td>
+      <td class="num">{{ totaux.mo|default:0|ariary }}</td>
+      <td class="num">{{ totaux.frais|default:0|ariary }}</td>
+      <td class="num">{{ totaux.total|default:0|ariary }}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

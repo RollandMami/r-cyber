@@ -1,0 +1,56 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Frais de chantier — {{ devis.reference }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:prix_unitaires' pk=devis.pk %}" class="btn primary"><i class="ti ti-arrow-right"></i> Prix unitaires →</a>
+{% endblock %}
+{% block content %}
+<div class="metrics">
+  {% for cat, label in categories %}
+  <div class="metric {% if forloop.last %}accent{% endif %}">
+    <div class="label">{{ label }}</div>
+    <div class="value" style="font-size:14px;">{{ totaux|default_if_none:0 }}</div>
+  </div>
+  {% endfor %}
+  <div class="metric accent">
+    <div class="label">Total frais chantier</div>
+    <div class="value" style="font-size:14px;">{{ total_global|ariary }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title"><i class="ti ti-plus"></i> Ajouter un frais</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid" style="grid-template-columns:2fr 2fr 80px 80px 120px auto;">
+      <div class="form-field"><label>Catégorie</label>{{ form.categorie }}</div>
+      <div class="form-field"><label>Désignation</label>{{ form.designation }}</div>
+      <div class="form-field"><label>Unité</label>{{ form.unite }}</div>
+      <div class="form-field"><label>Quantité</label>{{ form.quantite }}</div>
+      <div class="form-field"><label>Prix unitaire (Ar)</label>{{ form.prix_unitaire }}</div>
+      <div style="display:flex;align-items:flex-end;"><button type="submit" class="btn primary"><i class="ti ti-plus"></i> Ajouter</button></div>
+    </div>
+  </form>
+</div>
+
+{% for cat, label in categories %}
+<div class="card no-pad" style="margin-bottom:12px;">
+  <div class="section-row" style="padding:8px 14px;background:var(--bg2);font-size:12px;font-weight:600;border-bottom:1px solid var(--border);">{{ label }}</div>
+  <table>
+    <thead><tr><th>Désignation</th><th>Unité</th><th class="num">Quantité</th><th class="num">PU (Ar)</th><th class="num">Montant</th><th></th></tr></thead>
+    <tbody>
+    {% for f in frais %}{% if f.categorie == cat %}
+    <tr>
+      <td>{{ f.designation }}</td><td>{{ f.unite }}</td>
+      <td class="num">{{ f.quantite }}</td>
+      <td class="num">{{ f.prix_unitaire|ariary }}</td>
+      <td class="num" style="font-weight:600;">{{ f.montant|ariary }}</td>
+      <td><a href="{% url 'devis_btp:frais_delete' pk=devis.pk frais_pk=f.pk %}" class="btn sm danger"><i class="ti ti-trash"></i></a></td>
+    </tr>
+    {% endif %}{% endfor %}
+    <tr class="subtotal-row"><td colspan="4">Sous-total</td><td class="num">{{ totaux|default:0 }}</td><td></td></tr>
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+{% endblock %}

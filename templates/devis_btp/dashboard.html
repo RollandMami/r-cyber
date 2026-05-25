@@ -1,0 +1,63 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:devis_create' %}" class="btn primary">
+    <i class="ti ti-plus"></i> Nouveau devis
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<div class="metrics">
+  <div class="metric"><div class="label">Devis total</div><div class="value">{{ devis_list.count }}</div></div>
+  <div class="metric"><div class="label">Matériaux BDD</div><div class="value">{{ total_mat }}</div></div>
+  <div class="metric"><div class="label">Dosages BDD</div><div class="value">{{ total_dos }}</div></div>
+</div>
+
+<div class="card">
+  <div class="card-title"><i class="ti ti-sitemap"></i> Workflow MOREX — étapes du devis</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;">
+    {% for step in "123456789"|make_list %}
+    {% endfor %}
+    {% with steps="Matériaux,Dosages,Avant-métré,Nomenclature,PHMO,Frais chantier,Prix unitaires,Déboursé sec,Récapitulatif" %}
+    {% for label in steps|split:"," %}
+    <div style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;font-size:12px;color:var(--text2);background:#fff;">
+      <div style="font-size:18px;font-weight:700;color:var(--accent);margin-bottom:4px;">{{ forloop.counter }}</div>
+      {{ label }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title"><i class="ti ti-clock"></i> Devis récents</div>
+  {% if devis_list %}
+    {% for d in devis_list %}
+    <a href="{% url 'devis_btp:recap_final' pk=d.pk %}" class="devis-item">
+      <div>
+        <div class="ref">{{ d.reference }} — {{ d.titre }}</div>
+        <div class="sub">{{ d.client_nom }} · {{ d.date_devis }} · {{ d.get_source_display }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge {% if d.statut == 'finalise' or d.statut == 'accepte' %}green{% elif d.statut == 'brouillon' or d.statut == 'en_cours' %}amber{% else %}grey{% endif %}">
+          {{ d.get_statut_display }}
+        </span>
+        <span style="font-size:13px;font-weight:600;color:var(--accent-dark);">{{ d.montant_ttc|ariary }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <i class="ti ti-file-invoice"></i>
+      <p>Aucun devis. Créez votre premier devis.</p>
+      <a href="{% url 'devis_btp:devis_create' %}" class="btn primary">
+        <i class="ti ti-plus"></i> Nouveau devis
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}PHMO — {{ devis.reference }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:frais_chantier' pk=devis.pk %}" class="btn primary"><i class="ti ti-arrow-right"></i> Frais chantier →</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-title"><i class="ti ti-settings"></i> Mode de calcul main d'œuvre</div>
+  <form method="post" style="display:flex;gap:16px;align-items:center;">
+    {% csrf_token %}
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+      <input type="radio" name="mode_mo" value="horaire" {% if devis.mode_mo == 'horaire' %}checked{% endif %}> Base horaire (taux calculé)
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+      <input type="radio" name="mode_mo" value="forfait" {% if devis.mode_mo == 'forfait' %}checked{% endif %}> Forfaitaire par tâche
+    </label>
+    <button type="submit" class="btn sm"><i class="ti ti-check"></i> Valider</button>
+  </form>
+</div>
+
+{% if devis.mode_mo == 'horaire' %}
+<div class="card no-pad">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;">
+    <div class="card-title" style="margin:0;"><i class="ti ti-users"></i> Équipes PHMO — Taux horaires</div>
+    <button onclick="document.getElementById('equipe-form').style.display='block'" class="btn sm primary"><i class="ti ti-plus"></i> Équipe</button>
+  </div>
+  <div id="equipe-form" style="display:none;padding:14px 16px;border-bottom:1px solid var(--border);">
+    <form method="post" action="{% url 'devis_btp:phmo_add_equipe' pk=devis.pk %}">
+      {% csrf_token %}
+      <div class="form-grid" style="grid-template-columns:2fr 80px 120px 80px 80px 80px 80px auto;">
+        <div class="form-field"><label>Désignation</label>{{ equipe_form.designation }}</div>
+        <div class="form-field"><label>Catégorie</label>{{ equipe_form.categorie }}</div>
+        <div class="form-field"><label>Salaire base (Ar)</label>{{ equipe_form.salaire_base }}</div>
+        <div class="form-field"><label>Nb jours/mois</label>{{ equipe_form.nb_jours_mois }}</div>
+        <div class="form-field"><label>H/jour</label>{{ equipe_form.heures_par_jour }}</div>
+        <div class="form-field"><label>Charges %</label>{{ equipe_form.taux_charges }}</div>
+        <div class="form-field"><label>H totales chantier</label>{{ equipe_form.heures_total }}</div>
+        <div style="display:flex;align-items:flex-end;"><button type="submit" class="btn primary sm"><i class="ti ti-plus"></i></button></div>
+      </div>
+    </form>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Désignation</th><th>Cat.</th><th class="num">Salaire brut</th><th class="num">Charges %</th>
+      <th class="num">Salaire chargé</th><th class="num">H/mois</th><th class="num">Taux horaire</th>
+      <th class="num">H totales</th><th class="num">Coût total</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for e in equipes %}
+    <tr>
+      <td>{{ e.designation }}</td>
+      <td><span class="badge grey">{{ e.categorie }}</span></td>
+      <td class="num">{{ e.salaire_base|ariary }}</td>
+      <td class="num">{{ e.taux_charges }}%</td>
+      <td class="num">{{ e.salaire_charge|ariary }}</td>
+      <td class="num">{{ e.heures_mois }}</td>
+      <td class="num" style="font-weight:600;color:var(--accent-dark);">{{ e.taux_horaire|ariary }}/h</td>
+      <td class="num">{{ e.heures_total }}h</td>
+      <td class="num" style="font-weight:600;">{{ e.cout_total|ariary }}</td>
+      <td><a href="{% url 'devis_btp:phmo_delete_equipe' pk=devis.pk equipe_pk=e.pk %}" class="btn sm danger"><i class="ti ti-trash"></i></a></td>
+    </tr>
+    {% endfor %}
+    <tr class="total-row"><td colspan="8">Total MO horaire</td><td class="num">{{ total_equipes|ariary }}</td><td></td></tr>
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card no-pad">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;">
+    <div class="card-title" style="margin:0;"><i class="ti ti-clipboard-list"></i> Main d'œuvre forfaitaire par tâche</div>
+    <button onclick="document.getElementById('forfait-form').style.display='block'" class="btn sm primary"><i class="ti ti-plus"></i> Tâche</button>
+  </div>
+  <div id="forfait-form" style="display:none;padding:14px 16px;border-bottom:1px solid var(--border);">
+    <form method="post" action="{% url 'devis_btp:phmo_add_forfait' pk=devis.pk %}">
+      {% csrf_token %}
+      <div class="form-grid" style="grid-template-columns:2fr 80px 80px 120px auto;">
+        <div class="form-field"><label>Désignation tâche</label>{{ forfait_form.designation }}</div>
+        <div class="form-field"><label>Unité</label>{{ forfait_form.unite }}</div>
+        <div class="form-field"><label>Quantité</label>{{ forfait_form.quantite }}</div>
+        <div class="form-field"><label>PU MO (Ar)</label>{{ forfait_form.pu_mo }}</div>
+        <div style="display:flex;align-items:flex-end;"><button type="submit" class="btn primary sm"><i class="ti ti-plus"></i></button></div>
+      </div>
+    </form>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>Désignation</th><th>U</th><th class="num">Qté</th><th class="num">PU MO (Ar)</th><th class="num">Total MO</th><th></th></tr></thead>
+    <tbody>
+    {% for f in forfaits %}
+    <tr>
+      <td class="muted">{{ forloop.counter }}</td>
+      <td>{{ f.designation }}</td><td>{{ f.unite }}</td>
+      <td class="num">{{ f.quantite }}</td>
+      <td class="num">{{ f.pu_mo|ariary }}</td>
+      <td class="num" style="font-weight:600;">{{ f.montant_mo|ariary }}</td>
+      <td><a href="{% url 'devis_btp:phmo_delete_forfait' pk=devis.pk forfait_pk=f.pk %}" class="btn sm danger"><i class="ti ti-trash"></i></a></td>
+    </tr>
+    {% endfor %}
+    <tr class="total-row"><td colspan="5">Total MO forfaitaire</td><td class="num">{{ total_forfaits|ariary }}</td><td></td></tr>
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

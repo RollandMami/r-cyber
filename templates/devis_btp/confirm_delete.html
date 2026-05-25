@@ -1,0 +1,13 @@
+{% extends "devis_btp/base.html" %}
+{% block page_title %}Confirmer la suppression{% endblock %}
+{% block content %}
+<div class="card" style="max-width:500px;">
+  <div class="card-title"><i class="ti ti-alert-triangle" style="color:var(--danger);"></i> Confirmer la suppression</div>
+  <p style="margin-bottom:16px;font-size:13px;">Voulez-vous vraiment supprimer <strong>{{ obj }}</strong> ? Cette action est irréversible.</p>
+  <form method="post" style="display:flex;gap:8px;">
+    {% csrf_token %}
+    <button type="submit" class="btn danger"><i class="ti ti-trash"></i> Supprimer</button>
+    <a href="javascript:history.back()" class="btn">Annuler</a>
+  </form>
+</div>
+{% endblock %}

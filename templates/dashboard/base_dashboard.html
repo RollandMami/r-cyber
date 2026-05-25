@@ -46,70 +46,6 @@
             </a>
 
             <div class="db-nav-section">Métiers</div>
-            {# ── INFO-DEV ──────────────────────────────────── #}
-            <button class="db-accordion-btn {% block acc_infodev_open %}{% endblock %}"
-                    id="accInfoDev"
-                    onclick="toggleAccordion('panelInfoDev', this)">
-                <i class="fas fa-code icon-main" style="color:#6366f1;"></i>
-                <span class="label">Info-Dev</span>
-                <i class="fas fa-chevron-right icon-chevron"></i>
-            </button>
-
-            <div class="db-accordion-panel {% block acc_infodev_panel %}{% endblock %}"
-                 id="panelInfoDev">
-
-                {# Niveau 1 — menu général #}
-                <a href="{% url 'info_dev:projet_list' %}"
-                   class="db-sub-link {% block sb_id_projets %}{% endblock %}">
-                    <i class="fas fa-folder-open"></i> Tous les projets
-                </a>
-                <a href="{% url 'info_dev:projet_create' %}"
-                   class="db-sub-link {% block sb_id_new %}{% endblock %}">
-                    <i class="fas fa-plus-circle"></i> Nouveau projet
-                </a>
-                <a href="{% url 'info_dev:client_list' %}"
-                   class="db-sub-link {% block sb_id_clients %}{% endblock %}">
-                    <i class="fas fa-users"></i> Clients
-                </a>
-
-                {# Niveau 2 — projet courant #}
-                {% if projet and projet|stringformat:"s" != "" %}
-                {% with pid=projet.pk %}
-                <div class="db-projet-label" style="color:rgba(99,102,241,.6);">
-                    <i class="fas fa-dot-circle" style="font-size:.5rem;"></i>
-                    {{ projet.reference }}
-                </div>
-                <a href="{% url 'info_dev:projet_detail' pk=pid %}"
-                   class="db-sub-link {% block sb_id_detail %}{% endblock %}">
-                    <i class="fas fa-info-circle"></i> Vue d'ensemble
-                </a>
-                <a href="{% url 'info_dev:tache_list' projet_pk=pid %}"
-                   class="db-sub-link {% block sb_id_taches %}{% endblock %}">
-                    <i class="fas fa-columns"></i> Kanban tâches
-                </a>
-                <a href="{% url 'info_dev:bug_list' projet_pk=pid %}"
-                   class="db-sub-link {% block sb_id_bugs %}{% endblock %}">
-                    <i class="fas fa-bug"></i> Bugs / Demandes
-                </a>
-                <a href="{% url 'info_dev:livrable_list' projet_pk=pid %}"
-                   class="db-sub-link {% block sb_id_livrables %}{% endblock %}">
-                    <i class="fas fa-archive"></i> Livrables
-                </a>
-                <a href="{% url 'info_dev:doc_list' projet_pk=pid %}"
-                   class="db-sub-link {% block sb_id_docs %}{% endblock %}">
-                    <i class="fas fa-book"></i> Documentation
-                </a>
-                <a href="{% url 'info_dev:devis_list' projet_pk=pid %}"
-                   class="db-sub-link {% block sb_id_devis %}{% endblock %}">
-                    <i class="fas fa-file-invoice"></i> Devis
-                </a>
-                <a href="{% url 'info_dev:facture_list' projet_pk=pid %}"
-                   class="db-sub-link {% block sb_id_factures %}{% endblock %}">
-                    <i class="fas fa-receipt"></i> Facturation
-                </a>
-                {% endwith %}
-                {% endif %}
-            </div>
             {# ── BUREAU D'ÉTUDE ─────────────────────────────── #}
             <button class="db-accordion-btn {% block acc_be_open %}{% endblock %}"
                     id="accBE"
@@ -222,7 +158,73 @@
                 </a>
                 {% endif %}
             </div>
+            <a href="{% url 'devis_btp:devis_create' %}?source=bureau_etude&mission_id={{ mission.pk }}&client={{ mission.client_nom }}">
+                <i class="fas fa-file-invoice-dollar"></i> Créer un devis
+            </a>
+            {# ── INFO-DEV ──────────────────────────────────── #}
+            <button class="db-accordion-btn {% block acc_infodev_open %}{% endblock %}"
+                    id="accInfoDev"
+                    onclick="toggleAccordion('panelInfoDev', this)">
+                <i class="fas fa-code icon-main" style="color:#6366f1;"></i>
+                <span class="label">Info-Dev</span>
+                <i class="fas fa-chevron-right icon-chevron"></i>
+            </button>
 
+            <div class="db-accordion-panel {% block acc_infodev_panel %}{% endblock %}"
+                 id="panelInfoDev">
+
+                {# Niveau 1 — menu général #}
+                <a href="{% url 'info_dev:projet_list' %}"
+                   class="db-sub-link {% block sb_id_projets %}{% endblock %}">
+                    <i class="fas fa-folder-open"></i> Tous les projets
+                </a>
+                <a href="{% url 'info_dev:projet_create' %}"
+                   class="db-sub-link {% block sb_id_new %}{% endblock %}">
+                    <i class="fas fa-plus-circle"></i> Nouveau projet
+                </a>
+                <a href="{% url 'info_dev:client_list' %}"
+                   class="db-sub-link {% block sb_id_clients %}{% endblock %}">
+                    <i class="fas fa-users"></i> Clients
+                </a>
+
+                {# Niveau 2 — projet courant #}
+                {% if projet and projet|stringformat:"s" != "" %}
+                {% with pid=projet.pk %}
+                <div class="db-projet-label" style="color:rgba(99,102,241,.6);">
+                    <i class="fas fa-dot-circle" style="font-size:.5rem;"></i>
+                    {{ projet.reference }}
+                </div>
+                <a href="{% url 'info_dev:projet_detail' pk=pid %}"
+                   class="db-sub-link {% block sb_id_detail %}{% endblock %}">
+                    <i class="fas fa-info-circle"></i> Vue d'ensemble
+                </a>
+                <a href="{% url 'info_dev:tache_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_taches %}{% endblock %}">
+                    <i class="fas fa-columns"></i> Kanban tâches
+                </a>
+                <a href="{% url 'info_dev:bug_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_bugs %}{% endblock %}">
+                    <i class="fas fa-bug"></i> Bugs / Demandes
+                </a>
+                <a href="{% url 'info_dev:livrable_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_livrables %}{% endblock %}">
+                    <i class="fas fa-archive"></i> Livrables
+                </a>
+                <a href="{% url 'info_dev:doc_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_docs %}{% endblock %}">
+                    <i class="fas fa-book"></i> Documentation
+                </a>
+                <a href="{% url 'info_dev:devis_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_devis %}{% endblock %}">
+                    <i class="fas fa-file-invoice"></i> Devis
+                </a>
+                <a href="{% url 'info_dev:facture_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_factures %}{% endblock %}">
+                    <i class="fas fa-receipt"></i> Facturation
+                </a>
+                {% endwith %}
+                {% endif %}
+            </div>
             {# ── CYBER-CAFÉ (placeholder extensible) #}
             <button class="db-accordion-btn {% block acc_cyber_open %}{% endblock %}"
                     id="accCyber"

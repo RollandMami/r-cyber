@@ -1,0 +1,34 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Prix unitaires matériaux (A2) — {{ devis.reference }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:debourse_sec' pk=devis.pk %}" class="btn primary"><i class="ti ti-arrow-right"></i> Déboursé sec →</a>
+{% endblock %}
+{% block content %}
+<div class="alert info"><i class="ti ti-info-circle"></i> Prix unitaire = Σ (ratio dosage × prix rendu chantier) pour chaque matériau, par unité d'ouvrage.</div>
+<div class="card no-pad" style="overflow-x:auto;">
+  <table>
+    <thead><tr>
+      <th>Ouvrage</th><th>Dosage</th><th>U</th><th class="num">QAM</th>
+      {% for m in materiaux %}<th class="num" style="font-size:10px;white-space:nowrap;">{{ m.code }}<br/>Ar/{{ m.unite }}</th>{% endfor %}
+      <th class="num" style="color:var(--accent-dark)">Total mat./unité</th>
+    </tr></thead>
+    <tbody>
+    {% for l in lignes_pu %}
+    <tr>
+      <td>{{ l.recap.designation }}</td>
+      <td class="muted">{% if l.recap.dosage %}{{ l.recap.dosage.code }}{% endif %}</td>
+      <td>{{ l.recap.unite }}</td>
+      <td class="num">{{ l.recap.qam }}</td>
+      {% for col in l.cols %}
+      <td class="num muted">{% if col.montant %}{{ col.montant|ariary }}{% endif %}</td>
+      {% endfor %}
+      <td class="num" style="font-weight:600;color:var(--accent-dark);">{{ l.pu_mat|ariary }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="100" style="text-align:center;padding:20px;color:var(--text2);">Associez des dosages dans la Nomenclature pour voir les prix unitaires.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

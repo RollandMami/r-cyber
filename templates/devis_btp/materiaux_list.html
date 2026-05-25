@@ -1,0 +1,40 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Base — Prix matériaux{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:materiau_create' %}" class="btn primary"><i class="ti ti-plus"></i> Ajouter</a>
+{% endblock %}
+{% block content %}
+<div class="alert info"><i class="ti ti-info-circle"></i> Prix rendu chantier = (Fournisseur + Manutention + Transport) × (1 + Taux chute %)</div>
+<div class="card no-pad">
+  <table>
+    <thead><tr>
+      <th>Code</th><th>Désignation</th><th>Unité</th>
+      <th class="num">Fournisseur</th><th class="num">Manutention</th>
+      <th class="num">Transport</th><th class="num">Chute %</th>
+      <th class="num" style="color:var(--accent-dark)">Rendu chantier</th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+    {% for m in materiaux %}
+    <tr>
+      <td class="muted">{{ m.code }}</td>
+      <td><strong>{{ m.designation }}</strong></td>
+      <td>{{ m.unite }}</td>
+      <td class="num">{{ m.prix_fournisseur|ariary }}</td>
+      <td class="num">{{ m.frais_manutention|ariary }}</td>
+      <td class="num">{{ m.frais_transport|ariary }}</td>
+      <td class="num">{{ m.taux_chute }}%</td>
+      <td class="num" style="font-weight:600;color:var(--accent-dark);">{{ m.prix_rendu_chantier|ariary }}</td>
+      <td style="white-space:nowrap;">
+        <a href="{% url 'devis_btp:materiau_edit' pk=m.pk %}" class="btn sm"><i class="ti ti-edit"></i></a>
+        <a href="{% url 'devis_btp:materiau_delete' pk=m.pk %}" class="btn sm danger"><i class="ti ti-trash"></i></a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text2);">Aucun matériau. <a href="{% url 'devis_btp:materiau_create' %}">Ajouter</a> ou exécuter <code>python manage.py load_devis_data</code></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

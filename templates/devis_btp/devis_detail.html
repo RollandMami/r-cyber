@@ -1,0 +1,92 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}{{ devis.reference }} — {{ devis.titre }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:devis_edit' pk=devis.pk %}" class="btn">
+    <i class="ti ti-edit"></i> Modifier
+  </a>
+  <a href="{% url 'devis_btp:avantmetre' pk=devis.pk %}" class="btn primary">
+    <i class="ti ti-ruler"></i> Ouvrir l'avant-métré
+  </a>
+  <a href="{% url 'devis_btp:recap_final' pk=devis.pk %}" class="btn">
+    <i class="ti ti-receipt"></i> Récapitulatif
+  </a>
+  <a href="{% url 'devis_btp:devis_print' pk=devis.pk %}" class="btn" target="_blank">
+    <i class="ti ti-printer"></i> Imprimer
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="metrics">
+  <div class="metric">
+    <div class="label">Statut</div>
+    <div style="margin-top:6px;">
+      <span class="badge {% if devis.statut == 'finalise' or devis.statut == 'accepte' %}green{% elif devis.statut == 'brouillon' or devis.statut == 'en_cours' %}amber{% else %}grey{% endif %}">
+        {{ devis.get_statut_display }}
+      </span>
+    </div>
+  </div>
+  <div class="metric">
+    <div class="label">Date</div>
+    <div class="value" style="font-size:16px;">{{ devis.date_devis }}</div>
+  </div>
+  <div class="metric">
+    <div class="label">Source</div>
+    <div class="value" style="font-size:16px;">{{ devis.get_source_display }}</div>
+  </div>
+  <div class="metric accent">
+    <div class="label">Montant TTC</div>
+    <div class="value" style="font-size:16px;">{{ devis.montant_ttc|ariary }}</div>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-user"></i> Client</div>
+    <table>
+      <tr><td class="muted">Nom</td><td><strong>{{ devis.client_nom }}</strong></td></tr>
+      {% if devis.client_adresse %}<tr><td class="muted">Adresse</td><td>{{ devis.client_adresse }}</td></tr>{% endif %}
+      {% if devis.client_tel %}<tr><td class="muted">Tél</td><td>{{ devis.client_tel }}</td></tr>{% endif %}
+      {% if devis.client_email %}<tr><td class="muted">Email</td><td>{{ devis.client_email }}</td></tr>{% endif %}
+      {% if devis.maitre_ouvrage %}<tr><td class="muted">MOA</td><td>{{ devis.maitre_ouvrage }}</td></tr>{% endif %}
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-building"></i> Chantier</div>
+    <table>
+      <tr><td class="muted">Adresse</td><td>{{ devis.adresse_chantier|default:"—" }}</td></tr>
+      <tr><td class="muted">Durée</td><td>{{ devis.duree_chantier_mois }} mois</td></tr>
+      <tr><td class="muted">Mode MO</td><td>{{ devis.get_mode_mo_display }}</td></tr>
+      {% if devis.date_validite %}<tr><td class="muted">Validité</td><td>{{ devis.date_validite }}</td></tr>{% endif %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title"><i class="ti ti-calculator"></i> Synthèse financière</div>
+  <table style="max-width:400px;">
+    <tr><td class="muted">Déboursé sec</td><td class="num">{{ devis.montant_debourse_sec|ariary }}</td></tr>
+    <tr><td class="muted">Montant HT</td><td class="num">{{ devis.montant_ht|ariary }}</td></tr>
+    <tr><td class="muted">TVA ({{ devis.taux_tva }}%)</td><td class="num">{{ devis.montant_tva|ariary }}</td></tr>
+    <tr class="total-row"><td>Montant TTC</td><td class="num">{{ devis.montant_ttc|ariary }}</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <div class="card-title"><i class="ti ti-sitemap"></i> Progression du devis</div>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px,1fr)); gap:8px;">
+    {% with steps="Avant-métré|avantmetre,Nomenclature|nomenclature,PHMO|phmo,Frais chantier|frais_chantier,Prix unitaires|prix_unitaires,Déboursé sec|debourse_sec,Récapitulatif|recap_final" %}
+    {% for step in steps|split:"," %}
+    {% with parts=step|split:"|" %}
+    <a href="{% url 'devis_btp:'|add:parts.1 pk=devis.pk %}"
+       style="padding:12px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;font-size:12px;color:var(--text2);text-decoration:none;background:#fff;display:block;">
+      <div style="font-size:18px;font-weight:700;color:var(--accent);margin-bottom:4px;">{{ forloop.counter }}</div>
+      {{ parts.0 }}
+    </a>
+    {% endwith %}
+    {% endfor %}
+    {% endwith %}
+  </div>
+</div>
+{% endblock %}

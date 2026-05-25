@@ -1,0 +1,79 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Avant-métré — {{ devis.reference }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:nomenclature' pk=devis.pk %}" class="btn primary"><i class="ti ti-arrow-right"></i> Nomenclature →</a>
+{% endblock %}
+{% block content %}
+<div class="alert info"><i class="ti ti-info-circle"></i> Quantité = NPS × L × l × H (m³) ou NPS × L × l (m²) ou NPS × L (ml). Signe "−" pour les déductions.</div>
+
+<div class="card">
+  <div class="card-title"><i class="ti ti-plus"></i> Ajouter une ligne</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid" style="grid-template-columns:80px 1fr 80px 80px 60px 60px 80px 80px 80px auto;">
+      <div class="form-field"><label>N° ouvrage</label>{{ form.ouvrage_num }}</div>
+      <div class="form-field"><label>Désignation</label>{{ form.designation }}</div>
+      <div class="form-field"><label>Repère</label>{{ form.repere }}</div>
+      <div class="form-field"><label>Unité</label>{{ form.unite }}</div>
+      <div class="form-field"><label>NPS</label>{{ form.nps }}</div>
+      <div class="form-field"><label>L</label>{{ form.longueur }}</div>
+      <div class="form-field"><label>l</label>{{ form.largeur }}</div>
+      <div class="form-field"><label>H</label>{{ form.hauteur }}</div>
+      <div class="form-field"><label>Signe</label>{{ form.signe }}</div>
+    </div>
+    <button type="submit" class="btn primary"><i class="ti ti-plus"></i> Ajouter</button>
+  </form>
+</div>
+
+<div class="card no-pad">
+  <div class="card-title" style="padding:14px 16px 0;"><i class="ti ti-ruler"></i> Lignes avant-métré</div>
+  <table>
+    <thead><tr>
+      <th>#</th><th>N° ouv.</th><th>Désignation</th><th>REP</th><th>U</th>
+      <th class="num">NPS</th><th class="num">L</th><th class="num">l</th><th class="num">H</th>
+      <th class="num">Partiel</th><th class="num">QAM</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr {% if l.signe == 'deduire' %}style="color:var(--danger);"{% endif %}>
+      <td class="muted">{{ forloop.counter }}</td>
+      <td class="muted">{{ l.ouvrage_num }}</td>
+      <td>{{ l.designation }}</td>
+      <td class="muted">{{ l.repere }}</td>
+      <td>{{ l.unite }}</td>
+      <td class="num">{{ l.nps }}</td>
+      <td class="num">{{ l.longueur }}</td>
+      <td class="num">{{ l.largeur }}</td>
+      <td class="num">{{ l.hauteur }}</td>
+      <td class="num">{{ l.partiel }}</td>
+      <td class="num" style="font-weight:600;">{% if l.signe == 'deduire' %}−{% endif %}{{ l.partiel }}</td>
+      <td>
+        <a href="{% url 'devis_btp:avantmetre_edit_ligne' pk=devis.pk ligne_pk=l.pk %}" class="btn sm"><i class="ti ti-edit"></i></a>
+        <a href="{% url 'devis_btp:avantmetre_delete_ligne' pk=devis.pk ligne_pk=l.pk %}" class="btn sm danger"><i class="ti ti-x"></i></a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="12" style="text-align:center;padding:20px;color:var(--text2);">Aucune ligne. Utilisez le formulaire ci-dessus.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card no-pad">
+  <div class="card-title" style="padding:14px 16px 0;"><i class="ti ti-sum"></i> Récapitulatif QAM</div>
+  <table>
+    <thead><tr><th>N°</th><th>Désignation</th><th>Unité</th><th class="num">QAM</th></tr></thead>
+    <tbody>
+    {% for r in recap %}
+    <tr>
+      <td class="muted">{{ r.numero }}</td>
+      <td>{{ r.designation }}</td>
+      <td>{{ r.unite }}</td>
+      <td class="num" style="font-weight:600;color:var(--accent-dark);">{{ r.qam }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "devis_btp/base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:devis_list' %}" class="btn"><i class="ti ti-arrow-left"></i> Retour</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-title"><i class="ti ti-file-invoice"></i> {{ title }}</div>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.mission_id_ref }} {{ form.projet_id_ref }}
+    <div class="form-grid">
+      <div class="form-field"><label>Titre / Objet</label>{{ form.titre }}</div>
+      <div class="form-field"><label>Client</label>{{ form.client_nom }}</div>
+      <div class="form-field"><label>Source</label>{{ form.source }}</div>
+      <div class="form-field"><label>Mode MO</label>{{ form.mode_mo }}</div>
+      <div class="form-field"><label>Date</label>{{ form.date_devis }}</div>
+      <div class="form-field"><label>Validité</label>{{ form.date_validite }}</div>
+      <div class="form-field"><label>Durée chantier (mois)</label>{{ form.duree_chantier_mois }}</div>
+      <div class="form-field"><label>Maître d'ouvrage</label>{{ form.maitre_ouvrage }}</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Adresse chantier</label>{{ form.adresse_chantier }}</div>
+      <div class="form-field"><label>Adresse client</label>{{ form.client_adresse }}</div>
+    </div>
+    <details style="margin-bottom:14px;">
+      <summary style="cursor:pointer;font-size:13px;color:var(--text2);padding:8px 0;">Informations émetteur &amp; coefficient K</summary>
+      <div class="form-grid" style="margin-top:12px;">
+        <div class="form-field"><label>Nom émetteur</label>{{ form.emetteur_nom }}</div>
+        <div class="form-field"><label>NIF / STAT</label>{{ form.emetteur_nif }}</div>
+        <div class="form-field"><label>Taux aléas %</label>{{ form.taux_aleas }}</div>
+        <div class="form-field"><label>Taux bénéfices %</label>{{ form.taux_benefice }}</div>
+        <div class="form-field"><label>TVA %</label>{{ form.taux_tva }}</div>
+      </div>
+    </details>
+    <div style="display:flex;gap:8px;">
+      <button type="submit" class="btn primary"><i class="ti ti-check"></i> Enregistrer</button>
+      <a href="{% url 'devis_btp:devis_list' %}" class="btn">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

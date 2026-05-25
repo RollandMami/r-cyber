@@ -1,0 +1,168 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+
+{% block title %}Récapitulatif — {{ devis.reference }}{% endblock %}
+{% block page_title %}Récapitulatif & document livrable{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:devis_print' pk=devis.pk %}" class="btn primary" target="_blank">
+    <i class="ti ti-printer"></i> Imprimer / PDF
+  </a>
+  <a href="{% url 'devis_btp:debourse_sec' pk=devis.pk %}" class="btn">
+    <i class="ti ti-arrow-left"></i> Déboursé sec
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Coefficient K -->
+<div class="card">
+  <div class="card-title"><i class="ti ti-percentage"></i> Calcul du Coefficient K</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="form-field">
+        <label>Aléas %</label>
+        <input type="number" step="0.1" name="taux_aleas" value="{{ devis.taux_aleas }}"/>
+      </div>
+      <div class="form-field">
+        <label>Bénéfices %</label>
+        <input type="number" step="0.1" name="taux_benefice" value="{{ devis.taux_benefice }}"/>
+      </div>
+      <div class="form-field">
+        <label>TVA %</label>
+        <input type="number" step="0.1" name="taux_tva" value="{{ devis.taux_tva }}"/>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button type="submit" class="btn primary" style="width:100%">
+          <i class="ti ti-calculator"></i> Recalculer
+        </button>
+      </div>
+    </div>
+  </form>
+  <div style="background:var(--accent-light);padding:12px 16px;border-radius:var(--radius);margin-top:8px;">
+    <strong style="color:var(--accent-dark);font-size:14px;">
+      K = (1 + {{ devis.taux_aleas }}%) × (1 + {{ devis.taux_benefice }}%) × (1 + {{ devis.taux_tva }}%) = {{ recap_fin.coefficient_k }}
+    </strong>
+  </div>
+</div>
+
+<!-- Synthèse DEPS par ouvrage -->
+<div class="card no-pad">
+  <div class="card-title" style="padding:16px 20px 0;">
+    <i class="ti ti-table"></i> Tableau DEPS — Déboursé sec par ouvrage
+  </div>
+  <table style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>N°</th>
+        <th>Désignation</th>
+        <th>U</th>
+        <th class="num">QAM</th>
+        <th class="num">PU Mat.</th>
+        <th class="num">PU MO</th>
+        <th class="num">PU Frais</th>
+        <th class="num">Déboursé sec</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in lignes_deps %}
+      <tr>
+        <td class="muted">{{ ligne.numero }}</td>
+        <td>{{ ligne.designation }}</td>
+        <td>{{ ligne.unite }}</td>
+        <td class="num">{{ ligne.qam }}</td>
+        <td class="num">{{ ligne.pu_materiaux|ariary }}</td>
+        <td class="num">{{ ligne.pu_mo|ariary }}</td>
+        <td class="num">{{ ligne.pu_frais|ariary }}</td>
+        <td class="num" style="font-weight:600;">{{ ligne.montant_total|ariary }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="muted" style="text-align:center;padding:20px;">
+        Aucune ligne — calculez d'abord le déboursé sec.
+      </td></tr>
+      {% endfor %}
+      <tr class="total-row">
+        <td colspan="7">Déboursé sec total</td>
+        <td class="num">{{ recap_fin.debourse_sec|ariary }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Synthèse financière -->
+<div class="card no-pad" style="margin-bottom:16px;">
+  <div class="card-title" style="padding:16px 20px 0;"><i class="ti ti-receipt"></i> Synthèse financière</div>
+  <table style="margin-top:12px;">
+    <tbody>
+      <tr>
+        <td>Déboursé sec matériaux</td>
+        <td class="num">{{ recap_fin.debourse_sec|ariary }}</td>
+      </tr>
+      <tr>
+        <td>Aléas et imprévus ({{ recap_fin.taux_aleas }}%)</td>
+        <td class="num">{{ recap_fin.montant_aleas|ariary }}</td>
+      </tr>
+      <tr>
+        <td>Bénéfices ({{ recap_fin.taux_benefice }}%)</td>
+        <td class="num">{{ recap_fin.montant_benefice|ariary }}</td>
+      </tr>
+      <tr class="total-row">
+        <td>Montant Hors Taxes (HT)</td>
+        <td class="num">{{ recap_fin.montant_ht|ariary }}</td>
+      </tr>
+      <tr>
+        <td>TVA ({{ recap_fin.taux_tva }}%)</td>
+        <td class="num">{{ recap_fin.montant_tva|ariary }}</td>
+      </tr>
+      <tr class="total-row" style="font-size:16px;">
+        <td><strong>MONTANT TOTAL TTC</strong></td>
+        <td class="num"><strong>{{ recap_fin.montant_ttc|ariary }}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Mention officielle -->
+<div class="card" style="border:2px solid var(--accent);text-align:center;">
+  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Mention officielle du devis</div>
+  <p style="font-size:15px;line-height:2;color:var(--text);">
+    Le présent devis s'arrête à la somme de :<br/>
+    <strong style="font-size:22px;color:var(--accent-dark);">{{ recap_fin.montant_ttc|ariary }}</strong><br/>
+    <em style="font-size:14px;color:var(--text2);">({{ en_lettres }})</em>
+  </p>
+</div>
+
+<!-- En-tête document livrable -->
+<div class="card">
+  <div class="card-title"><i class="ti ti-building"></i> Aperçu document livrable</div>
+  <div style="border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:var(--accent-dark);">DEVIS N° {{ devis.reference }}</div>
+        <div style="color:var(--text2);font-size:12px;margin-top:4px;">Date : {{ devis.date_devis }} {% if devis.date_validite %} — Valide jusqu'au : {{ devis.date_validite }}{% endif %}</div>
+      </div>
+      <div style="text-align:right;font-size:13px;">
+        <div style="font-weight:600;">{{ devis.emetteur_nom }}</div>
+        <div style="color:var(--text2);">{{ devis.emetteur_adresse }}</div>
+        {% if devis.emetteur_nif %}<div style="color:var(--text2);">NIF : {{ devis.emetteur_nif }}</div>{% endif %}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px;">
+      <div>
+        <div style="font-weight:600;margin-bottom:6px;">CLIENT</div>
+        <div>{{ devis.client_nom }}</div>
+        <div style="color:var(--text2);">{{ devis.client_adresse }}</div>
+        {% if devis.maitre_ouvrage %}<div>MOA : {{ devis.maitre_ouvrage }}</div>{% endif %}
+      </div>
+      <div>
+        <div style="font-weight:600;margin-bottom:6px;">CHANTIER</div>
+        <div>{{ devis.adresse_chantier }}</div>
+        <div style="margin-top:6px;"><strong>Objet :</strong> {{ devis.titre }}</div>
+        <div><strong>Source :</strong> {{ devis.get_source_display }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "devis_btp/base.html" %}
+{% block page_title %}Modifier la ligne — {{ devis.reference }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:avantmetre' pk=devis.pk %}" class="btn">
+    <i class="ti ti-arrow-left"></i> Retour avant-métré
+  </a>
+{% endblock %}
+{% block content %}
+<div class="card" style="max-width:700px;">
+  <div class="card-title"><i class="ti ti-edit"></i> Modifier la ligne d'avant-métré</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="form-field">
+        <label>N° ouvrage</label>
+        {{ form.ouvrage_num }}
+      </div>
+      <div class="form-field" style="grid-column: span 2;">
+        <label>Désignation</label>
+        {{ form.designation }}
+      </div>
+      <div class="form-field">
+        <label>Repère</label>
+        {{ form.repere }}
+      </div>
+      <div class="form-field">
+        <label>Unité</label>
+        {{ form.unite }}
+      </div>
+      <div class="form-field">
+        <label>Signe</label>
+        {{ form.signe }}
+      </div>
+    </div>
+    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="form-field">
+        <label>NPS (Nombre)</label>
+        {{ form.nps }}
+      </div>
+      <div class="form-field">
+        <label>L — Longueur (m)</label>
+        {{ form.longueur }}
+      </div>
+      <div class="form-field">
+        <label>l — Largeur (m)</label>
+        {{ form.largeur }}
+      </div>
+      <div class="form-field">
+        <label>H — Hauteur (m)</label>
+        {{ form.hauteur }}
+      </div>
+    </div>
+    <div class="form-field" style="margin-bottom: 14px;">
+      <label>Note</label>
+      {{ form.note }}
+    </div>
+
+    {% if ligne %}
+    <div class="alert info" style="margin-bottom:14px;">
+      <i class="ti ti-info-circle"></i>
+      Résultat actuel : QAM = <strong>{{ ligne.qam }}</strong> {{ ligne.unite }}
+      (Partiel = {{ ligne.partiel }})
+    </div>
+    {% endif %}
+
+    <div style="display:flex; gap:8px;">
+      <button type="submit" class="btn primary">
+        <i class="ti ti-check"></i> Enregistrer
+      </button>
+      <a href="{% url 'devis_btp:avantmetre' pk=devis.pk %}" class="btn">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

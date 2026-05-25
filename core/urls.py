@@ -31,6 +31,7 @@ urlpatterns = [
 	path('dashboard/', include('apps.dashboard.urls')),
 	path('bureau-etude/', include('apps.bureau_etude.urls')),
 	path('info-dev/', include('apps.info_dev.urls')),
+	path('devis/', include('apps.devis_btp.urls', namespace='devis_btp')),
 
     # App version management
     path('api/version/',  api_version,      name='api_version'),

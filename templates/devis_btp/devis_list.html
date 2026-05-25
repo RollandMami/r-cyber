@@ -1,0 +1,34 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Mes devis{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:devis_create' %}" class="btn primary"><i class="ti ti-plus"></i> Nouveau devis</a>
+{% endblock %}
+{% block content %}
+<div class="card" style="padding:10px 16px;margin-bottom:16px;">
+  <form method="get" style="display:flex;gap:8px;">
+    <input type="text" name="q" value="{{ q }}" placeholder="Rechercher..." style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;"/>
+    <button type="submit" class="btn"><i class="ti ti-search"></i> Rechercher</button>
+  </form>
+</div>
+{% if devis_list %}
+  {% for d in devis_list %}
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:#fff;">
+    <div>
+      <div style="font-weight:600;">{{ d.reference }} — {{ d.titre }}</div>
+      <div style="font-size:12px;color:var(--text2);">{{ d.client_nom }} · {{ d.date_devis }} · {{ d.get_source_display }}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="badge {% if d.statut == 'finalise' or d.statut == 'accepte' %}green{% elif d.statut == 'brouillon' %}amber{% else %}grey{% endif %}">{{ d.get_statut_display }}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--accent-dark);">{{ d.montant_ttc|ariary }}</span>
+      <a href="{% url 'devis_btp:avantmetre' pk=d.pk %}" class="btn sm"><i class="ti ti-edit"></i> Ouvrir</a>
+      <a href="{% url 'devis_btp:recap_final' pk=d.pk %}" class="btn sm"><i class="ti ti-receipt"></i></a>
+      <a href="{% url 'devis_btp:devis_print' pk=d.pk %}" class="btn sm" target="_blank"><i class="ti ti-printer"></i></a>
+      <a href="{% url 'devis_btp:devis_delete' pk=d.pk %}" class="btn sm danger"><i class="ti ti-trash"></i></a>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="empty-state"><i class="ti ti-file-invoice"></i><p>Aucun devis.{% if q %} Essayez une autre recherche.{% endif %}</p><a href="{% url 'devis_btp:devis_create' %}" class="btn primary"><i class="ti ti-plus"></i> Nouveau devis</a></div>
+{% endif %}
+{% endblock %}

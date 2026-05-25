@@ -1,0 +1,29 @@
+{% extends "devis_btp/base.html" %}
+{% block page_title %}Base — Dosages béton/mortier{% endblock %}
+{% block topbar_actions %}<a href="{% url 'devis_btp:dosage_create' %}" class="btn primary"><i class="ti ti-plus"></i> Ajouter</a>{% endblock %}
+{% block content %}
+<div class="card no-pad">
+  <table>
+    <thead><tr>
+      <th>Code</th><th>Catégorie</th><th>Dosage (kg)</th><th>Liant</th>
+      <th class="num">Sable m³</th><th class="num">Gravillon m³</th><th class="num">Eau L</th><th class="num">Ciment kg</th><th class="num">Chaux kg</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for d in dosages %}
+    <tr>
+      <td class="muted">{{ d.code }}</td>
+      <td><span class="badge {% if d.categorie == 'BETON' %}green{% else %}amber{% endif %}">{{ d.categorie }}</span></td>
+      <td>{{ d.dosage_kg }}</td>
+      <td>{{ d.choix_liant }}</td>
+      <td class="num">{{ d.sable_m3 }}</td>
+      <td class="num">{{ d.gravillon_m3 }}</td>
+      <td class="num">{{ d.eau_litres }}</td>
+      <td class="num">{{ d.ciment_kg }}</td>
+      <td class="num">{{ d.chaux_kg }}</td>
+      <td><a href="{% url 'devis_btp:dosage_edit' pk=d.pk %}" class="btn sm"><i class="ti ti-edit"></i></a> <a href="{% url 'devis_btp:dosage_delete' pk=d.pk %}" class="btn sm danger"><i class="ti ti-trash"></i></a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

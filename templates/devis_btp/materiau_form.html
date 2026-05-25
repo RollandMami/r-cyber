@@ -1,0 +1,26 @@
+{% extends "devis_btp/base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'devis_btp:materiaux_list' %}" class="btn"><i class="ti ti-arrow-left"></i> Retour</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-title"><i class="ti ti-database"></i> {{ title }}</div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-field"><label>Code</label>{{ form.code }}</div>
+      <div class="form-field"><label>Désignation</label>{{ form.designation }}</div>
+      <div class="form-field"><label>Unité</label>{{ form.unite }}</div>
+      <div class="form-field"><label>Prix fournisseur (Ar)</label>{{ form.prix_fournisseur }}</div>
+      <div class="form-field"><label>Frais manutention (Ar)</label>{{ form.frais_manutention }}</div>
+      <div class="form-field"><label>Frais transport (Ar)</label>{{ form.frais_transport }}</div>
+      <div class="form-field"><label>Taux chute et perte (%)</label>{{ form.taux_chute }}</div>
+    </div>
+    <div class="form-field" style="margin-bottom:12px;"><label>Note</label>{{ form.note }}</div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;">{{ form.actif }} Actif</label>
+    <div style="display:flex;gap:8px;">
+      <button type="submit" class="btn primary"><i class="ti ti-check"></i> Enregistrer</button>
+      <a href="{% url 'devis_btp:materiaux_list' %}" class="btn">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

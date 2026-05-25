@@ -1,0 +1,218 @@
+{% load devis_filters %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<title>Devis {{ devis.reference }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Times New Roman', Georgia, serif; font-size: 11pt; color: #111; background: #fff; }
+  .page { max-width: 210mm; margin: 0 auto; padding: 15mm 20mm; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid #1D9E75; }
+  .header .emetteur .brand { font-size: 22pt; font-weight: 700; color: #085041; letter-spacing: -0.5px; }
+  .header .emetteur .sub { font-size: 9pt; color: #666; margin-top: 2px; }
+  .header .ref-block { text-align: right; }
+  .header .ref-block .ref { font-size: 16pt; font-weight: 700; color: #1D9E75; }
+  .header .ref-block .date { font-size: 10pt; color: #666; }
+
+  /* Client + chantier */
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; font-size: 10pt; }
+  .partie-box { border: 1px solid #ddd; border-radius: 4px; padding: 10px 14px; }
+  .partie-box .titre { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1D9E75; margin-bottom: 6px; }
+
+  /* Objet */
+  .objet-box { background: #E1F5EE; border-left: 4px solid #1D9E75; padding: 8px 14px; margin-bottom: 20px; font-size: 11pt; }
+  .objet-box strong { color: #085041; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 16px; }
+  th { background: #085041; color: #fff; padding: 7px 10px; text-align: left; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.3px; }
+  th.num { text-align: right; }
+  td { padding: 6px 10px; border-bottom: 0.5pt solid #ddd; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.section td { background: #f0f0f0; font-weight: 700; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5px; }
+  tr.total td { background: #E1F5EE; font-weight: 700; color: #085041; }
+  tr.grand-total td { background: #085041; color: #fff; font-weight: 700; font-size: 12pt; }
+  tr.grand-total td.num { text-align: right; }
+  tr:last-child td { border-bottom: none; }
+
+  /* Synthèse */
+  .synthese { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .synthese-table { }
+  .synthese-k { border: 1px solid #1D9E75; border-radius: 4px; padding: 12px; background: #E1F5EE; }
+  .synthese-k .k-title { font-size: 9pt; text-transform: uppercase; font-weight: 700; color: #085041; margin-bottom: 8px; }
+  .synthese-k .k-row { display: flex; justify-content: space-between; font-size: 10pt; margin-bottom: 4px; }
+  .synthese-k .k-formula { font-size: 9pt; color: #444; margin-top: 8px; padding-top: 8px; border-top: 1px solid #1D9E75; }
+
+  /* Mention officielle */
+  .mention { border: 2pt solid #1D9E75; border-radius: 4px; padding: 20px; text-align: center; margin-bottom: 20px; }
+  .mention .montant { font-size: 18pt; font-weight: 700; color: #085041; margin: 8px 0; }
+  .mention .lettres { font-style: italic; font-size: 11pt; color: #444; }
+
+  /* Signatures */
+  .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 24px; }
+  .sig-box { border-top: 1px solid #ccc; padding-top: 10px; font-size: 10pt; color: #444; }
+  .sig-box .role { font-weight: 700; margin-bottom: 40px; }
+
+  /* Pied de page */
+  .footer { text-align: center; font-size: 8pt; color: #999; margin-top: 24px; padding-top: 12px; border-top: 0.5pt solid #ccc; }
+
+  /* Section séparateur */
+  .section-title { font-size: 12pt; font-weight: 700; color: #085041; border-bottom: 1pt solid #1D9E75; margin: 20px 0 10px; padding-bottom: 4px; }
+
+  @media print {
+    .page { padding: 10mm 15mm; }
+    .no-print { display: none !important; }
+    table { page-break-inside: avoid; }
+  }
+  @media screen {
+    body { background: #f0f0f0; }
+    .page { background: #fff; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Bouton imprimer (screen only) -->
+  <div class="no-print" style="text-align:right;margin-bottom:16px;">
+    <button onclick="window.print()" style="padding:8px 18px;background:#1D9E75;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;">
+      🖨 Imprimer / Enregistrer PDF
+    </button>
+    <a href="javascript:window.close()" style="margin-left:8px;padding:8px 14px;border:1px solid #ccc;border-radius:6px;font-size:13px;text-decoration:none;color:#444;">Fermer</a>
+  </div>
+
+  <!-- En-tête -->
+  <div class="header">
+    <div class="emetteur">
+      <div class="brand">{{ devis.emetteur_nom }}</div>
+      <div class="sub">BUREAU D'ÉTUDE & CONSTRUCTION BTP</div>
+      {% if devis.emetteur_adresse %}<div style="font-size:10pt;color:#555;margin-top:4px;">{{ devis.emetteur_adresse }}</div>{% endif %}
+      {% if devis.emetteur_nif %}<div style="font-size:9pt;color:#888;">NIF : {{ devis.emetteur_nif }}</div>{% endif %}
+    </div>
+    <div class="ref-block">
+      <div style="font-size:9pt;color:#888;text-transform:uppercase;letter-spacing:1px;">Devis N°</div>
+      <div class="ref">{{ devis.reference }}</div>
+      <div class="date">Date : {{ devis.date_devis }}</div>
+      {% if devis.date_validite %}<div class="date">Validité : {{ devis.date_validite }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Client + Chantier -->
+  <div class="parties">
+    <div class="partie-box">
+      <div class="titre">Client / Maître d'ouvrage</div>
+      <strong>{{ devis.client_nom }}</strong><br/>
+      {% if devis.client_adresse %}<div>{{ devis.client_adresse }}</div>{% endif %}
+      {% if devis.client_tel %}<div>Tél : {{ devis.client_tel }}</div>{% endif %}
+      {% if devis.maitre_ouvrage %}<div>MOA : {{ devis.maitre_ouvrage }}</div>{% endif %}
+    </div>
+    <div class="partie-box">
+      <div class="titre">Chantier</div>
+      {% if devis.adresse_chantier %}<div>{{ devis.adresse_chantier }}</div>{% endif %}
+      <div style="margin-top:6px;"><strong>Durée prévue :</strong> {{ devis.duree_chantier_mois }} mois</div>
+      <div><strong>Source :</strong> {{ devis.get_source_display }}</div>
+    </div>
+  </div>
+
+  <!-- Objet -->
+  <div class="objet-box">
+    <strong>Objet :</strong> {{ devis.titre }}
+  </div>
+
+  <!-- ── SECTION 1 : Déboursé sec ── -->
+  <div class="section-title">A — Tableau de Déboursé Sec (DEPS)</div>
+  <table>
+    <thead>
+      <tr>
+        <th>N°</th><th>Désignation</th><th>U</th>
+        <th class="num">QAM</th>
+        <th class="num">PU Mat. (Ar)</th>
+        <th class="num">PU MO (Ar)</th>
+        <th class="num">PU Frais (Ar)</th>
+        <th class="num">Montant (Ar)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in lignes_deps %}
+      <tr>
+        <td>{{ ligne.numero }}</td>
+        <td>{{ ligne.designation }}</td>
+        <td>{{ ligne.unite }}</td>
+        <td class="num">{{ ligne.qam }}</td>
+        <td class="num">{{ ligne.pu_materiaux|ariary }}</td>
+        <td class="num">{{ ligne.pu_mo|ariary }}</td>
+        <td class="num">{{ ligne.pu_frais|ariary }}</td>
+        <td class="num"><strong>{{ ligne.montant_total|ariary }}</strong></td>
+      </tr>
+      {% endfor %}
+      <tr class="total">
+        <td colspan="7">Sous-total déboursé sec</td>
+        <td class="num">{{ recap_fin.debourse_sec|ariary }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── SECTION 2 : Synthèse financière + K ── -->
+  <div class="section-title">B — Synthèse financière</div>
+  <div class="synthese">
+    <table class="synthese-table">
+      <tbody>
+        <tr><td>Déboursé sec (DS)</td><td class="num">{{ recap_fin.debourse_sec|ariary }}</td></tr>
+        <tr><td>Aléas / imprévus ({{ recap_fin.taux_aleas }}%)</td><td class="num">{{ recap_fin.montant_aleas|ariary }}</td></tr>
+        <tr><td>Bénéfices ({{ recap_fin.taux_benefice }}%)</td><td class="num">{{ recap_fin.montant_benefice|ariary }}</td></tr>
+        <tr class="total"><td>Montant HT</td><td class="num">{{ recap_fin.montant_ht|ariary }}</td></tr>
+        <tr><td>TVA ({{ recap_fin.taux_tva }}%)</td><td class="num">{{ recap_fin.montant_tva|ariary }}</td></tr>
+        <tr class="grand-total"><td>MONTANT TTC</td><td class="num">{{ recap_fin.montant_ttc|ariary }}</td></tr>
+      </tbody>
+    </table>
+    <div class="synthese-k">
+      <div class="k-title">Coefficient K</div>
+      <div class="k-row"><span>Aléas :</span><span>{{ recap_fin.taux_aleas }}%</span></div>
+      <div class="k-row"><span>Bénéfices :</span><span>{{ recap_fin.taux_benefice }}%</span></div>
+      <div class="k-row"><span>TVA :</span><span>{{ recap_fin.taux_tva }}%</span></div>
+      <div class="k-formula">
+        K = {{ recap_fin.coefficient_k }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Mention officielle ── -->
+  <div class="mention">
+    <div style="font-size:10pt;color:#666;text-transform:uppercase;letter-spacing:1px;">Arrêté du présent devis</div>
+    <div class="montant">{{ recap_fin.montant_ttc|ariary }}</div>
+    <div class="lettres">({{ en_lettres }})</div>
+  </div>
+
+  <!-- Conditions -->
+  {% if devis.conditions %}
+  <div class="section-title">Conditions générales</div>
+  <div style="font-size:10pt;line-height:1.7;color:#333;margin-bottom:16px;">{{ devis.conditions|linebreaks }}</div>
+  {% endif %}
+
+  <!-- Signatures -->
+  <div class="signatures">
+    <div class="sig-box">
+      <div class="role">L'entreprise :</div>
+      <div style="font-size:10pt;">{{ devis.emetteur_nom }}</div>
+      <div style="color:#888;font-size:9pt;margin-top:4px;">Signature et cachet</div>
+    </div>
+    <div class="sig-box">
+      <div class="role">Le client / MOA :</div>
+      <div style="font-size:10pt;">{{ devis.client_nom }}</div>
+      <div style="color:#888;font-size:9pt;margin-top:4px;">Lu et approuvé — Signature</div>
+    </div>
+  </div>
+
+  <!-- Pied de page -->
+  <div class="footer">
+    Document généré par MOREX Devis BTP — {{ devis.reference }} — {{ devis.date_devis }}
+    {% if devis.emetteur_tel %} — Tél : {{ devis.emetteur_tel }}{% endif %}
+    {% if devis.emetteur_email %} — {{ devis.emetteur_email }}{% endif %}
+  </div>
+
+</div>
+</body>
+</html>

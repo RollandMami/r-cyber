@@ -1,0 +1,27 @@
+{% extends "devis_btp/base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'devis_btp:dosages_list' %}" class="btn"><i class="ti ti-arrow-left"></i> Retour</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-title"><i class="ti ti-test-pipe"></i> {{ title }}</div>
+  <form method="post">{% csrf_token %}
+    <div class="form-grid">
+      <div class="form-field"><label>Code</label>{{ form.code }}</div>
+      <div class="form-field"><label>Catégorie</label>{{ form.categorie }}</div>
+      <div class="form-field"><label>Dosage kg/m³</label>{{ form.dosage_kg }}</div>
+      <div class="form-field"><label>Choix liant</label>{{ form.choix_liant }}</div>
+      <div class="form-field"><label>Sable m³</label>{{ form.sable_m3 }}</div>
+      <div class="form-field"><label>Gravillon m³</label>{{ form.gravillon_m3 }}</div>
+      <div class="form-field"><label>Eau (litres)</label>{{ form.eau_litres }}</div>
+      <div class="form-field"><label>Ciment kg</label>{{ form.ciment_kg }}</div>
+      <div class="form-field"><label>Chaux kg</label>{{ form.chaux_kg }}</div>
+      <div class="form-field"><label>Acier HA kg</label>{{ form.acier_kg }}</div>
+      <div class="form-field"><label>Fil recuit kg</label>{{ form.fil_recuit_kg }}</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button type="submit" class="btn primary"><i class="ti ti-check"></i> Enregistrer</button>
+      <a href="{% url 'devis_btp:dosages_list' %}" class="btn">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

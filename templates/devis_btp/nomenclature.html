@@ -1,0 +1,63 @@
+{% extends "devis_btp/base.html" %}
+{% load devis_filters %}
+{% block page_title %}Nomenclature matériaux — {{ devis.reference }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'devis_btp:phmo' pk=devis.pk %}" class="btn primary"><i class="ti ti-arrow-right"></i> PHMO →</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-title"><i class="ti ti-test-pipe"></i> Association ouvrage → dosage</div>
+  <form method="post">
+    {% csrf_token %}
+    <table>
+      <thead><tr><th>Ouvrage</th><th>Unité</th><th class="num">QAM</th><th>Dosage associé</th></tr></thead>
+      <tbody>
+      {% for r in recap %}
+      <tr>
+        <td>{{ r.designation }}</td>
+        <td>{{ r.unite }}</td>
+        <td class="num">{{ r.qam }}</td>
+        <td>
+          <select name="dosage_{{ r.pk }}" style="min-width:180px;">
+            <option value="">— aucun —</option>
+            {% for d in dosages %}
+            <option value="{{ d.pk }}" {% if r.dosage.pk == d.pk %}selected{% endif %}>{{ d.code }} — {{ d.get_categorie_display }} {{ d.dosage_kg }}kg {{ d.choix_liant }}</option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button type="submit" class="btn primary"><i class="ti ti-calculator"></i> Calculer la nomenclature</button>
+    </div>
+  </form>
+</div>
+
+<div class="card no-pad">
+  <div class="card-title" style="padding:14px 16px 0;"><i class="ti ti-list-numbers"></i> A1 — Nomenclature des matériaux</div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr>
+        <th>Ouvrage</th><th>Dosage</th><th>U</th><th class="num">QAM</th>
+        {% for m in materiaux %}<th class="num" style="font-size:10px;white-space:nowrap;">{{ m.code }}<br/>{{ m.unite }}</th>{% endfor %}
+      </tr></thead>
+      <tbody>
+      {% for r in recap %}
+      <tr>
+        <td>{{ r.designation }}</td>
+        <td class="muted">{% if r.dosage %}{{ r.dosage.code }}{% endif %}</td>
+        <td>{{ r.unite }}</td>
+        <td class="num">{{ r.qam }}</td>
+        {% for m in materiaux %}
+        <td class="num muted">—</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="padding:10px 16px;font-size:12px;color:var(--text2);">Cliquez "Calculer la nomenclature" pour remplir ce tableau.</p>
+</div>
+{% endblock %}
