@@ -519,14 +519,62 @@ def ged_download_dossier(request, patrimoine_pk):
     return response
 
 
+def _guess_mimetype(filename):
+    """Retourne le MIME type en fonction de l'extension."""
+    import mimetypes
+    ext = os.path.splitext(filename)[1].lower()
+    MIME_OVERRIDE = {
+        '.pdf':  'application/pdf',
+        '.png':  'image/png',
+        '.jpg':  'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif':  'image/gif',
+        '.webp': 'image/webp',
+        '.svg':  'image/svg+xml',
+        '.bmp':  'image/bmp',
+        '.txt':  'text/plain; charset=utf-8',
+        '.csv':  'text/plain; charset=utf-8',
+        '.json': 'application/json',
+        '.xml':  'text/xml; charset=utf-8',
+        '.html': 'text/html; charset=utf-8',
+        '.md':   'text/plain; charset=utf-8',
+        '.log':  'text/plain; charset=utf-8',
+        '.py':   'text/plain; charset=utf-8',
+        '.js':   'text/plain; charset=utf-8',
+        '.css':  'text/plain; charset=utf-8',
+        '.sql':  'text/plain; charset=utf-8',
+        '.ifc':  'text/plain; charset=utf-8',
+    }
+    if ext in MIME_OVERRIDE:
+        return MIME_OVERRIDE[ext]
+    mime, _ = mimetypes.guess_type(filename)
+    return mime or 'application/octet-stream'
+
+
 @login_required
 def ged_download(request, pk):
-    """Télécharge un document unique de la GED."""
+    """
+    Télécharge ou prévisualise un document de la GED.
+    ?inline=1  → Content-Disposition: inline  (prévisualisation navigateur)
+    (défaut)   → Content-Disposition: attachment (téléchargement forcé)
+    """
     doc = get_object_or_404(DocumentGED, pk=pk)
     if not doc.fichier:
         raise Http404
-    return FileResponse(doc.fichier.open('rb'), as_attachment=True,
-                        filename=os.path.basename(doc.fichier.name))
+
+    inline   = request.GET.get('inline') == '1'
+    fname    = os.path.basename(doc.fichier.name)
+    mimetype = _guess_mimetype(fname)
+
+    response = FileResponse(
+        doc.fichier.open('rb'),
+        content_type=mimetype,
+        as_attachment=not inline,
+        filename=fname,
+    )
+    # Autoriser l'affichage en iframe même-origine
+    response['X-Frame-Options'] = 'SAMEORIGIN'
+    return response
 
 
 @login_required

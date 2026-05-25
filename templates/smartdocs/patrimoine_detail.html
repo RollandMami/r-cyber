@@ -110,153 +110,235 @@
         <!-- ══ ONGLET 1 — INFORMATIONS GÉNÉRALES ══════════════ -->
         <div class="nb-pane active" id="pane-info">
 
-            <div class="info-grid">
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-calendar me-1"></i>Année de construction</div>
-                    <div class="ic-value">{{ patrimoine.annee_construction|default:"—" }}</div>
-                </div>
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-ruler-combined me-1"></i>Surface habitable</div>
-                    <div class="ic-value">
-                        {% if surface_ifc %}
-                            {{ surface_ifc|floatformat:0 }} m²
-                            <small style="font-size:0.6rem;color:#bbb;display:block;">calculée IFC</small>
-                        {% elif patrimoine.surface_totale %}
-                            {{ patrimoine.surface_totale }} m²
-                        {% else %}—{% endif %}
+            <!-- ── KPI bar — toute en une ligne sur grand écran ── -->
+            <div class="kpi-bar">
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#eff6ff;"><i class="fas fa-calendar" style="color:#3b82f6;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Année de construction</div>
+                        <div class="kpi-value">{{ patrimoine.annee_construction|default:"—" }}</div>
                     </div>
                 </div>
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-layer-group me-1"></i>Nombre d'étages</div>
-                    <div class="ic-value">{{ nb_etages }}</div>
+                <div class="kpi-sep"></div>
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#f0fdf4;"><i class="fas fa-ruler-combined" style="color:#22c55e;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Surface habitable</div>
+                        <div class="kpi-value">
+                            {% if surface_ifc %}{{ surface_ifc|floatformat:0 }} <span class="kpi-unit">m²</span>
+                                <span class="kpi-sub">IFC exacte</span>
+                            {% elif patrimoine.surface_totale %}{{ patrimoine.surface_totale }} <span class="kpi-unit">m²</span>
+                            {% else %}—{% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-file-alt me-1"></i>Documents</div>
-                    <div class="ic-value">{{ total_docs }}</div>
+                <div class="kpi-sep"></div>
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#faf5ff;"><i class="fas fa-layer-group" style="color:#a855f7;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Nombre d'étages</div>
+                        <div class="kpi-value">{{ nb_etages }}</div>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-door-open me-1"></i>Ouvertures</div>
-                    <div class="ic-value">{{ ouvertures.count }}</div>
+                <div class="kpi-sep"></div>
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#fff7ed;"><i class="fas fa-file-alt" style="color:#f97316;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Documents</div>
+                        <div class="kpi-value">{{ total_docs }}</div>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-toilet me-1"></i>Sanitaires</div>
-                    <div class="ic-value">{{ sanitaires.count }}</div>
+                <div class="kpi-sep"></div>
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#eff6ff;"><i class="fas fa-door-open" style="color:#3b82f6;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Ouvertures</div>
+                        <div class="kpi-value">{{ ouvertures.count }}</div>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-lightbulb me-1"></i>Éclairage / Électrique</div>
-                    <div class="ic-value">{{ electrique.count }}</div>
+                <div class="kpi-sep"></div>
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#f0fdf4;"><i class="fas fa-toilet" style="color:#22c55e;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Sanitaires</div>
+                        <div class="kpi-value">{{ sanitaires.count }}</div>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="ic-label"><i class="fas fa-shield-alt me-1"></i>Garde-corps</div>
-                    <div class="ic-value">{{ protection.count }}</div>
+                <div class="kpi-sep"></div>
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#fefce8;"><i class="fas fa-lightbulb" style="color:#eab308;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Éclairage / Électrique</div>
+                        <div class="kpi-value">{{ electrique.count }}</div>
+                    </div>
+                </div>
+                <div class="kpi-sep"></div>
+                <div class="kpi-item">
+                    <div class="kpi-icon" style="background:#fdf4ff;"><i class="fas fa-shield-alt" style="color:#d946ef;"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Garde-corps</div>
+                        <div class="kpi-value">{{ protection.count }}</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="row g-3">
-                <!-- Revêtements — tableau enrichi mur/sol/plafond -->
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm" style="border-radius:14px;">
-                        <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex align-items-center gap-3 flex-wrap">
-                            <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
-                                <i class="fas fa-paint-roller me-2" style="color:var(--c-blue,#1e6fca);"></i>Revêtements
-                            </h6>
-                            <!-- Filtres type -->
-                            <div class="d-flex flex-wrap gap-1 ms-auto">
-                                <button class="rev-tab-btn active" onclick="filterRevTab('all',this)"
-                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid #bfdbfe;background:var(--c-blue,#1e6fca);color:#fff;cursor:pointer;">
-                                    Tout
-                                </button>
-                                {% for g in groupes_revetements %}
-                                <button class="rev-tab-btn" onclick="filterRevTab('{{ g.type }}',this)"
-                                        style="font-size:0.72rem;padding:0.2rem 0.65rem;border-radius:50px;border:1px solid #e2e8f0;background:#fff;color:#888;cursor:pointer;">
-                                    <i class="fas {{ g.icone }} me-1"></i>{{ g.label }}
-                                    {% if g.total_surf %}<span class="text-muted" style="font-size:0.68rem;"> · {{ g.total_surf }} m²</span>{% endif %}
-                                </button>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            {% if groupes_revetements %}
-                            {% for g in groupes_revetements %}
-                            <div class="rev-groupe" data-type="{{ g.type }}">
-                                <div class="px-3 py-2 d-flex align-items-center gap-2"
-                                     style="background:#f0f7ff;border-top:1px solid #e8f2ff;">
-                                    <i class="fas {{ g.icone }}" style="color:var(--c-blue,#1e6fca);font-size:0.82rem;"></i>
-                                    <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:0.07em;color:var(--c-blue,#1e6fca);">{{ g.label }}</span>
-                                    {% if g.total_surf %}
-                                    <span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.65rem;">{{ g.total_surf }} m² total</span>
-                                    {% endif %}
-                                </div>
-                                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-                                    <table class="table table-sm table-hover mb-0" style="font-size:0.8rem;min-width:650px;">
-                                        <thead style="background:#fff;">
-                                            <tr style="border-bottom:2px solid #e2e8f0;">
-                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:100px;">Bâtiment</th>
-                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:80px;">Étage</th>
-                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:100px;">Zone / Pièce</th>
-                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:70px;">Revêtement</th>
-                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:130px;">Nature</th>
-                                                <th style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:130px;">Matériau</th>
-                                                <th class="text-end" style="padding:0.45rem 0.75rem;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;min-width:80px;">Surface</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for r in g.items %}
-                                            <tr style="border-bottom:1px solid #f0f7ff;">
-                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;color:#64748b;">{{ patrimoine.nom }}</td>
-                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;">
-                                                    <span class="badge" style="background:#e8f2ff;color:#1e40af;font-size:0.68rem;font-weight:500;">
-                                                        {{ r.etage.nom|default:"—" }}
-                                                    </span>
-                                                </td>
-                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;color:#475569;">
-                                                    {{ r.piece.nom|default:"—" }}
-                                                </td>
-                                                <td style="padding:0.4rem 0.75rem;">
-                                                    <span class="badge" style="font-size:0.68rem;font-weight:600;padding:0.25rem 0.5rem;border-radius:6px;
-                                                        {% if r.type_revetement == 'sol' %}background:#fef3c7;color:#92400e;
-                                                        {% elif r.type_revetement == 'plafond' %}background:#f0fdf4;color:#166534;
-                                                        {% else %}background:#eff6ff;color:#1d4ed8;{% endif %}">
-                                                        {{ r.get_type_revetement_display }}
-                                                    </span>
-                                                </td>
-                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:500;">
-                                                    {{ r.nature|default:"—" }}
-                                                </td>
-                                                <td style="padding:0.4rem 0.75rem;font-size:0.78rem;color:#64748b;">
-                                                    {{ r.materiau|default:"—" }}
-                                                </td>
-                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:600;">
-                                                    {% if r.surface %}{{ r.surface|floatformat:2 }} m²{% else %}<span style="opacity:0.3;">—</span>{% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                        {% if g.total_surf %}
-                                        <tfoot>
-                                            <tr style="background:#f0f7ff;border-top:2px solid #bfdbfe;">
-                                                <td colspan="6" style="padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:700;color:var(--c-blue,#1e6fca);">Total {{ g.label }}</td>
-                                                <td class="text-end" style="padding:0.4rem 0.75rem;font-size:0.82rem;font-weight:700;color:var(--c-blue,#1e6fca);">{{ g.total_surf }} m²</td>
-                                            </tr>
-                                        </tfoot>
-                                        {% endif %}
-                                    </table>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            {% else %}
-                            <p class="text-muted small text-center py-4 mb-0">
-                                Aucun revêtement extrait.{% if not patrimoine.fichier_ifc %} Uploadez un IFC.{% endif %}
-                            </p>
+            <!-- ── Revêtements ─────────────────────────────────── -->
+            <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
+                <div class="card-header bg-transparent border-0 pt-3 pb-2 px-3 d-flex align-items-center gap-3 flex-wrap">
+                    <h6 class="fw-bold mb-0" style="font-size:0.87rem;">
+                        <i class="fas fa-paint-roller me-2" style="color:var(--c-blue,#1e6fca);"></i>Revêtements
+                    </h6>
+                    <!-- Filtres type (inclut plafond explicitement) -->
+                    <div class="d-flex flex-wrap gap-1 ms-auto">
+                        <button class="rev-tab-btn active" onclick="filterRevTab('all',this)">Tout</button>
+                        <button class="rev-tab-btn" onclick="filterRevTab('mur',this)">
+                            <i class="fas fa-border-all me-1"></i>Murs
+                        </button>
+                        <button class="rev-tab-btn" onclick="filterRevTab('sol',this)">
+                            <i class="fas fa-layer-group me-1"></i>Sols
+                        </button>
+                        <button class="rev-tab-btn" onclick="filterRevTab('plafond',this)">
+                            <i class="fas fa-cloud me-1"></i>Plafonds
+                        </button>
+                        <button class="rev-tab-btn" onclick="filterRevTab('autre',this)">
+                            <i class="fas fa-cube me-1"></i>Autres
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    {% if groupes_revetements %}
+                    {% for g in groupes_revetements %}
+                    <div class="rev-groupe" data-type="{{ g.type }}" id="rev-groupe-{{ g.type }}">
+                        <!-- Sous-header -->
+                        <div class="px-3 py-2 d-flex align-items-center gap-2"
+                             style="background:#f0f7ff;border-top:1px solid #e8f2ff;">
+                            <i class="fas {{ g.icone }}" style="color:var(--c-blue,#1e6fca);font-size:0.82rem;"></i>
+                            <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:0.07em;color:var(--c-blue,#1e6fca);">
+                                {{ g.label }}
+                            </span>
+                            {% if g.total_surf %}
+                            <span class="badge ms-1" style="background:#dbeafe;color:#1e40af;font-size:0.65rem;">
+                                {{ g.total_surf }} m² total
+                            </span>
                             {% endif %}
+                            <span class="badge ms-1" style="background:#e2e8f0;color:#475569;font-size:0.65rem;">
+                                {{ g.items|length }} élément{{ g.items|length|pluralize }}
+                            </span>
+                        </div>
+
+                        <!-- Tableau avec scroll X + scroll Y limité à 8 lignes -->
+                        <div class="rev-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+                            <table class="table table-sm table-hover mb-0 rev-table"
+                                   id="rev-table-{{ g.type }}"
+                                   style="font-size:0.8rem;min-width:650px;">
+                                <thead style="position:sticky;top:0;background:#fff;z-index:2;">
+                                    <tr style="border-bottom:2px solid #e2e8f0;">
+                                        {% for col in "ABCDEFG" %}{% endfor %}
+                                        <th class="rev-th sortable" data-col="0" data-type="{{ g.type }}"
+                                            style="min-width:100px;padding:0.45rem 0.75rem;">
+                                            Bâtiment <i class="fas fa-sort sort-icon"></i>
+                                        </th>
+                                        <th class="rev-th sortable" data-col="1" data-type="{{ g.type }}"
+                                            style="min-width:80px;padding:0.45rem 0.75rem;">
+                                            Étage <i class="fas fa-sort sort-icon"></i>
+                                        </th>
+                                        <th class="rev-th sortable" data-col="2" data-type="{{ g.type }}"
+                                            style="min-width:120px;padding:0.45rem 0.75rem;">
+                                            Zone / Pièce <i class="fas fa-sort sort-icon"></i>
+                                        </th>
+                                        <th class="rev-th sortable" data-col="3" data-type="{{ g.type }}"
+                                            style="min-width:75px;padding:0.45rem 0.75rem;">
+                                            Revêtement <i class="fas fa-sort sort-icon"></i>
+                                        </th>
+                                        <th class="rev-th sortable" data-col="4" data-type="{{ g.type }}"
+                                            style="min-width:130px;padding:0.45rem 0.75rem;">
+                                            Nature <i class="fas fa-sort sort-icon"></i>
+                                        </th>
+                                        <th class="rev-th sortable" data-col="5" data-type="{{ g.type }}"
+                                            style="min-width:130px;padding:0.45rem 0.75rem;">
+                                            Matériau <i class="fas fa-sort sort-icon"></i>
+                                        </th>
+                                        <th class="rev-th sortable text-end" data-col="6" data-type="{{ g.type }}"
+                                            style="min-width:80px;padding:0.45rem 0.75rem;">
+                                            Surface <i class="fas fa-sort sort-icon"></i>
+                                        </th>
+                                    </tr>
+                                    <!-- Ligne filtres -->
+                                    <tr class="rev-filter-row" style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+                                        <td style="padding:0.25rem 0.4rem;">
+                                            <input type="text" class="form-control form-control-sm rev-filter" data-col="0" data-tbl="{{ g.type }}" placeholder="Filtrer…" style="font-size:0.72rem;height:24px;padding:0.2rem 0.4rem;">
+                                        </td>
+                                        <td style="padding:0.25rem 0.4rem;">
+                                            <input type="text" class="form-control form-control-sm rev-filter" data-col="1" data-tbl="{{ g.type }}" placeholder="Filtrer…" style="font-size:0.72rem;height:24px;padding:0.2rem 0.4rem;">
+                                        </td>
+                                        <td style="padding:0.25rem 0.4rem;">
+                                            <input type="text" class="form-control form-control-sm rev-filter" data-col="2" data-tbl="{{ g.type }}" placeholder="Filtrer…" style="font-size:0.72rem;height:24px;padding:0.2rem 0.4rem;">
+                                        </td>
+                                        <td style="padding:0.25rem 0.4rem;"></td>
+                                        <td style="padding:0.25rem 0.4rem;">
+                                            <input type="text" class="form-control form-control-sm rev-filter" data-col="4" data-tbl="{{ g.type }}" placeholder="Filtrer…" style="font-size:0.72rem;height:24px;padding:0.2rem 0.4rem;">
+                                        </td>
+                                        <td style="padding:0.25rem 0.4rem;">
+                                            <input type="text" class="form-control form-control-sm rev-filter" data-col="5" data-tbl="{{ g.type }}" placeholder="Filtrer…" style="font-size:0.72rem;height:24px;padding:0.2rem 0.4rem;">
+                                        </td>
+                                        <td style="padding:0.25rem 0.4rem;"></td>
+                                    </tr>
+                                </thead>
+                                <!-- Scroll vertical : max 8 lignes visibles -->
+                                <tbody class="rev-tbody" style="display:block;max-height:296px;overflow-y:auto;overflow-x:hidden;">
+                                    {% for r in g.items %}
+                                    <tr class="rev-row" style="display:table;width:100%;table-layout:fixed;border-bottom:1px solid #f0f7ff;">
+                                        <td style="width:100px;padding:0.4rem 0.75rem;font-size:0.78rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ patrimoine.nom }}</td>
+                                        <td style="width:80px;padding:0.4rem 0.75rem;font-size:0.78rem;">
+                                            <span class="badge" style="background:#e8f2ff;color:#1e40af;font-size:0.68rem;font-weight:500;">{{ r.etage.nom|default:"—" }}</span>
+                                        </td>
+                                        <td style="width:120px;padding:0.4rem 0.75rem;font-size:0.78rem;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.piece.nom|default:"—" }}</td>
+                                        <td style="width:75px;padding:0.4rem 0.75rem;">
+                                            <span class="badge" style="font-size:0.68rem;font-weight:600;padding:0.25rem 0.5rem;border-radius:6px;
+                                                {% if r.type_revetement == 'sol' %}background:#fef3c7;color:#92400e;
+                                                {% elif r.type_revetement == 'plafond' %}background:#f0fdf4;color:#166534;
+                                                {% else %}background:#eff6ff;color:#1d4ed8;{% endif %}">
+                                                {{ r.get_type_revetement_display }}
+                                            </span>
+                                        </td>
+                                        <td style="width:130px;padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.nature|default:"—" }}</td>
+                                        <td style="width:130px;padding:0.4rem 0.75rem;font-size:0.78rem;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.materiau|default:"—" }}</td>
+                                        <td style="width:80px;padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:600;text-align:right;">
+                                            {% if r.surface %}{{ r.surface|floatformat:2 }} m²{% else %}<span style="opacity:0.3;">—</span>{% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                {% if g.total_surf %}
+                                <tfoot style="display:table;width:100%;table-layout:fixed;">
+                                    <tr style="background:#f0f7ff;border-top:2px solid #bfdbfe;">
+                                        <td colspan="6" style="padding:0.4rem 0.75rem;font-size:0.78rem;font-weight:700;color:var(--c-blue,#1e6fca);">Total {{ g.label }}</td>
+                                        <td style="padding:0.4rem 0.75rem;font-size:0.82rem;font-weight:700;color:var(--c-blue,#1e6fca);text-align:right;">{{ g.total_surf }} m²</td>
+                                    </tr>
+                                </tfoot>
+                                {% endif %}
+                            </table>
                         </div>
                     </div>
+                    {% empty %}
+                    <!-- Plafonds absents de groupes_revetements mais potentiellement présents en base -->
+                    {% endfor %}
+
+                    {% else %}
+                    <p class="text-muted small text-center py-4 mb-0">
+                        Aucun revêtement extrait.{% if not patrimoine.fichier_ifc %} Uploadez un IFC.{% endif %}
+                    </p>
+                    {% endif %}
+
+                    {% comment %}
+                    Panneau affiché quand un filtre de type masque tous les groupes
+                    {% endcomment %}
+                    <div id="rev-no-data" class="text-center py-4 text-muted small" style="display:none;">
+                        Aucun revêtement de ce type dans le modèle IFC.
+                    </div>
                 </div>
-                
-
             </div>
-            <!-- /pane-info -->
-
 
                 <div class="col-12">
                     <div class="card border-0 shadow-sm" style="border-radius:14px;">
@@ -581,8 +663,13 @@
 
         <!-- ══ ONGLET 2 — DOCUMENTATION GED ════════════════════ -->
         <div class="nb-pane m-3" id="pane-ged" style="margin-top:-13%;">
+
+            <!-- Barre d'outils GED -->
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h5 class="fw-bold mb-0" style="font-size:1rem;">Gestionnaire de documents</h5>
+                <h5 class="fw-bold mb-0" style="font-size:1rem;">
+                    <i class="fas fa-folder-open me-2" style="color:var(--c-blue,#1e6fca);"></i>
+                    Gestionnaire de documents
+                </h5>
                 {% if user.is_staff %}
                 <button class="btn btn-primary btn-sm" onclick="toggleUploadPanel()">
                     <i class="fas fa-upload me-1"></i> Ajouter
@@ -590,6 +677,7 @@
                 {% endif %}
             </div>
 
+            <!-- Panel upload (admin) -->
             {% if user.is_staff %}
             <div id="upload-panel" class="card border-0 shadow-sm mb-3" style="border-radius:14px;display:none;">
                 <div class="card-body p-3">
@@ -642,23 +730,56 @@
             </div>
             {% endif %}
 
-            <!-- Arborescence GED -->
+            <!-- Layout 3 colonnes : Arborescence | Viewer | Propriétés -->
+            <div id="ged-layout" style="display:flex;gap:0;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;min-height:560px;">
+
+            <!-- ── Col 1 : Arborescence (aside gauche) ─────── -->
+            <aside id="ged-tree" style="width:260px;min-width:220px;max-width:300px;flex-shrink:0;
+                        border-right:1px solid #e2e8f0;background:#f8fafc;overflow-y:auto;
+                        display:flex;flex-direction:column;">
+                <div style="padding:0.65rem 0.85rem;border-bottom:1px solid #e2e8f0;
+                            font-size:0.65rem;font-weight:700;text-transform:uppercase;
+                            letter-spacing:0.1em;color:#94a3b8;background:#f1f5f9;">
+                    <i class="fas fa-folder-tree me-1"></i> Arborescence
+                </div>
             {% if ged_arbo %}
+            <div style="padding:0.4rem 0;">
             {% for corps_key, corps_data in ged_arbo.items %}
+
+            <!-- Corps header (CEA / CET) -->
             <div class="mb-3">
-                <div class="ged-corps-header" onclick="toggleCorps('corps-{{ corps_key }}')">
-                    <i class="fas {{ corps_data.icone }}"></i>
-                    <span>{{ corps_key }} — {{ corps_data.label }}</span>
-                    <i class="fas fa-chevron-down ms-auto" id="chevron-corps-{{ corps_key }}" style="transition:transform 0.2s;"></i>
+                <div class="ged-corps-header" onclick="toggleCorps('corps-{{ corps_key }}')"
+                    style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.85rem;
+                                    cursor:pointer;font-size:0.8rem;font-weight:700;color:#1e293b;
+                                    background:linear-gradient(135deg,#0d1628,#1e6fca);color:#fff;
+                                    margin:0.4rem 0.5rem 0.2rem;border-radius:8px;">
+                    <i class="fas {{ corps_data.icone }}" style="font-size:0.75rem;opacity:0.85;"></i>
+                    <span>{{ corps_key }}</span>
+                    <span style="font-size:0.65rem;opacity:0.7;font-weight:400;">— {{ corps_data.label|truncatechars:20 }}</span>
+                    <i class="fas fa-chevron-down ms-auto" id="chevron-corps-{{ corps_key }}" 
+                    style="font-size:0.6rem;transition:transform 0.2s;"></i>
                 </div>
                 <div id="corps-{{ corps_key }}" style="border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;overflow:hidden;">
                     {% for dossier_key, dossier_data in corps_data.dossiers.items %}
+
+                    <!-- Dossier row -->
                     <div>
-                        <div class="ged-dossier-header" onclick="toggleDossier('dos-{{ corps_key }}-{{ dossier_key }}','chevron-dos-{{ corps_key }}-{{ dossier_key }}')">
-                            <i class="fas fa-folder" style="color:var(--c-blue,#1e6fca);font-size:0.85rem;"></i>
-                            <span>{{ dossier_data.label }}</span>
+                        <div class="ged-dossier-header" style="display:flex;align-items:center;gap:0.4rem;padding:0.32rem 0.5rem;
+                            border-radius:7px;cursor:pointer;transition:background 0.15s;"
+                            onclick="toggleDossier('dos-{{ corps_key }}-{{ dossier_key }}','chevron-dos-{{ corps_key }}-{{ dossier_key }}')"
+                            onmouseenter="this.style.background='#e8f2ff'"
+                            onmouseleave="this.style.background='transparent'">
+                            <i class="fas fa-folder" style="color:#f59e0b;font-size:0.85rem;flex-shrink:0;"></i>
+                            <span style="font-size:0.78rem;font-weight:600;color:#334155;flex:1;min-width:0;
+                                        overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                                    title="{{ dossier_data.label }}">
+                                {{ dossier_data.label|truncatechars:22 }}
+                            </span>
                             {% if dossier_data.count > 0 %}
-                            <span class="badge ms-auto rounded-pill" style="background:var(--c-blue,#1e6fca);font-size:0.63rem;">{{ dossier_data.count }}</span>
+                            <span class="badge ms-auto rounded-pill" 
+                                  style="background:#dbeafe;color:#1e40af;font-size:0.6rem;font-weight:700;padding:0.1rem 0.35rem;border-radius:50px;flex-shrink:0;">
+                                {{ dossier_data.count }}
+                            </span>
                             <!-- Bouton télécharger tout le dossier (visible pour tous) -->
                             <a href="{% url 'smartdocs:ged_download_dossier' patrimoine.pk %}?corps={{ corps_key }}&dossier={{ dossier_key }}"
                                class="ged-dl-btn"
@@ -667,29 +788,62 @@
                                style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.18rem 0.55rem;
                                       background:#eff6ff;color:var(--c-blue,#1e6fca);border-radius:6px;
                                       font-size:0.7rem;font-weight:600;text-decoration:none;border:1px solid #bfdbfe;
-                                      transition:background 0.15s;margin-left:0.4rem;white-space:nowrap;">
+                                      transition:background 0.15s;margin-left:0.4rem;white-space:nowrap;"
+                                      onmouseover="this.style.background='#dbeafe';"
+                                      onmouseleave="this.style.background='#eff6ff';">
                                 <i class="fas fa-download" style="font-size:0.65rem;"></i>
                                 <span class="d-none d-sm-inline">Tout</span>
                             </a>
                             {% else %}
-                            <span class="ms-auto text-muted" style="font-size:0.72rem;">vide</span>
-                            {% endif %}
                             <i class="fas fa-chevron-right ms-1" id="chevron-dos-{{ corps_key }}-{{ dossier_key }}" style="font-size:0.65rem;transition:transform 0.2s;opacity:0.5;"></i>
+                            {% endif %}
                         </div>
-                        <div id="dos-{{ corps_key }}-{{ dossier_key }}" style="display:none;">
+
+                        <!-- Fichiers du dossier -->
+                    {% if dossier_data.count > 0 %}
+                        <div id="dos-{{ corps_key }}-{{ dossier_key }}" style="display:none;padding-left:0.75rem;">
                             <div class="ged-dossier-body">
                                 {% for doc in dossier_data.docs %}
-                                <div class="ged-file-row" id="ged-doc-{{ doc.pk }}">
-                                    {% if doc.is_pdf %}<i class="fas fa-file-pdf" style="color:#e53935;font-size:0.9rem;flex-shrink:0;"></i>
-                                    {% elif doc.is_image %}<i class="fas fa-file-image" style="color:#1e88e5;font-size:0.9rem;flex-shrink:0;"></i>
-                                    {% else %}<i class="fas fa-file-alt" style="color:#888;font-size:0.9rem;flex-shrink:0;"></i>{% endif %}
+                                <div class="ged-file-row" id="ged-doc-{{ doc.pk }}"
+                                      onclick="gedOpenFile({{ doc.pk }},'{{ doc.titre|escapejs }}','{{ doc.extension|escapejs }}','{{ doc.uploade_le|date:"d/m/Y H:i" }}','{% if doc.fichier %}{{ doc.fichier.size }}{% else %}0{% endif %}','{{ doc.version|escapejs }}','{% url "smartdocs:ged_download" doc.pk %}')"
+                                      style="display:flex;align-items:center;gap:0.4rem;padding:0.28rem 0.4rem;
+                                      border-radius:6px;cursor:pointer;transition:background 0.12s;">
+                                    <!-- Icône par extension -->
+                                    <span style="flex-shrink:0;font-size:0.75rem;">
+                                        {% if doc.is_pdf %}<i class="fas fa-file-pdf" style="color:#e53935;"></i>
+                                        {% elif doc.is_image %}<i class="fas fa-file-image" style="color:#1e88e5;"></i>
+                                        {% elif doc.extension == '.dwg' or doc.extension == '.dxf' %}<i class="fas fa-drafting-compass" style="color:#7c3aed;"></i>
+                                        {% elif doc.extension == '.xlsx' or doc.extension == '.xls' or doc.extension == '.csv' %}<i class="fas fa-file-excel" style="color:#16a34a;"></i>
+                                        {% elif doc.extension == '.docx' or doc.extension == '.doc' %}<i class="fas fa-file-word" style="color:#2563eb;"></i>
+                                        {% elif doc.extension == '.txt' %}<i class="fas fa-file-lines" style="color:#64748b;"></i>
+                                        {% elif doc.extension == '.ifc' %}<i class="fas fa-cubes" style="color:#0891b2;"></i>
+                                        {% else %}<i class="fas fa-file-alt" style="color:#94a3b8;"></i>{% endif %}
+                                    </span>
                                     <div class="flex-grow-1 min-w-0">
                                         <div class="fw-semibold text-truncate" style="font-size:0.82rem;">{{ doc.titre }}</div>
                                         <div class="text-muted" style="font-size:0.72rem;">{{ doc.extension }}{% if doc.version %} · {{ doc.version }}{% endif %} · {{ doc.uploade_le|date:"d/m/Y" }}</div>
                                     </div>
-                                    <a href="{% url 'smartdocs:ged_download' doc.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Télécharger"><i class="fas fa-download" style="font-size:0.72rem;"></i></a>
+                                    <!-- Download individuel -->
+                                    <a href="{% url 'smartdocs:ged_download' doc.pk %}" 
+                                        class="btn btn-sm btn-outline-secondary py-0 px-1" 
+                                        title="Télécharger"
+                                        style="display:flex;align-items:center;justify-content:center;
+                                                  width:18px;height:18px;border-radius:4px;flex-shrink:0;
+                                                  background:transparent;color:#94a3b8;text-decoration:none;
+                                                  font-size:0.58rem;transition:all 0.12s;opacity:0;"
+                                        onclick="event.stopPropagation();">
+                                        <i class="fas fa-download" style="font-size:0.72rem;"></i>
+                                    </a>
                                     {% if user.is_staff %}
-                                    <button class="btn btn-sm btn-outline-danger py-0 px-1" title="Supprimer" onclick="deleteGedDoc({{ doc.pk }})"><i class="fas fa-trash" style="font-size:0.72rem;"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-1"
+                                            style="display:flex;align-items:center;justify-content:center;
+                                                       width:18px;height:18px;border-radius:4px;flex-shrink:0;
+                                                       background:transparent;color:#fca5a5;border:none;
+                                                       font-size:0.58rem;transition:all 0.12s;cursor:pointer;opacity:0;" 
+                                            title="Supprimer" 
+                                            onclick="event.stopPropagation();deleteGedDoc({{ doc.pk }})">
+                                        <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+                                    </button>
                                     {% endif %}
                                 </div>
                                 {% empty %}
@@ -716,9 +870,10 @@
                                 {% endif %}
                             </div>
                         </div>
+                    {% endif %}  
                     </div>
                     {% endfor %}
-                </div>
+                </div> <!-- /tree-corps -->
             </div>
             {% endfor %}
             {% else %}
@@ -727,6 +882,137 @@
                 <p class="text-muted">Aucun document dans la GED.{% if user.is_staff %} Cliquez sur « Ajouter » pour commencer.{% endif %}</p>
             </div>
             {% endif %}
+        </aside>
+        <!-- ── Col 2 : Viewer central ────────────────────── -->
+                <div id="ged-viewer-area" style="flex:1;min-width:0;display:flex;flex-direction:column;background:#fff;">
+
+                    <!-- Toolbar viewer -->
+                    <div id="ged-viewer-toolbar" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;
+                         border-bottom:1px solid #e2e8f0;background:#f8fafc;min-height:42px;flex-shrink:0;">
+                        <span id="ged-viewer-filename" style="font-size:0.82rem;font-weight:600;color:#334155;
+                              flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            <i class="fas fa-hand-pointer me-2" style="color:#cbd5e1;"></i>
+                            Sélectionnez un fichier dans l'arborescence
+                        </span>
+                        <a id="ged-dl-active" href="#" download
+                           style="display:none;align-items:center;gap:0.3rem;padding:0.3rem 0.7rem;
+                                  background:var(--c-blue,#1e6fca);color:#fff;border-radius:7px;
+                                  font-size:0.75rem;font-weight:600;text-decoration:none;">
+                            <i class="fas fa-download"></i> Télécharger
+                        </a>
+                    </div>
+
+                    <!-- Zone d'affichage -->
+                    <div id="ged-viewer-content" style="flex:1;position:relative;overflow:hidden;min-height:0;">
+
+                        <!-- État vide -->
+                        <div id="ged-viewer-empty" style="position:absolute;inset:0;display:flex;flex-direction:column;
+                             align-items:center;justify-content:center;color:#cbd5e1;">
+                            <i class="fas fa-file-circle-question" style="font-size:3.5rem;margin-bottom:1rem;"></i>
+                            <p style="font-size:0.88rem;text-align:center;max-width:260px;line-height:1.5;">
+                                Cliquez sur un fichier dans l'arborescence pour le prévisualiser
+                            </p>
+                        </div>
+
+                        <!-- Loader -->
+                        <div id="ged-viewer-loader" style="display:none;position:absolute;inset:0;
+                             background:rgba(248,250,252,0.95);z-index:10;
+                             flex-direction:column;align-items:center;justify-content:center;">
+                            <div style="width:36px;height:36px;border:3px solid #e2e8f0;
+                                        border-top-color:var(--c-blue,#1e6fca);border-radius:50%;
+                                        animation:ged-spin 0.7s linear infinite;margin-bottom:0.75rem;"></div>
+                            <span style="font-size:0.82rem;color:#64748b;">Chargement…</span>
+                        </div>
+
+                        <!-- PDF viewer -->
+                        <iframe id="ged-viewer-pdf" src="" style="display:none;width:100%;height:100%;border:none;"></iframe>
+
+                        <!-- Image viewer -->
+                        <div id="ged-viewer-img-wrap" style="display:none;width:100%;height:100%;
+                             overflow:auto;display:none;align-items:center;justify-content:center;
+                             background:#f1f5f9;padding:1rem;">
+                            <img id="ged-viewer-img" src="" alt=""
+                                 style="max-width:100%;max-height:100%;object-fit:contain;
+                                        border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.1);">
+                        </div>
+
+                        <!-- Texte / CSV / code viewer -->
+                        <div id="ged-viewer-text" style="display:none;width:100%;height:100%;overflow:auto;padding:1.25rem;">
+                            <pre id="ged-viewer-text-content"
+                                 style="margin:0;font-size:0.8rem;font-family:'Courier New',monospace;
+                                        white-space:pre-wrap;word-break:break-word;color:#1e293b;
+                                        background:#f8fafc;border-radius:8px;padding:1rem;
+                                        border:1px solid #e2e8f0;line-height:1.6;"></pre>
+                        </div>
+
+                        <!-- Format non prévisualisable -->
+                        <div id="ged-viewer-unsupported" style="display:none;position:absolute;inset:0;
+                             flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;">
+                            <i id="ged-unsupported-icon" class="fas fa-file fa-4x mb-3"></i>
+                            <p id="ged-unsupported-msg" style="font-size:0.88rem;text-align:center;max-width:260px;"></p>
+                            <a id="ged-unsupported-dl" href="#"
+                               style="margin-top:0.75rem;padding:0.5rem 1.25rem;background:var(--c-blue,#1e6fca);
+                                      color:#fff;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;">
+                                <i class="fas fa-download me-1"></i> Télécharger pour ouvrir
+                            </a>
+                        </div>
+
+                    </div><!-- /ged-viewer-content -->
+                </div><!-- /ged-viewer-area -->
+
+                <!-- ── Col 3 : Propriétés (aside droite) ─────────── -->
+                <aside id="ged-props" style="width:210px;min-width:180px;flex-shrink:0;
+                            border-left:1px solid #e2e8f0;background:#f8fafc;
+                            overflow-y:auto;display:flex;flex-direction:column;">
+                    <div style="padding:0.65rem 0.85rem;border-bottom:1px solid #e2e8f0;
+                                font-size:0.65rem;font-weight:700;text-transform:uppercase;
+                                letter-spacing:0.1em;color:#94a3b8;background:#f1f5f9;">
+                        <i class="fas fa-circle-info me-1"></i> Propriétés
+                    </div>
+                    <div id="ged-props-content" style="padding:0.85rem;flex:1;">
+                        <div id="ged-props-empty" style="text-align:center;padding:2rem 0.5rem;color:#cbd5e1;font-size:0.78rem;">
+                            <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+                            Sélectionnez un fichier
+                        </div>
+                        <div id="ged-props-data" style="display:none;">
+                            <!-- Miniature / icône -->
+                            <div id="ged-props-thumb" style="text-align:center;margin-bottom:1rem;"></div>
+                            <!-- Propriétés -->
+                            <div class="ged-prop-row" id="prop-nom-row">
+                                <div class="ged-prop-label">Nom</div>
+                                <div class="ged-prop-value" id="prop-nom"></div>
+                            </div>
+                            <div class="ged-prop-row">
+                                <div class="ged-prop-label">Type</div>
+                                <div class="ged-prop-value" id="prop-type"></div>
+                            </div>
+                            <div class="ged-prop-row">
+                                <div class="ged-prop-label">Taille</div>
+                                <div class="ged-prop-value" id="prop-taille"></div>
+                            </div>
+                            <div class="ged-prop-row">
+                                <div class="ged-prop-label">Ajouté le</div>
+                                <div class="ged-prop-value" id="prop-date"></div>
+                            </div>
+                            <div class="ged-prop-row" id="prop-version-row">
+                                <div class="ged-prop-label">Version</div>
+                                <div class="ged-prop-value" id="prop-version"></div>
+                            </div>
+                            <hr style="border-color:#e2e8f0;margin:0.75rem 0;">
+                            <a id="prop-dl-btn" href="#"
+                               style="display:flex;align-items:center;justify-content:center;gap:0.4rem;
+                                      padding:0.5rem;background:var(--c-blue,#1e6fca);color:#fff;
+                                      border-radius:8px;font-size:0.78rem;font-weight:600;text-decoration:none;
+                                      transition:opacity 0.15s;"
+                               onmouseenter="this.style.opacity='0.85'"
+                               onmouseleave="this.style.opacity='1'">
+                                <i class="fas fa-download"></i> Télécharger
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+
+            </div><!-- /ged-layout -->
         </div><!-- /pane-ged -->
 
 
@@ -955,16 +1241,95 @@ function showTab(id, el) {
 
 /* ── Filtrage tableau équipements ──────────────────────────────── */
 function filterRevTab(type, btn) {
+    // Boutons
     document.querySelectorAll('.rev-tab-btn').forEach(b => {
         b.style.background = '#fff'; b.style.color = '#888';
         b.style.borderColor = '#e2e8f0';
     });
     btn.style.background = 'var(--c-blue,#1e6fca)';
-    btn.style.color = '#fff';
+    btn.style.color = '#fff'; btn.style.borderColor = 'var(--c-blue,#1e6fca)';
+
+    // Groupes
+    let anyVisible = false;
     document.querySelectorAll('.rev-groupe').forEach(g => {
-        g.classList.toggle('hidden', type !== 'all' && g.dataset.type !== type);
+        const show = type === 'all' || g.dataset.type === type;
+        g.classList.toggle('hidden', !show);
+        if (show) anyVisible = true;
+    });
+    const noData = document.getElementById('rev-no-data');
+    if (noData) noData.style.display = anyVisible ? 'none' : 'block';
+}
+
+
+/* ── Tri des tableaux revêtements ────────────────────────────── */
+const _revSortState = {}; // { tableId: { col, asc } }
+
+document.addEventListener('click', function(e) {
+    const th = e.target.closest('.rev-th.sortable');
+    if (!th) return;
+    const tblType = th.dataset.type;
+    const col     = parseInt(th.dataset.col);
+    const tbody   = document.querySelector(`#rev-table-${tblType} .rev-tbody`);
+    if (!tbody) return;
+
+    const key = tblType;
+    const prev = _revSortState[key] || {};
+    const asc  = prev.col === col ? !prev.asc : true;
+    _revSortState[key] = { col, asc };
+
+    // Reset icônes
+    document.querySelectorAll(`#rev-table-${tblType} .sort-icon`).forEach(i => {
+        i.className = 'fas fa-sort sort-icon';
+    });
+    th.querySelector('.sort-icon').className = `fas fa-sort-${asc ? 'up' : 'down'} sort-icon`;
+
+    // Tri
+    const rows = Array.from(tbody.querySelectorAll('.rev-row'));
+    rows.sort((a, b) => {
+        const tds = a.querySelectorAll('td');
+        const tds2 = b.querySelectorAll('td');
+        if (!tds[col] || !tds2[col]) return 0;
+        let va = tds[col].textContent.trim();
+        let vb = tds2[col].textContent.trim();
+        // Tri numérique si possible (surface)
+        const na = parseFloat(va), nb = parseFloat(vb);
+        if (!isNaN(na) && !isNaN(nb)) return asc ? na - nb : nb - na;
+        return asc ? va.localeCompare(vb, 'fr') : vb.localeCompare(va, 'fr');
+    });
+    rows.forEach(r => tbody.appendChild(r));
+});
+
+/* ── Filtre inline par colonne ───────────────────────────────── */
+document.addEventListener('input', function(e) {
+    const inp = e.target.closest('.rev-filter');
+    if (!inp) return;
+    const col    = parseInt(inp.dataset.col);
+    const tblType = inp.dataset.tbl;
+    applyRevFilters(tblType);
+});
+
+function applyRevFilters(tblType) {
+    const table  = document.getElementById(`rev-table-${tblType}`);
+    if (!table) return;
+    const filters = Array.from(table.querySelectorAll('.rev-filter'));
+    const tbody   = table.querySelector('.rev-tbody');
+    if (!tbody) return;
+
+    tbody.querySelectorAll('.rev-row').forEach(row => {
+        const tds = row.querySelectorAll('td');
+        let show = true;
+        filters.forEach(f => {
+            const col = parseInt(f.dataset.col);
+            const val = f.value.toLowerCase().trim();
+            if (!val) return;
+            const cellText = tds[col] ? tds[col].textContent.toLowerCase() : '';
+            if (!cellText.includes(val)) show = false;
+        });
+        row.style.display = show ? '' : 'none';
     });
 }
+
+
 function showRecap(id, btn) {
     document.querySelectorAll('.recap-pane').forEach(p => p.style.display = 'none');
     document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
@@ -983,7 +1348,7 @@ function filterEqTab(type, btn) {
     });
 }
 
-/* ── GED accordéon ─────────────────────────────────────────── */
+/* ── GED accordéon Tree + Viewer ──────────────────────────────────── */
 function toggleCorps(id) {
     const el = document.getElementById(id);
     const ch = document.getElementById('chevron-' + id);
@@ -998,6 +1363,187 @@ function toggleDossier(id, chevronId) {
     el.style.display = open ? 'none' : 'block';
     if (ch) ch.style.transform = open ? '' : 'rotate(90deg)';
 }
+function toggleUploadPanel() {
+    const p = document.getElementById('upload-panel');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+// Hover sur fichier → affiche boutons dl/delete
+document.addEventListener('mouseover', function(e) {
+    const row = e.target.closest('.ged-tree-file');
+    if (!row) return;
+    row.style.background = '#eff6ff';
+    row.querySelectorAll('.ged-file-dl-btn,.ged-file-del-btn').forEach(b => b.style.opacity = '1');
+});
+document.addEventListener('mouseout', function(e) {
+    const row = e.target.closest('.ged-tree-file');
+    if (!row) return;
+    if (!row.classList.contains('ged-active')) row.style.background = 'transparent';
+    row.querySelectorAll('.ged-file-dl-btn,.ged-file-del-btn').forEach(b => b.style.opacity = '0');
+});
+
+// ── Ouvrir un fichier dans le viewer ─────────────────────────
+let _gedActiveDocId = null;
+
+function gedOpenFile(docId, titre, ext, date, taille, version, dlUrl) {
+    // Marquer actif dans l'arbre
+    document.querySelectorAll('.ged-tree-file').forEach(r => {
+        r.classList.remove('ged-active');
+        r.style.background = 'transparent';
+    });
+    const row = document.getElementById('tree-file-' + docId);
+    if (row) { row.classList.add('ged-active'); row.style.background = '#dbeafe'; }
+    _gedActiveDocId = docId;
+
+    // Toolbar
+    document.getElementById('ged-viewer-filename').innerHTML =
+        `<i class="${_gedExtIcon(ext)} me-2"></i>${titre}`;
+    const dlActive = document.getElementById('ged-dl-active');
+    dlActive.href = dlUrl;
+    dlActive.style.display = 'flex';
+
+    // Propriétés
+    document.getElementById('ged-props-empty').style.display = 'none';
+    document.getElementById('ged-props-data').style.display  = 'block';
+    document.getElementById('prop-nom').textContent   = titre;
+    document.getElementById('prop-type').textContent  = ext.toUpperCase().replace('.','') || '—';
+    document.getElementById('prop-taille').textContent = taille > 0 ? _gedFormatSize(parseInt(taille)) : '—';
+    document.getElementById('prop-date').textContent  = date;
+    const vRow = document.getElementById('prop-version-row');
+    if (version) { document.getElementById('prop-version').textContent = version; vRow.style.display = ''; }
+    else { vRow.style.display = 'none'; }
+    document.getElementById('prop-dl-btn').href = dlUrl;
+
+    // Miniature dans propriétés
+    const thumb = document.getElementById('ged-props-thumb');
+    const isImg = ['.jpg','.jpeg','.png','.gif','.webp','.svg'].includes(ext);
+    if (isImg) {
+        thumb.innerHTML = `<img src="${dlUrl.replace('/telecharger/','') + '?inline=1'}" 
+            style="max-width:100%;max-height:80px;border-radius:6px;object-fit:contain;" 
+            onerror="this.style.display='none'">`;
+    } else {
+        thumb.innerHTML = `<i class="${_gedExtIcon(ext)}" style="font-size:2.5rem;margin:0.5rem 0;display:block;"></i>`;
+    }
+
+    // Charger le viewer approprié
+    _gedShowViewer(ext, dlUrl, titre);
+}
+
+function _gedShowViewer(ext, dlUrl, titre) {
+    // Masquer tous
+    ['ged-viewer-empty','ged-viewer-pdf','ged-viewer-img-wrap',
+     'ged-viewer-text','ged-viewer-unsupported'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    document.getElementById('ged-viewer-loader').style.display = 'flex';
+
+    // Construire URL inline (force affichage navigateur)
+    const inlineUrl = dlUrl + '?inline=1';
+
+    // PDF
+    if (ext === '.pdf') {
+        const iframe = document.getElementById('ged-viewer-pdf');
+        iframe.onload = () => document.getElementById('ged-viewer-loader').style.display = 'none';
+        iframe.src = inlineUrl;
+        iframe.style.display = 'block';
+        return;
+    }
+
+    // Images
+    if (['.jpg','.jpeg','.png','.gif','.webp','.svg','.bmp'].includes(ext)) {
+        const wrap = document.getElementById('ged-viewer-img-wrap');
+        const img  = document.getElementById('ged-viewer-img');
+        img.onload = () => {
+            document.getElementById('ged-viewer-loader').style.display = 'none';
+            wrap.style.display = 'flex';
+        };
+        img.onerror = () => _gedShowUnsupported(ext, dlUrl, titre);
+        img.src = inlineUrl;
+        return;
+    }
+
+    // Texte / CSV / JSON / code
+    if (['.txt','.csv','.json','.xml','.html','.md','.log','.py','.js','.css','.sql','.ifc'].includes(ext)) {
+        fetch(inlineUrl, { credentials: 'same-origin' })
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.text();
+            })
+            .then(text => {
+                document.getElementById('ged-viewer-loader').style.display = 'none';
+                const pre = document.getElementById('ged-viewer-text-content');
+                pre.textContent = text.length > 200000 ? text.slice(0, 200000) + '\n… (fichier tronqué)' : text;
+                document.getElementById('ged-viewer-text').style.display = 'block';
+            })
+            .catch(() => _gedShowUnsupported(ext, dlUrl, titre));
+        return;
+    }
+
+    // Office & DWG → aperçu via Office Online / Google Docs
+    if (['.docx','.doc','.xlsx','.xls','.pptx','.ppt','.dwg','.dxf'].includes(ext)) {
+        // Pour les fichiers Office, on tente d'abord l'iframe avec Google Docs Viewer
+        // mais ça nécessite une URL publique — on affiche donc le message adapté
+        _gedShowUnsupported(ext, dlUrl, titre);
+        return;
+    }
+
+    // Tout le reste
+    _gedShowUnsupported(ext, dlUrl, titre);
+}
+
+const EXT_LABELS = {
+    '.docx':'Word', '.doc':'Word', '.xlsx':'Excel', '.xls':'Excel',
+    '.pptx':'PowerPoint', '.ppt':'PowerPoint',
+    '.dwg':'AutoCAD DWG', '.dxf':'AutoCAD DXF',
+    '.zip':'Archive ZIP', '.rar':'Archive',
+    '.ifc':'Modèle IFC', '.rvt':'Revit',
+};
+
+function _gedShowUnsupported(ext, dlUrl, titre) {
+    document.getElementById('ged-viewer-loader').style.display = 'none';
+    const wrap = document.getElementById('ged-viewer-unsupported');
+    const label = EXT_LABELS[ext] || ext.toUpperCase().replace('.','') || 'Fichier';
+    document.getElementById('ged-unsupported-icon').className = _gedExtIcon(ext) + ' fa-4x mb-3';
+    document.getElementById('ged-unsupported-msg').textContent =
+        `La prévisualisation de ${label} n'est pas disponible dans le navigateur. Téléchargez le fichier pour l'ouvrir.`;
+    document.getElementById('ged-unsupported-dl').href = dlUrl;
+    wrap.style.display = 'flex';
+}
+
+function _gedExtIcon(ext) {
+    const map = {
+        '.pdf':  'fas fa-file-pdf text-danger',
+        '.png':  'fas fa-file-image text-primary',
+        '.jpg':  'fas fa-file-image text-primary',
+        '.jpeg': 'fas fa-file-image text-primary',
+        '.gif':  'fas fa-file-image text-primary',
+        '.webp': 'fas fa-file-image text-primary',
+        '.svg':  'fas fa-file-image text-primary',
+        '.dwg':  'fas fa-drafting-compass text-purple',
+        '.dxf':  'fas fa-drafting-compass text-purple',
+        '.xlsx': 'fas fa-file-excel text-success',
+        '.xls':  'fas fa-file-excel text-success',
+        '.csv':  'fas fa-file-csv text-success',
+        '.docx': 'fas fa-file-word text-primary',
+        '.doc':  'fas fa-file-word text-primary',
+        '.pptx': 'fas fa-file-powerpoint text-danger',
+        '.txt':  'fas fa-file-lines text-secondary',
+        '.json': 'fas fa-file-code text-warning',
+        '.xml':  'fas fa-file-code text-warning',
+        '.ifc':  'fas fa-cubes text-info',
+        '.zip':  'fas fa-file-zipper text-secondary',
+    };
+    return map[ext] || 'fas fa-file text-secondary';
+}
+
+function _gedFormatSize(bytes) {
+    if (bytes < 1024)       return bytes + ' o';
+    if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + ' Ko';
+    if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' Mo';
+    return (bytes / 1073741824).toFixed(2) + ' Go';
+}
+
 function toggleUploadPanel() {
     const p = document.getElementById('upload-panel');
     p.style.display = p.style.display === 'none' ? 'block' : 'none';
