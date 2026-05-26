@@ -158,9 +158,71 @@
                 </a>
                 {% endif %}
             </div>
-            <a href="{% url 'devis_btp:devis_create' %}?source=bureau_etude&mission_id={{ mission.pk }}&client={{ mission.client_nom }}">
-                <i class="fas fa-file-invoice-dollar"></i> Créer un devis
-            </a>
+
+            {# ── MOREX STANDALONE ────────────────────────────── #}
+            <button class="db-accordion-btn {% block acc_morex_open %}{% endblock %}" 
+                    id="accMorex"
+                    onclick="window.location.href='{% url 'devis_btp:devis_create' %}?source=bureau_etude&mission_id={{ mission.pk }}&client={{ mission.client_nom }}'">
+                <i class="fas fa-file-invoice-dollar"></i> 
+                <span class="label">Créer un devis</span>
+                <i class="fas fa-chevron-right icon-chevron" onclick="toggleAccordion('panelMorex', this)"></i>
+            </button>
+
+            <div class="db-accordion-panel {% block acc_morex_panel %}{% endblock %}"
+                 id="panelMorex">
+
+                {# Niveau 1 — menu général #}
+                <a href="{% url 'devis_btp:devis_list' %}"
+                   class="db-sub-link {% block sb_id_devi %}{% endblock %}">
+                    <i class="fas fa-folder-open"></i> Tous les projets
+                </a>
+                <a href="{% url 'devis_btp:devis_create' %}"
+                   class="db-sub-link {% block sb_id_new_devis %}{% endblock %}">
+                    <i class="fas fa-plus-circle"></i> Nouveau devis
+                </a>
+                <a href="{% url 'devis_btp:materiaux_list' %}"
+                   class="db-sub-link {% block sb_id_materiaux %}{% endblock %}">
+                    <i class="fas fa-cubes"></i> Materiaux
+                </a>
+
+                {# Niveau 2 — projet courant #}
+                {% if projet and projet|stringformat:"s" != "" %}
+                {% with pid=projet.pk %}
+                <div class="db-projet-label" style="color:rgba(99,102,241,.6);">
+                    <i class="fas fa-dot-circle" style="font-size:.5rem;"></i>
+                    {{ projet.reference }}
+                </div>
+                <a href="{% url 'devis_btp:devis_detail' pk=pid %}"
+                   class="db-sub-link {% block sb_id_detail_devis %}{% endblock %}">
+                    <i class="fas fa-info-circle"></i> Vue d'ensemble
+                </a>
+                <a href="{% url 'devis_btp:materiau_create' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_materiaux_create %}{% endblock %}">
+                    <i class="fas fa-plus-circle"></i> Materiaux create
+                </a>
+                <a href="{% url 'devis_btp:dosages_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_dosages %}{% endblock %}">
+                    <i class="fas fa-bug"></i> Dosages
+                </a>{% comment %}
+                <a href="{% url 'devis_btp:livrable_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_livrables %}{% endblock %}">
+                    <i class="fas fa-archive"></i> Livrables
+                </a>
+                 <a href="{% url 'devis_btp:doc_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_docs %}{% endblock %}">
+                    <i class="fas fa-book"></i> Documentation
+                </a>
+                <a href="{% url 'devis_btp:devis_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_devis %}{% endblock %}">
+                    <i class="fas fa-file-invoice"></i> Devis
+                </a>
+                <a href="{% url 'devis_btp:facture_list' projet_pk=pid %}"
+                   class="db-sub-link {% block sb_id_factures %}{% endblock %}">
+                    <i class="fas fa-receipt"></i> Facturation
+                </a> {% endcomment %}
+                {% endwith %}
+                {% endif %}
+            </div>
             {# ── INFO-DEV ──────────────────────────────────── #}
             <button class="db-accordion-btn {% block acc_infodev_open %}{% endblock %}"
                     id="accInfoDev"
@@ -225,6 +287,8 @@
                 {% endwith %}
                 {% endif %}
             </div>
+
+
             {# ── CYBER-CAFÉ (placeholder extensible) #}
             <button class="db-accordion-btn {% block acc_cyber_open %}{% endblock %}"
                     id="accCyber"

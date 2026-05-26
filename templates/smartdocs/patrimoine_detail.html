@@ -775,7 +775,7 @@
                                     title="{{ dossier_data.label }}">
                                 {{ dossier_data.label|truncatechars:22 }}
                             </span>
-                            {% if dossier_data.count > 0 %}
+
                             <span class="badge ms-auto rounded-pill" 
                                   style="background:#dbeafe;color:#1e40af;font-size:0.6rem;font-weight:700;padding:0.1rem 0.35rem;border-radius:50px;flex-shrink:0;">
                                 {{ dossier_data.count }}
@@ -794,13 +794,10 @@
                                 <i class="fas fa-download" style="font-size:0.65rem;"></i>
                                 <span class="d-none d-sm-inline">Tout</span>
                             </a>
-                            {% else %}
                             <i class="fas fa-chevron-right ms-1" id="chevron-dos-{{ corps_key }}-{{ dossier_key }}" style="font-size:0.65rem;transition:transform 0.2s;opacity:0.5;"></i>
-                            {% endif %}
                         </div>
 
                         <!-- Fichiers du dossier -->
-                    {% if dossier_data.count > 0 %}
                         <div id="dos-{{ corps_key }}-{{ dossier_key }}" style="display:none;padding-left:0.75rem;">
                             <div class="ged-dossier-body">
                                 {% for doc in dossier_data.docs %}
@@ -837,12 +834,11 @@
                                     {% if user.is_staff %}
                                     <button class="btn btn-sm btn-outline-danger py-0 px-1"
                                             style="display:flex;align-items:center;justify-content:center;
-                                                       width:18px;height:18px;border-radius:4px;flex-shrink:0;
-                                                       background:transparent;color:#fca5a5;border:none;
+                                                       width:18px;height:18px;border-radius:4px;flex-shrink:0;color:#EB2828;border:none;
                                                        font-size:0.58rem;transition:all 0.12s;cursor:pointer;opacity:0;" 
                                             title="Supprimer" 
-                                            onclick="event.stopPropagation();deleteGedDoc({{ doc.pk }})">
-                                        <i class="fas fa-trash" style="font-size:0.72rem;"></i>
+                                            onclick="event.stopPropagation();deleteGedDoc({{ doc.pk }})">``
+                                        <i class="fas fa-trash" style="font-size:1rem;"></i>
                                     </button>
                                     {% endif %}
                                 </div>
@@ -870,7 +866,6 @@
                                 {% endif %}
                             </div>
                         </div>
-                    {% endif %}  
                     </div>
                     {% endfor %}
                 </div> <!-- /tree-corps -->
